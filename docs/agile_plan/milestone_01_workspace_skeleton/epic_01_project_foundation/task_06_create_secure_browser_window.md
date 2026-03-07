@@ -1,5 +1,9 @@
 # Task 06 - Create secure BrowserWindow defaults
 
+Status:
+- [ ] Not started
+- [x] Done
+
 - Objective: configure Electron with secure window defaults and process boundaries.
 - Why: the architecture explicitly requires safe Electron boundaries.
 - Deliverable: hardened `BrowserWindow` setup in the main process.

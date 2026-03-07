@@ -1,5 +1,9 @@
 # Task 03 - Build structural rules
 
+Status:
+- [x] Not started
+- [ ] Done
+
 - Objective: validate title page, abstract, and references presence according to selected paper structure.
 - Why: structural guidance is as important as formatting guidance.
 - Deliverable: structural validation rules keyed to metadata and template choice.

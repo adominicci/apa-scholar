@@ -1,5 +1,9 @@
 # Task 01 - Build app shell layout
 
+Status:
+- [x] Not started
+- [ ] Done
+
 - Objective: implement the main workspace layout with stable panel regions.
 - Why: navigation should feel like an academic workspace before editor work begins.
 - Deliverable: shell layout for sidebar, main view, and supporting panels.

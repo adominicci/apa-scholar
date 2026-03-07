@@ -1,5 +1,9 @@
 # Task 03 - Support paragraphs and headings
 
+Status:
+- [x] Not started
+- [ ] Done
+
 - Objective: support paragraphs and APA heading levels 1 through 5.
 - Why: heading structure is central to academic paper organization.
 - Deliverable: paragraph and heading nodes with deterministic rendering.
