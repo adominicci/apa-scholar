@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+:root {
+  --color-canvas: #f3efe5;
+  --color-panel: #e8dfd1;
+  --color-card: #fffaf2;
+  --color-line: rgba(76, 57, 36, 0.14);
+  --color-ink: #2f2418;
+  --color-muted: #7d6850;
+  --color-accent: #9d4f2f;
+  --shadow-panel: 0 24px 60px rgba(61, 43, 29, 0.12);
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(157, 79, 47, 0.08),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(126, 96, 60, 0.12),
+      transparent 32%
+    ),
+    var(--color-canvas);
+  color: var(--color-ink);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
