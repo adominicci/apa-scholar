@@ -571,7 +571,16 @@ The UI should feel:
 - modern but academic,
 - instructional without feeling childish.
 
-The visual inspiration is a modern coding/workspace app adapted to academic writing rather than programming.
+The visual inspiration is a warm-dark studio workspace (see `docs/UI/screen.png` for the reference screenshot and `docs/UI/code.html` for the reference HTML). The aesthetic uses flat panels with border separators, a warm brown/orange palette (`#1a1612` canvas, `#ff8c00` accent), and the Inter font family for UI chrome.
+
+For the full design token reference, color palette, font specification, layout structure, and component architecture, see **`docs/UI/design-system.md`**.
+
+### Workspace UI fonts
+- **Inter** (bundled, variable woff2) — all workspace UI text
+- **Material Symbols Outlined** (bundled, woff2) — all UI icons
+- **Iowan Old Style / Palatino** (system) — paper canvas display text
+
+These are distinct from the **APA paper fonts** listed in Appendix D, which apply only to the paper content rendered in the editor and PDF export.
 
 ---
 

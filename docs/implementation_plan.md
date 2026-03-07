@@ -10,6 +10,12 @@
 
 This plan exists to keep implementation aligned with the revised PRD and architecture.
 
+Current UI source of truth for shell-level work:
+- `docs/UI/design-system.md`
+- `src/renderer/app/App.tsx`
+- `src/renderer/app/Sidebar.tsx`
+- `src/renderer/app/Inspector.tsx`
+
 It should answer:
 - what gets built first,
 - what must wait,
@@ -137,10 +143,11 @@ Build the main user shell and course-first navigation model.
 
 ### Deliverables
 
-- left sidebar
-- routes/views for Home, Course, Paper, Settings
-- expand/collapse course groups
-- recent papers list infrastructure
+- header bar with global search and primary actions
+- left sidebar with course-first navigation
+- center routes/views for Home, Course, Paper, Settings
+- right inspector shell for contextual details, issues, and search placeholders
+- expand/collapse course groups and panel rails
 
 ### Tasks
 
@@ -158,6 +165,7 @@ Build the main user shell and course-first navigation model.
 - User can create paper within a course.
 - Sidebar updates immediately.
 - Empty states are meaningful and instructional.
+- The shell follows the current three-region workspace structure and system theme behavior.
 
 ### Exit Gate
 
@@ -209,7 +217,7 @@ Make title-page and paper settings editable through structured forms.
 
 ### Deliverables
 
-- right-side inspector panel
+- extend the existing right-side inspector panel
 - paper metadata form
 - course default override flow
 - template switching guardrails
@@ -320,7 +328,7 @@ Deliver the first compliance/intelligence layer.
 
 - rule runner
 - issue models
-- issue panel UI
+- issue panel UI integrated into the inspector workflow
 - autofix framework
 - template/metadata validation
 
@@ -355,7 +363,7 @@ Add the structured research layer.
 ### Deliverables
 
 - reference data model
-- references manager UI
+- references manager UI aligned with the current shell
 - citation insertion flow
 - references page generation
 - orphan detection rules
@@ -363,7 +371,7 @@ Add the structured research layer.
 ### Tasks
 
 1. Define reference entry schema.
-2. Build references sidebar/panel.
+2. Build references management surface within the existing shell.
 3. Support manual reference creation.
 4. Add formatted reference preview.
 5. Insert linked citations into body editor.
@@ -428,7 +436,7 @@ Finish product-level usability for target users.
 
 - complete i18n coverage
 - settings panel
-- recent papers
+- recent papers shortcuts within the current shell
 - keyboard polish
 - onboarding empty states
 - error copy polish
@@ -438,7 +446,7 @@ Finish product-level usability for target users.
 1. Externalize all strings.
 2. Add EN/ES resources.
 3. Build language setting.
-4. Add recent papers query + UI.
+4. Add recent papers query + dashboard/home UI.
 5. Improve onboarding, tips, and empty states.
 6. Improve paper/course rename flows.
 
@@ -516,7 +524,7 @@ Includes:
 - Phase 3
 
 Goal:
-- user can create course and open ghost paper shell
+- user can create a course and open a guided paper shell with title-page, body, and references scaffolds
 
 ## Milestone B — Writing Core
 
@@ -697,4 +705,3 @@ When priorities conflict, choose in this order:
 6. extra features.
 
 That order should keep the product coherent and prevent early technical debt.
-

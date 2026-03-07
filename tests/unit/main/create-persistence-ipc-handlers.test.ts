@@ -14,6 +14,11 @@ describe('createPersistenceIpcHandlers', () => {
     const createPaper = vi
       .fn()
       .mockResolvedValue({ id: 'paper-2', courseId: 'course-1' });
+    const querySearch = vi.fn().mockResolvedValue({
+      courses: [],
+      papers: [],
+      status: 'placeholder',
+    });
 
     const handlers = createPersistenceIpcHandlers({
       courses: {
@@ -23,6 +28,9 @@ describe('createPersistenceIpcHandlers', () => {
       papers: {
         create: createPaper,
         listByCourse: listPapersByCourse,
+      },
+      search: {
+        query: querySearch,
       },
     });
 
@@ -51,6 +59,15 @@ describe('createPersistenceIpcHandlers', () => {
       courseId: 'course-1',
       id: 'paper-2',
     });
+    await expect(
+      handlers[persistenceIpcChannels.searchQuery]({
+        query: 'draft',
+      }),
+    ).resolves.toEqual({
+      courses: [],
+      papers: [],
+      status: 'placeholder',
+    });
 
     expect(listCourses).toHaveBeenCalledTimes(1);
     expect(createCourse).toHaveBeenCalledWith({ name: 'Research Methods' });
@@ -59,5 +76,6 @@ describe('createPersistenceIpcHandlers', () => {
       courseId: 'course-1',
       title: 'Annotated Bibliography',
     });
+    expect(querySearch).toHaveBeenCalledWith('draft');
   });
 });

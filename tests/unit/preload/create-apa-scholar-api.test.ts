@@ -13,6 +13,7 @@ describe('createApaScholarApi', () => {
     expect(api.courses.create).toBeTypeOf('function');
     expect(api.papers.listByCourse).toBeTypeOf('function');
     expect(api.papers.create).toBeTypeOf('function');
+    expect(api.search.query).toBeTypeOf('function');
   });
 
   it('routes preload methods through the shared IPC channels', async () => {
@@ -50,6 +51,12 @@ describe('createApaScholarApi', () => {
       payload: {
         courseId: 'course-1',
         title: 'Literature Review',
+      },
+    });
+    await expect(api.search.query('draft')).resolves.toEqual({
+      channel: persistenceIpcChannels.searchQuery,
+      payload: {
+        query: 'draft',
       },
     });
   });

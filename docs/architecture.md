@@ -89,9 +89,25 @@ Forge gives a simpler, official-feeling path for initialization, packaging, and 
 - **React**
 - **Vite**
 - **TypeScript**
-- **CSS variables + Tailwind or CSS Modules**
+- **Tailwind CSS v4 + CSS custom properties**
 
-Recommendation: prefer **Tailwind + CSS variables** for speed, but keep the design tokens centralized.
+Design tokens are centralized in `src/renderer/styles/index.css` as CSS custom properties with light/dark theme variants. Tailwind utility classes reference these tokens for consistent theming. See `docs/UI/design-system.md` for the full token reference, color palette, and layout specification.
+
+Current shell reference:
+- `src/renderer/app/App.tsx`
+- `src/renderer/app/Sidebar.tsx`
+- `src/renderer/app/Inspector.tsx`
+- `src/renderer/app/CourseModal.tsx`
+- `src/renderer/app/PaperModal.tsx`
+
+### Fonts
+
+All fonts are bundled locally (woff2) for fully offline operation:
+- **Inter** — primary UI font
+- **Material Symbols Outlined** — icon font for all UI icons
+- **Satoshi** — fallback UI font
+
+Paper canvas content uses the `--font-display` serif stack (Iowan Old Style, Palatino).
 
 ## 3.3 Editor Layer
 
@@ -104,13 +120,14 @@ Why:
 
 ## 3.4 State Management
 
-- **Zustand** for UI/application state
-- React local state for small isolated component state
+- React `useReducer` for shell, route, and panel state
+- React local state for fetch/cache, drafts, and modal forms
+- Introduce a broader shared store only when real cross-feature complexity justifies it
 
 Why:
 - Minimal boilerplate
 - Easy for AI to navigate
-- Good fit for desktop app complexity without overengineering
+- Good fit for the current extracted shell without overengineering
 
 ## 3.5 Validation / Schemas
 
@@ -269,11 +286,11 @@ window.apaScholar = {
     create: (payload) => invoke('courses:create', payload),
   },
   papers: {
+    listByCourse: (courseId) => invoke('papers:listByCourse', { courseId }),
     create: (payload) => invoke('papers:create', payload),
-    open: (paperId) => invoke('papers:open', { paperId }),
   },
-  export: {
-    pdf: (paperId) => invoke('export:pdf', { paperId }),
+  search: {
+    query: (query) => invoke('search:query', { query }),
   }
 }
 ```
@@ -282,6 +299,7 @@ window.apaScholar = {
 
 - Manage user interaction and visual state
 - Call preload APIs
+- Orchestrate the header, left sidebar, main canvas, and right inspector shell
 - Render ghost pages
 - Host TipTap editor instances
 - Show issues and inspector data
@@ -302,50 +320,31 @@ The repository should be intentionally modular.
 src/
   main/
     app/
-    db/
     ipc/
-    services/
-    windows/
   preload/
     api/
     index.ts
   renderer/
     app/
-    routes/
-    components/
-    features/
-      workspace/
-      courses/
-      papers/
-      editor/
-      references/
-      issues/
-      export/
-      settings/
-    state/
+      App.tsx
+      Sidebar.tsx
+      Inspector.tsx
+      CourseModal.tsx
+      PaperModal.tsx
+      workspace-shell-state.ts
+      icons.tsx
     styles/
+    assets/
   domain/
-    workspace/
-    courses/
-    papers/
-    references/
-    citations/
-    apa/
-    paste/
-    export/
     shared/
   application/
-    commands/
-    queries/
-    services/
+    contracts/
   infrastructure/
     persistence/
-    localization/
-    logging/
-    clipboard/
-    printing/
   tests/
 ```
+
+As the product grows, renderer subfolders such as `features/`, `routes/`, or richer shared-state modules may be introduced, but the current extracted shell files are the present source of truth and should not be ignored in favor of an aspirational folder tree.
 
 ### Key rule
 
@@ -910,4 +909,3 @@ If a future implementation choice conflicts with this document, prefer the optio
 5. copy-paste reliability.
 
 Those five priorities matter more than visual cleverness.
-

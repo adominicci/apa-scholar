@@ -40,8 +40,9 @@
 - Test: renderer component smoke test
 
 1. Install Tailwind CSS v4 and configure it through the Vite plugin.
-2. Add centralized theme tokens with CSS variables.
-3. Build a minimal workspace placeholder shell with sidebar and content regions.
+2. Add centralized theme tokens with CSS variables in `src/renderer/styles/index.css` (light/dark themes, warm-dark studio palette). See `docs/UI/design-system.md` for the full token reference.
+3. Bundle fonts locally: Inter (UI), Material Symbols Outlined (icons), Satoshi (fallback) — all as woff2 in `src/renderer/assets/fonts/`.
+4. Build a minimal workspace placeholder shell with header bar, sidebar, main content, and inspector regions.
 
 ### Task 4: Add quality gates
 
