@@ -249,6 +249,34 @@ describe('App', () => {
     ).toBeVisible();
   });
 
+  it('shows a workspace error when the initial course load fails', async () => {
+    const api = createTestApi();
+    api.courses.list = vi.fn(async () => {
+      throw new Error('courses unavailable');
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    expect(
+      await screen.findAllByText('Unable to load your courses right now.'),
+    ).toHaveLength(2);
+    expect(
+      screen.queryByText('No courses yet. Create one to start organizing APA papers by class.'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('gives the top-bar icon buttons accessible names', async () => {
+    window.apaScholar = createTestApi();
+
+    render(<App />);
+
+    expect(
+      await screen.findByRole('button', { name: 'Notifications' }),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeVisible();
+  });
+
   it('keeps hidden collapsed-rail actions out of the accessible tree while the sidebar is expanded', async () => {
     window.apaScholar = createTestApi({
       courses: [createCourse()],

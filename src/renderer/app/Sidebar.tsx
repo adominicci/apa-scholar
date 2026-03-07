@@ -16,6 +16,7 @@ interface SidebarProps {
   collapsed: boolean;
   courses: Course[];
   coursePapers: Record<string, Paper[]>;
+  emptyCoursesMessage?: string | null;
   expandedCourseIds: string[];
   loadingCourses: boolean;
   loadingCourseIds: string[];
@@ -37,11 +38,6 @@ interface SidebarProps {
 const railButtonClass =
   'flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] text-[var(--color-muted)] transition hover:text-[var(--color-accent)]';
 
-const getBridgeStatus = (): string =>
-  window.apaScholar?.meta.platform === 'desktop'
-    ? 'Secure desktop bridge ready'
-    : 'Desktop bridge unavailable';
-
 const getCourseMetaLine = (course: Course): string[] =>
   [course.professorName, course.institution, course.semester].filter(
     (value): value is string => Boolean(value),
@@ -51,6 +47,7 @@ export const Sidebar = ({
   collapsed,
   courses,
   coursePapers,
+  emptyCoursesMessage,
   expandedCourseIds,
   loadingCourses,
   loadingCourseIds,
@@ -298,7 +295,8 @@ export const Sidebar = ({
             <div className="px-4 py-4 text-sm leading-6 text-[var(--color-muted)]">
               {loadingCourses
                 ? 'Loading your workspace...'
-                : 'No courses yet. Create one to start organizing APA papers by class.'}
+                : emptyCoursesMessage ??
+                  'No courses yet. Create one to start organizing APA papers by class.'}
             </div>
           )}
         </div>

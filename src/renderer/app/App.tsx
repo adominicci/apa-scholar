@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useReducer, useState } from 'react';
+import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
 import type { Course, CreateCourseInput, CreatePaperInput, Paper } from '@domain/shared/persistence-models';
 import {
   createInitialWorkspaceShellState,
@@ -62,6 +62,8 @@ export const App = () => {
   const [paperForm, setPaperForm] = useState<CreatePaperInput>(emptyPaperForm);
   const [courseFormError, setCourseFormError] = useState<string | null>(null);
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
+  // Keep in-flight course loads current without retriggering the fetch effects.
+  const loadingCourseIdsRef = useRef<string[]>([]);
 
   const activeCourse =
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
@@ -88,7 +90,12 @@ export const App = () => {
         const loadedCourses = await api.courses.list();
 
         if (!cancelled) {
+          setWorkspaceError(null);
           setCourses(sortCourses(loadedCourses));
+        }
+      } catch {
+        if (!cancelled) {
+          setWorkspaceError('Unable to load your courses right now.');
         }
       } finally {
         if (!cancelled) {
@@ -103,6 +110,10 @@ export const App = () => {
       cancelled = true;
     };
   }, [api]);
+
+  useEffect(() => {
+    loadingCourseIdsRef.current = loadingCourseIds;
+  }, [loadingCourseIds]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -150,7 +161,7 @@ export const App = () => {
       !api ||
       !selectedCourseId ||
       coursePapers[selectedCourseId] ||
-      loadingCourseIds.includes(selectedCourseId)
+      loadingCourseIdsRef.current.includes(selectedCourseId)
     ) {
       return;
     }
@@ -193,7 +204,7 @@ export const App = () => {
       (courseId) =>
         courseId !== shellState.selectedCourseId &&
         !coursePapers[courseId] &&
-        !loadingCourseIds.includes(courseId),
+        !loadingCourseIdsRef.current.includes(courseId),
     );
 
     if (!api || pendingCourseIds.length === 0) {
@@ -658,12 +669,14 @@ export const App = () => {
           </button>
           <div className="flex gap-1">
             <button
+              aria-label="Notifications"
               className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"
               type="button"
             >
               <NotificationsIcon />
             </button>
             <button
+              aria-label="Settings"
               className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"
               onClick={() => dispatch({ type: 'navigateSettings' })}
               type="button"
@@ -697,6 +710,11 @@ export const App = () => {
           collapsed={shellState.leftPanelCollapsed}
           courses={courses}
           coursePapers={coursePapers}
+          emptyCoursesMessage={
+            workspaceError && courses.length === 0
+              ? 'Unable to load your courses right now.'
+              : null
+          }
           expandedCourseIds={shellState.expandedCourseIds}
           loadingCourses={loadingCourses}
           loadingCourseIds={loadingCourseIds}
