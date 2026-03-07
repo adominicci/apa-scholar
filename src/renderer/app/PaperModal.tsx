@@ -1,3 +1,8 @@
+import {
+  listTemplateDefinitions,
+  resolveTemplateDefinitionId,
+} from '@domain/papers/template-definitions';
+import type { TemplateId } from '@domain/shared/contracts';
 import type { Course, CreatePaperInput } from '@domain/shared/persistence-models';
 
 interface PaperModalProps {
@@ -22,6 +27,8 @@ export const PaperModal = ({
   onSubmit,
   onClose,
 }: PaperModalProps) => {
+  const templateOptions = listTemplateDefinitions();
+
   if (!isOpen) {
     return null;
   }
@@ -70,10 +77,19 @@ export const PaperModal = ({
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               onChange={(event) =>
-                onFormChange((current) => ({
-                  ...current,
-                  courseId: event.target.value,
-                }))
+                onFormChange((current) => {
+                  const selectedCourse = courses.find(
+                    (course) => course.id === event.target.value,
+                  );
+
+                  return {
+                    ...current,
+                    courseId: event.target.value,
+                    templateId: resolveTemplateDefinitionId(
+                      selectedCourse?.defaultPaperTemplate ?? current.templateId,
+                    ),
+                  };
+                })
               }
               value={paperForm.courseId}
             >
@@ -81,6 +97,28 @@ export const PaperModal = ({
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-sm text-[var(--color-ink-strong)]">
+            Template
+            <select
+              className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              onChange={(event) =>
+                onFormChange((current) => ({
+                  ...current,
+                  templateId: resolveTemplateDefinitionId(
+                    event.target.value as TemplateId,
+                  ),
+                }))
+              }
+              value={resolveTemplateDefinitionId(paperForm.templateId)}
+            >
+              {templateOptions.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.label}
                 </option>
               ))}
             </select>

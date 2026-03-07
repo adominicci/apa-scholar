@@ -1,4 +1,5 @@
 import type { PaperRepository } from '@application/contracts/persistence-repositories';
+import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import {
   createEmptyRichTextDocument,
   createEntityId,
@@ -7,6 +8,8 @@ import {
 import { abstractEnabledTemplates } from '@domain/shared/contracts';
 import {
   createStoredPaperInputSchema,
+  paperContentSchema,
+  paperMetaSchema,
   paperSchema,
   updatePaperInputSchema,
 } from '@domain/shared/persistence-models';
@@ -15,10 +18,14 @@ import type {
   Paper,
   UpdatePaperInput,
 } from '@domain/shared/persistence-models';
+import type { TemplateSeedResult } from '@domain/papers/template-definitions';
 import type { SqliteDatabase } from '@infrastructure/persistence/database';
 import { createRowParser } from '@infrastructure/persistence/row-parsers';
+import { parseJsonRecord, toNullableString } from '@infrastructure/persistence/sql-helpers';
 
 const parsePaperRow = createRowParser(paperSchema);
+const parsePaperMetaRow = createRowParser(paperMetaSchema);
+const parsePaperContentRow = createRowParser(paperContentSchema);
 
 const selectPaperColumns = `
   SELECT
@@ -33,6 +40,35 @@ const selectPaperColumns = `
     updated_at AS updatedAt,
     archived_at AS archivedAt
   FROM papers
+`;
+
+const selectPaperMetaColumns = `
+  SELECT
+    paper_id AS paperId,
+    title,
+    short_title AS shortTitle,
+    author_name AS authorName,
+    institution,
+    course_name AS courseName,
+    course_code AS courseCode,
+    professor_name AS professorName,
+    due_date AS dueDate,
+    running_head AS runningHead,
+    author_note AS authorNote,
+    abstract_enabled AS abstractEnabled,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  FROM paper_meta
+`;
+
+const selectPaperContentColumns = `
+  SELECT
+    paper_id AS paperId,
+    abstract_doc AS abstractDoc,
+    body_doc AS bodyDoc,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  FROM paper_content
 `;
 
 export const createPaperRepository = (
@@ -118,6 +154,12 @@ export const createPaperRepository = (
   const getPaperByIdStatement = database.prepare<[string], Paper>(
     `${selectPaperColumns} WHERE id = ? LIMIT 1`,
   );
+  const getPaperMetaByIdStatement = database.prepare<[string]>(
+    `${selectPaperMetaColumns} WHERE paper_id = ? LIMIT 1`,
+  );
+  const getPaperContentByIdStatement = database.prepare<[string]>(
+    `${selectPaperContentColumns} WHERE paper_id = ? LIMIT 1`,
+  );
   const listPapersByCourseStatement = database.prepare<[string], Paper>(
     `${selectPaperColumns} WHERE course_id = ? AND archived_at IS NULL ORDER BY updated_at DESC, title ASC`,
   );
@@ -150,8 +192,35 @@ export const createPaperRepository = (
     return row ? parsePaperRow(row) : null;
   };
 
+  const getAggregateById = (id: string): StoredPaperAggregate | null => {
+    const paper = getById(id);
+    const paperMetaRow = getPaperMetaByIdStatement.get(id);
+    const paperContentRow = getPaperContentByIdStatement.get(id);
+
+    if (!paper || !paperMetaRow || !paperContentRow) {
+      return null;
+    }
+
+    return {
+      paper,
+      paperContent: parsePaperContentRow({
+        ...paperContentRow,
+        abstractDoc: parseJsonRecord(
+          (paperContentRow as { abstractDoc: string }).abstractDoc,
+        ),
+        bodyDoc: parseJsonRecord((paperContentRow as { bodyDoc: string }).bodyDoc),
+      }),
+      paperMeta: parsePaperMetaRow(paperMetaRow),
+    };
+  };
+
   const insertPaperAggregate = database.transaction(
-    (id: string, input: CreateStoredPaperInput, timestamp: string) => {
+    (
+      id: string,
+      input: CreateStoredPaperInput,
+      seed: TemplateSeedResult,
+      timestamp: string,
+    ) => {
       insertPaperStatement.run(
         id,
         input.courseId,
@@ -165,24 +234,27 @@ export const createPaperRepository = (
       );
       insertPaperMetaStatement.run(
         id,
-        input.title,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        abstractEnabledTemplates.has(input.templateId) ? 1 : 0,
+        seed.paperMeta.title,
+        toNullableString(seed.paperMeta.shortTitle),
+        toNullableString(seed.paperMeta.authorName),
+        toNullableString(seed.paperMeta.institution),
+        toNullableString(seed.paperMeta.courseName),
+        toNullableString(seed.paperMeta.courseCode),
+        toNullableString(seed.paperMeta.professorName),
+        toNullableString(seed.paperMeta.dueDate),
+        toNullableString(seed.paperMeta.runningHead),
+        toNullableString(seed.paperMeta.authorNote),
+        seed.paperMeta.abstractEnabled ||
+        abstractEnabledTemplates.has(input.templateId)
+          ? 1
+          : 0,
         timestamp,
         timestamp,
       );
       insertPaperContentStatement.run(
         id,
-        JSON.stringify(createEmptyRichTextDocument()),
-        JSON.stringify(createEmptyRichTextDocument()),
+        JSON.stringify(seed.paperContent.abstractDoc ?? createEmptyRichTextDocument()),
+        JSON.stringify(seed.paperContent.bodyDoc ?? createEmptyRichTextDocument()),
         timestamp,
         timestamp,
       );
@@ -190,17 +262,18 @@ export const createPaperRepository = (
   );
 
   return {
-    create: (input: CreateStoredPaperInput): Paper => {
+    create: (input: CreateStoredPaperInput, seed: TemplateSeedResult): Paper => {
       const parsedInput = createStoredPaperInputSchema.parse(input);
       const id = createEntityId();
       const timestamp = createIsoTimestamp();
 
-      insertPaperAggregate(id, parsedInput, timestamp);
+      insertPaperAggregate(id, parsedInput, seed, timestamp);
 
       return getById(id) ?? (() => {
         throw new Error(`Created paper "${id}" could not be reloaded.`);
       })();
     },
+    getAggregateById,
     listByCourse: (courseId: string): Paper[] =>
       listPapersByCourseStatement.all(courseId).map(parsePaperRow),
     getById,

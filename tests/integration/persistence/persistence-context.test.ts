@@ -78,7 +78,10 @@ describe('createPersistenceContext', () => {
   it('creates a paper aggregate and scopes active papers by course', () => {
     const context = createPersistenceContext({ dbPath: createTempDbPath() });
     const course = context.courseRepository.create({
+      code: 'PSY-500',
+      institution: 'APA University',
       name: 'Capstone Seminar',
+      professorName: 'Dr. Rivera',
     });
 
     context.settingsRepository.save({
@@ -100,6 +103,7 @@ describe('createPersistenceContext', () => {
       .get(createdPaper.id) as
       | { paperId: string; abstractDoc: string; bodyDoc: string }
       | undefined;
+    const paperDraft = context.paperService.getById(createdPaper.id);
 
     const activePapers = context.paperRepository.listByCourse(course.id);
     const archivedPaper = context.paperRepository.archive(createdPaper.id);
@@ -116,6 +120,14 @@ describe('createPersistenceContext', () => {
       title: 'Literature Review',
     });
     expect(paperContentRow?.paperId).toBe(createdPaper.id);
+    expect(paperDraft?.paperMeta.courseName).toBe('Capstone Seminar');
+    expect(paperDraft?.paperMeta.courseCode).toBe('PSY-500');
+    expect(paperDraft?.paperMeta.professorName).toBe('Dr. Rivera');
+    expect(paperDraft?.ghostPages.map((page) => page.kind)).toEqual([
+      'title-page',
+      'body-page',
+      'references-page',
+    ]);
     expect(activePapers).toHaveLength(1);
     expect(archivedPaper.archivedAt).not.toBeNull();
     expect(activePapersAfterArchive).toHaveLength(0);

@@ -1,3 +1,4 @@
+import { buildPaperDraft } from '@application/services/build-paper-draft';
 import type {
   CourseRepository,
   PaperRepository,
@@ -5,6 +6,7 @@ import type {
 } from '@application/contracts/persistence-repositories';
 import { createPaperInputSchema } from '@domain/shared/persistence-models';
 import { resolveCreatePaperDefaults } from '@application/services/resolve-create-paper-defaults';
+import { getTemplateDefinition } from '@domain/papers/template-definitions';
 
 export interface PersistenceServices {
   courses: {
@@ -12,6 +14,7 @@ export interface PersistenceServices {
     create: (input: unknown) => ReturnType<CourseRepository['create']>;
   };
   papers: {
+    getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
     listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
   };
@@ -30,6 +33,11 @@ export const createPersistenceServices = (repositories: {
       ),
   },
   papers: {
+    getById: (paperId) => {
+      const aggregate = repositories.paperRepository.getAggregateById(paperId);
+
+      return aggregate ? buildPaperDraft(aggregate) : null;
+    },
     listByCourse: (courseId) => repositories.paperRepository.listByCourse(courseId),
     create: (input) => {
       const parsedInput = createPaperInputSchema.parse(input);
@@ -44,8 +52,16 @@ export const createPersistenceServices = (repositories: {
         course,
         repositories.settingsRepository.get() ?? undefined,
       );
+      const templateDefinition = getTemplateDefinition(resolvedInput.templateId);
+      const seed = templateDefinition.createSeed({
+        courseCode: course.code,
+        courseName: course.name,
+        institution: course.institution,
+        professorName: course.professorName,
+        title: resolvedInput.title,
+      });
 
-      return repositories.paperRepository.create(resolvedInput);
+      return repositories.paperRepository.create(resolvedInput, seed);
     },
   },
 });

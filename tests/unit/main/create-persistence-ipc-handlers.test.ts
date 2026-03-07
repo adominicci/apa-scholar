@@ -11,6 +11,9 @@ describe('createPersistenceIpcHandlers', () => {
     const listPapersByCourse = vi
       .fn()
       .mockResolvedValue([{ id: 'paper-1', courseId: 'course-1' }]);
+    const getPaperById = vi
+      .fn()
+      .mockResolvedValue({ paper: { id: 'paper-1' }, ghostPages: [] });
     const createPaper = vi
       .fn()
       .mockResolvedValue({ id: 'paper-2', courseId: 'course-1' });
@@ -27,6 +30,7 @@ describe('createPersistenceIpcHandlers', () => {
       },
       papers: {
         create: createPaper,
+        getById: getPaperById,
         listByCourse: listPapersByCourse,
       },
       search: {
@@ -51,6 +55,14 @@ describe('createPersistenceIpcHandlers', () => {
       }),
     ).resolves.toEqual([{ id: 'paper-1', courseId: 'course-1' }]);
     await expect(
+      handlers[persistenceIpcChannels.papersGetById]({
+        paperId: 'paper-1',
+      }),
+    ).resolves.toEqual({
+      ghostPages: [],
+      paper: { id: 'paper-1' },
+    });
+    await expect(
       handlers[persistenceIpcChannels.papersCreate]({
         courseId: 'course-1',
         title: 'Annotated Bibliography',
@@ -72,6 +84,7 @@ describe('createPersistenceIpcHandlers', () => {
     expect(listCourses).toHaveBeenCalledTimes(1);
     expect(createCourse).toHaveBeenCalledWith({ name: 'Research Methods' });
     expect(listPapersByCourse).toHaveBeenCalledWith('course-1');
+    expect(getPaperById).toHaveBeenCalledWith('paper-1');
     expect(createPaper).toHaveBeenCalledWith({
       courseId: 'course-1',
       title: 'Annotated Bibliography',

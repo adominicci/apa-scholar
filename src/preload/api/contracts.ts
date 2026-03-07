@@ -1,3 +1,4 @@
+import type { PaperDraft } from '@domain/papers/paper-draft';
 import type {
   Course,
   CreateCourseInput,
@@ -23,6 +24,7 @@ export interface ApaScholarApi {
   };
   papers: {
     listByCourse: (courseId: string) => Promise<Paper[]>;
+    getById: (paperId: string) => Promise<PaperDraft | null>;
     create: (input: CreatePaperInput) => Promise<Paper>;
   };
   search: {

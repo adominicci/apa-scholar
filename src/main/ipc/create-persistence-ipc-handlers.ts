@@ -1,4 +1,5 @@
 import {
+  getPaperByIdPayloadSchema,
   listPapersByCoursePayloadSchema,
   persistenceIpcChannels,
   searchQueryPayloadSchema,
@@ -10,6 +11,7 @@ export interface PersistenceIpcServices {
     create: (input: unknown) => unknown;
   };
   papers: {
+    getById: (paperId: string) => unknown;
     listByCourse: (courseId: string) => unknown;
     create: (input: unknown) => unknown;
   };
@@ -28,6 +30,8 @@ export const createPersistenceIpcHandlers = (
     services.papers.listByCourse(
       listPapersByCoursePayloadSchema.parse(input).courseId,
     ),
+  [persistenceIpcChannels.papersGetById]: (input: unknown) =>
+    services.papers.getById(getPaperByIdPayloadSchema.parse(input).paperId),
   [persistenceIpcChannels.papersCreate]: (input: unknown) =>
     services.papers.create(input),
   [persistenceIpcChannels.searchQuery]: (input: unknown) =>

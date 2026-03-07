@@ -23,6 +23,8 @@ export const createApaScholarApi = (
   papers: {
     listByCourse: (courseId) =>
       invoke(persistenceIpcChannels.papersListByCourse, { courseId }),
+    getById: (paperId) =>
+      invoke(persistenceIpcChannels.papersGetById, { paperId }),
     create: (input) => invoke(persistenceIpcChannels.papersCreate, input),
   },
   search: {

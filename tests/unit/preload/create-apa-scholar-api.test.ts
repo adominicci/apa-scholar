@@ -12,6 +12,7 @@ describe('createApaScholarApi', () => {
     expect(api.courses.list).toBeTypeOf('function');
     expect(api.courses.create).toBeTypeOf('function');
     expect(api.papers.listByCourse).toBeTypeOf('function');
+    expect(api.papers.getById).toBeTypeOf('function');
     expect(api.papers.create).toBeTypeOf('function');
     expect(api.search.query).toBeTypeOf('function');
   });
@@ -39,6 +40,12 @@ describe('createApaScholarApi', () => {
       channel: persistenceIpcChannels.papersListByCourse,
       payload: {
         courseId: 'course-1',
+      },
+    });
+    await expect(api.papers.getById('paper-1')).resolves.toEqual({
+      channel: persistenceIpcChannels.papersGetById,
+      payload: {
+        paperId: 'paper-1',
       },
     });
     await expect(
