@@ -143,11 +143,18 @@ export const App = () => {
 
     let cancelled = false;
 
-    void api.search.query(query).then((result) => {
-      if (!cancelled) {
-        setSearchStatus(result.status);
-      }
-    });
+    void api.search
+      .query(query)
+      .then((result) => {
+        if (!cancelled) {
+          setSearchStatus(result.status);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSearchStatus('idle');
+        }
+      });
 
     return () => {
       cancelled = true;
@@ -186,11 +193,9 @@ export const App = () => {
           setWorkspaceError('Unable to load papers for this course right now.');
         }
       } finally {
-        if (!cancelled) {
-          setLoadingCourseIds((current) =>
-            current.filter((courseId) => courseId !== selectedCourseId),
-          );
-        }
+        setLoadingCourseIds((current) =>
+          current.filter((courseId) => courseId !== selectedCourseId),
+        );
       }
     })();
 
@@ -223,6 +228,10 @@ export const App = () => {
         })),
       );
 
+      setLoadingCourseIds((current) =>
+        current.filter((courseId) => !pendingCourseIds.includes(courseId)),
+      );
+
       if (cancelled) {
         return;
       }
@@ -241,9 +250,6 @@ export const App = () => {
 
         return next;
       });
-      setLoadingCourseIds((current) =>
-        current.filter((courseId) => !pendingCourseIds.includes(courseId)),
-      );
       setWorkspaceError(
         results.some((result) => result.status === 'rejected')
           ? 'Unable to load papers for this course right now.'

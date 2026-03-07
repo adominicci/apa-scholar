@@ -14,6 +14,18 @@ import type { ApaScholarApi } from '@preload/api/contracts';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import { App } from '@renderer/app/App';
 
+const createDeferred = <T,>() => {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+
+  const promise = new Promise<T>((nextResolve, nextReject) => {
+    resolve = nextResolve;
+    reject = nextReject;
+  });
+
+  return { promise, reject, resolve };
+};
+
 const createCourse = (overrides: Partial<Course> = {}): Course => ({
   archivedAt: null,
   code: null,
@@ -247,6 +259,71 @@ describe('App', () => {
     expect(
       screen.getByText('Search will span courses and papers in a later milestone.'),
     ).toBeVisible();
+  });
+
+  it('retries a course paper load after navigating away mid-request', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    const firstLoad = createDeferred<Paper[]>();
+    api.papers.listByCourse = vi
+      .fn()
+      .mockImplementationOnce(() => firstLoad.promise)
+      .mockResolvedValueOnce([createPaper()]);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    expect(await screen.findByText('Loading papers')).toBeVisible();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dashboard' }));
+    firstLoad.resolve([createPaper()]);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+
+    await waitFor(() => {
+      expect(api.papers.listByCourse).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      screen.getByRole('button', { name: /open paper literature review/i }),
+    ).toBeVisible();
+  });
+
+  it('clears the placeholder banner when a search request fails', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    api.search.query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        courses: [],
+        papers: [],
+        status: 'placeholder' as const,
+      })
+      .mockRejectedValueOnce(new Error('search unavailable'));
+    window.apaScholar = api;
+
+    render(<App />);
+
+    const search = await screen.findByLabelText('Search workspace');
+    fireEvent.change(search, { target: { value: 'draft' } });
+
+    expect(
+      await screen.findByText('Search will span courses and papers in a later milestone.'),
+    ).toBeVisible();
+
+    fireEvent.change(search, { target: { value: 'outline' } });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Search will span courses and papers in a later milestone.'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it('shows a workspace error when the initial course load fails', async () => {
