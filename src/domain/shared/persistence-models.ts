@@ -12,8 +12,7 @@ const nullableTrimmedStringSchema = z
   .string()
   .trim()
   .min(1)
-  .nullable()
-  .transform((value) => value ?? null);
+  .nullable();
 
 export const languageSchema = z.enum(supportedLanguages, {
   error: (issue) =>

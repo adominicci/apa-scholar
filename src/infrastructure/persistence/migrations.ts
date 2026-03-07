@@ -111,9 +111,7 @@ export const runMigrations = (database: SqliteDatabase): void => {
       continue;
     }
 
-    database.transaction(() => {
-      database.exec(migration.sql);
-      insertMigration.run(migration.id, new Date().toISOString());
-    })();
+    database.exec(migration.sql);
+    insertMigration.run(migration.id, new Date().toISOString());
   }
 };

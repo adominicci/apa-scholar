@@ -3,10 +3,7 @@ import type {
   PaperRepository,
   SettingsRepository,
 } from '@application/contracts/persistence-repositories';
-import {
-  createCourseInputSchema,
-  createPaperInputSchema,
-} from '@domain/shared/persistence-models';
+import { createPaperInputSchema } from '@domain/shared/persistence-models';
 import { resolveCreatePaperDefaults } from '@application/services/resolve-create-paper-defaults';
 
 export interface PersistenceServices {
@@ -28,7 +25,9 @@ export const createPersistenceServices = (repositories: {
   courses: {
     list: () => repositories.courseRepository.listActive(),
     create: (input) =>
-      repositories.courseRepository.create(createCourseInputSchema.parse(input)),
+      repositories.courseRepository.create(
+        input as Parameters<CourseRepository['create']>[0],
+      ),
   },
   papers: {
     listByCourse: (courseId) => repositories.paperRepository.listByCourse(courseId),

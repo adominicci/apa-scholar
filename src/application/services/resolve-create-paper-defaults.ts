@@ -1,4 +1,3 @@
-import { createPaperInputSchema } from '@domain/shared/persistence-models';
 import {
   resolvePaperTypeFromTemplate,
 } from '@domain/shared/contracts';
@@ -19,18 +18,14 @@ export const resolveCreatePaperDefaults = <
   course: TCourse,
   settings?: TSettings,
 ): ResolvedCreatePaperDefaults => {
-  const parsedInput = createPaperInputSchema.parse(input);
-  const templateId =
-    parsedInput.templateId ?? course.defaultPaperTemplate ?? 'apa-student';
+  const templateId = input.templateId ?? course.defaultPaperTemplate ?? 'apa-student';
 
   return {
-    courseId: parsedInput.courseId,
-    title: parsedInput.title,
+    courseId: input.courseId,
+    title: input.title,
     templateId,
-    paperType:
-      parsedInput.paperType ?? resolvePaperTypeFromTemplate(templateId),
-    language:
-      parsedInput.language ?? course.defaultLanguage ?? settings?.language ?? 'en',
+    paperType: input.paperType ?? resolvePaperTypeFromTemplate(templateId),
+    language: input.language ?? course.defaultLanguage ?? settings?.language ?? 'en',
     status: 'draft',
   };
 };
