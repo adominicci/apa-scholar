@@ -4,6 +4,7 @@ interface PaperModalProps {
   isOpen: boolean;
   paperForm: CreatePaperInput;
   courses: Course[];
+  errorMessage?: string | null;
   onFormChange: (updater: (current: CreatePaperInput) => CreatePaperInput) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
@@ -16,6 +17,7 @@ export const PaperModal = ({
   isOpen,
   paperForm,
   courses,
+  errorMessage,
   onFormChange,
   onSubmit,
   onClose,
@@ -84,6 +86,12 @@ export const PaperModal = ({
             </select>
           </label>
         </div>
+
+        {errorMessage ? (
+          <p className="mt-4 rounded-[var(--radius-card)] border border-[var(--color-accent-soft)] bg-[var(--color-panel-muted)] px-4 py-3 text-sm text-[var(--color-ink-strong)]">
+            {errorMessage}
+          </p>
+        ) : null}
 
         <div className="mt-6 flex justify-end gap-3">
           <button

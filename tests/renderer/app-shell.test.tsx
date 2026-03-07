@@ -261,4 +261,99 @@ describe('App', () => {
     expect(screen.getAllByRole('button', { name: 'New course' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'New paper' })).toHaveLength(1);
   });
+
+  it('disables the reference action until the references workflow exists', async () => {
+    window.apaScholar = createTestApi({
+      courses: [createCourse()],
+    });
+
+    render(<App />);
+
+    const button = await screen.findByRole('button', { name: 'Add reference' });
+
+    expect(button).toBeDisabled();
+  });
+
+  it('clears failed paper loading state so the user can retry', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    api.papers.listByCourse = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('load failed'))
+      .mockResolvedValueOnce([createPaper()]);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+
+    expect(await screen.findByText('Loading papers')).toBeVisible();
+    await waitFor(() => {
+      expect(screen.queryByText('Loading papers')).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dashboard' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+
+    await waitFor(() => {
+      expect(api.papers.listByCourse).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      screen.getByRole('button', { name: /open paper literature review/i }),
+    ).toBeVisible();
+  });
+
+  it('keeps the course modal open and shows an error when course creation fails', async () => {
+    const api = createTestApi();
+    api.courses.create = vi.fn(async () => {
+      throw new Error('create failed');
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(
+      await screen.findByText('Unable to create the course right now. Try again.'),
+    ).toBeVisible();
+    expect(screen.getByLabelText('Course name')).toHaveValue('Advanced Composition');
+  });
+
+  it('keeps the paper modal open and shows an error when paper creation fails', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    api.papers.create = vi.fn(async () => {
+      throw new Error('create failed');
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Capstone Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByText('Unable to create the paper right now. Try again.'),
+    ).toBeVisible();
+    expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
+  });
 });

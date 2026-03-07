@@ -55,10 +55,13 @@ export const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
   const [courseForm, setCourseForm] = useState<CreateCourseInput>(emptyCourseForm);
   const [paperForm, setPaperForm] = useState<CreatePaperInput>(emptyPaperForm);
+  const [courseFormError, setCourseFormError] = useState<string | null>(null);
+  const [paperFormError, setPaperFormError] = useState<string | null>(null);
 
   const activeCourse =
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
@@ -156,26 +159,41 @@ export const App = () => {
 
     setLoadingCourseIds((current) => [...current, selectedCourseId]);
 
-    void api.papers.listByCourse(selectedCourseId).then((papers) => {
-      if (!cancelled) {
-        setCoursePapers((current) => ({
-          ...current,
-          [selectedCourseId]: papers,
-        }));
-        setLoadingCourseIds((current) =>
-          current.filter((courseId) => courseId !== selectedCourseId),
-        );
+    void (async () => {
+      try {
+        const papers = await api.papers.listByCourse(selectedCourseId);
+
+        if (!cancelled) {
+          setWorkspaceError(null);
+          setCoursePapers((current) => ({
+            ...current,
+            [selectedCourseId]: papers,
+          }));
+        }
+      } catch {
+        if (!cancelled) {
+          setWorkspaceError('Unable to load papers for this course right now.');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingCourseIds((current) =>
+            current.filter((courseId) => courseId !== selectedCourseId),
+          );
+        }
       }
-    });
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [api, coursePapers, loadingCourseIds, shellState.selectedCourseId]);
+  }, [api, coursePapers, shellState.selectedCourseId]);
 
   useEffect(() => {
     const pendingCourseIds = shellState.expandedCourseIds.filter(
-      (courseId) => !coursePapers[courseId] && !loadingCourseIds.includes(courseId),
+      (courseId) =>
+        courseId !== shellState.selectedCourseId &&
+        !coursePapers[courseId] &&
+        !loadingCourseIds.includes(courseId),
     );
 
     if (!api || pendingCourseIds.length === 0) {
@@ -186,32 +204,51 @@ export const App = () => {
 
     setLoadingCourseIds((current) => [...current, ...pendingCourseIds]);
 
-    void Promise.all(
-      pendingCourseIds.map(async (courseId) => ({
-        courseId,
-        papers: await api.papers.listByCourse(courseId),
-      })),
-    ).then((results) => {
-      if (!cancelled) {
-        setCoursePapers((current) => {
-          const next = { ...current };
+    void (async () => {
+      const results = await Promise.allSettled(
+        pendingCourseIds.map(async (courseId) => ({
+          courseId,
+          papers: await api.papers.listByCourse(courseId),
+        })),
+      );
 
-          results.forEach(({ courseId, papers }) => {
-            next[courseId] = papers;
-          });
-
-          return next;
-        });
-        setLoadingCourseIds((current) =>
-          current.filter((courseId) => !pendingCourseIds.includes(courseId)),
-        );
+      if (cancelled) {
+        return;
       }
-    });
+
+      const fulfilledResults = results.filter(
+        (result): result is PromiseFulfilledResult<{ courseId: string; papers: Paper[] }> =>
+          result.status === 'fulfilled',
+      );
+
+      setCoursePapers((current) => {
+        const next = { ...current };
+
+        fulfilledResults.forEach(({ value }) => {
+          next[value.courseId] = value.papers;
+        });
+
+        return next;
+      });
+      setLoadingCourseIds((current) =>
+        current.filter((courseId) => !pendingCourseIds.includes(courseId)),
+      );
+      setWorkspaceError(
+        results.some((result) => result.status === 'rejected')
+          ? 'Unable to load papers for this course right now.'
+          : null,
+      );
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, [api, coursePapers, loadingCourseIds, shellState.expandedCourseIds]);
+  }, [
+    api,
+    coursePapers,
+    shellState.expandedCourseIds,
+    shellState.selectedCourseId,
+  ]);
 
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
@@ -227,6 +264,7 @@ export const App = () => {
 
   const openCourseModal = () => {
     setCourseForm(emptyCourseForm);
+    setCourseFormError(null);
     setIsCourseModalOpen(true);
   };
 
@@ -235,6 +273,7 @@ export const App = () => {
       courseId: shellState.selectedCourseId ?? courses[0]?.id ?? '',
       title: '',
     });
+    setPaperFormError(null);
     setIsPaperModalOpen(true);
   };
 
@@ -245,19 +284,25 @@ export const App = () => {
       return;
     }
 
-    const createdCourse = await api.courses.create({
-      ...courseForm,
-      name: courseForm.name.trim(),
-    });
+    try {
+      const createdCourse = await api.courses.create({
+        ...courseForm,
+        name: courseForm.name.trim(),
+      });
 
-    setCourses((current) => sortCourses([...current, createdCourse]));
-    setCoursePapers((current) => ({
-      ...current,
-      [createdCourse.id]: [],
-    }));
+      setWorkspaceError(null);
+      setCourseFormError(null);
+      setCourses((current) => sortCourses([...current, createdCourse]));
+      setCoursePapers((current) => ({
+        ...current,
+        [createdCourse.id]: [],
+      }));
 
-    setIsCourseModalOpen(false);
-    dispatch({ type: 'navigateCourse', courseId: createdCourse.id });
+      setIsCourseModalOpen(false);
+      dispatch({ type: 'navigateCourse', courseId: createdCourse.id });
+    } catch {
+      setCourseFormError('Unable to create the course right now. Try again.');
+    }
   };
 
   const handleCreatePaper = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -267,26 +312,32 @@ export const App = () => {
       return;
     }
 
-    const createdPaper = await api.papers.create({
-      ...paperForm,
-      title: paperForm.title.trim(),
-    });
+    try {
+      const createdPaper = await api.papers.create({
+        ...paperForm,
+        title: paperForm.title.trim(),
+      });
 
-    setCoursePapers((current) => ({
-      ...current,
-      [paperForm.courseId]: [createdPaper, ...(current[paperForm.courseId] ?? [])],
-    }));
-    setPaperDrafts((current) => ({
-      ...current,
-      [createdPaper.id]: '',
-    }));
+      setWorkspaceError(null);
+      setPaperFormError(null);
+      setCoursePapers((current) => ({
+        ...current,
+        [paperForm.courseId]: [createdPaper, ...(current[paperForm.courseId] ?? [])],
+      }));
+      setPaperDrafts((current) => ({
+        ...current,
+        [createdPaper.id]: '',
+      }));
 
-    setIsPaperModalOpen(false);
-    dispatch({
-      type: 'navigatePaper',
-      courseId: paperForm.courseId,
-      paperId: createdPaper.id,
-    });
+      setIsPaperModalOpen(false);
+      dispatch({
+        type: 'navigatePaper',
+        courseId: paperForm.courseId,
+        paperId: createdPaper.id,
+      });
+    } catch {
+      setPaperFormError('Unable to create the paper right now. Try again.');
+    }
   };
 
   const renderHomeView = () => (
@@ -623,6 +674,14 @@ export const App = () => {
         </div>
       </header>
 
+      {workspaceError ? (
+        <div className="border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2">
+          <p className="text-xs leading-5 text-[var(--color-ink-strong)]">
+            {workspaceError}
+          </p>
+        </div>
+      ) : null}
+
       {/* Search status feedback */}
       {searchStatus === 'placeholder' && searchQuery.trim().length > 0 && (
         <div className="border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2">
@@ -671,18 +730,26 @@ export const App = () => {
       <CourseModal
         isOpen={isCourseModalOpen}
         courseForm={courseForm}
+        errorMessage={courseFormError}
         onFormChange={setCourseForm}
         onSubmit={handleCreateCourse}
-        onClose={() => setIsCourseModalOpen(false)}
+        onClose={() => {
+          setCourseFormError(null);
+          setIsCourseModalOpen(false);
+        }}
       />
 
       <PaperModal
         isOpen={isPaperModalOpen}
         paperForm={paperForm}
         courses={courses}
+        errorMessage={paperFormError}
         onFormChange={setPaperForm}
         onSubmit={handleCreatePaper}
-        onClose={() => setIsPaperModalOpen(false)}
+        onClose={() => {
+          setPaperFormError(null);
+          setIsPaperModalOpen(false);
+        }}
       />
     </div>
   );

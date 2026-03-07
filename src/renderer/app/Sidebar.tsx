@@ -306,8 +306,9 @@ export const Sidebar = ({
 
       <div className="mt-auto border-t border-[var(--color-line)] p-4">
         <button
+          aria-label="Add reference"
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--color-accent-soft)] py-2 text-xs font-bold text-[var(--color-accent)] transition hover:bg-[var(--color-selection)]"
-          onClick={onCourseModalOpen}
+          disabled
           type="button"
         >
           <LibraryAddIcon />

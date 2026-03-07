@@ -3,6 +3,7 @@ import type { CreateCourseInput } from '@domain/shared/persistence-models';
 interface CourseModalProps {
   isOpen: boolean;
   courseForm: CreateCourseInput;
+  errorMessage?: string | null;
   onFormChange: (updater: (current: CreateCourseInput) => CreateCourseInput) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
@@ -14,6 +15,7 @@ const shellButtonClass =
 export const CourseModal = ({
   isOpen,
   courseForm,
+  errorMessage,
   onFormChange,
   onSubmit,
   onClose,
@@ -100,6 +102,12 @@ export const CourseModal = ({
             />
           </label>
         </div>
+
+        {errorMessage ? (
+          <p className="mt-4 rounded-[var(--radius-card)] border border-[var(--color-accent-soft)] bg-[var(--color-panel-muted)] px-4 py-3 text-sm text-[var(--color-ink-strong)]">
+            {errorMessage}
+          </p>
+        ) : null}
 
         <div className="mt-6 flex justify-end gap-3">
           <button
