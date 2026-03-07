@@ -36,7 +36,11 @@ export const PaperCanvasBlock = ({
   if (block.kind === 'section-heading') {
     if (pageKind === 'body-page') {
       return (
-        <p className="font-[var(--font-display)] text-3xl text-[var(--color-page-ink)]">
+        <p
+          aria-level={3}
+          className="font-[var(--font-display)] text-3xl text-[var(--color-page-ink)]"
+          role="heading"
+        >
           {block.text}
         </p>
       );
@@ -83,6 +87,16 @@ export const PaperCanvasBlock = ({
           value={bodyDraftValue}
         />
       </>
+    );
+  }
+
+  if (block.kind === 'textarea') {
+    return (
+      <div className="mt-8 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-8">
+        <p className="text-sm leading-7 text-[var(--color-page-muted)]">
+          {block.text}
+        </p>
+      </div>
     );
   }
 

@@ -348,7 +348,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByRole('heading', { name: 'Capstone Draft' }),
+      await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
     expect(screen.getByText('Title page scaffold')).toBeVisible();
     expect(screen.getByLabelText('Paper body draft')).toBeVisible();
@@ -385,7 +385,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByRole('heading', { name: 'Abstract Draft' }),
+      await screen.findByRole('heading', { level: 2, name: 'Abstract Draft' }),
     ).toBeVisible();
     expect(screen.getByText('Abstract scaffold')).toBeVisible();
     expect(screen.getAllByText('Abstract')[0]).toBeVisible();
@@ -416,7 +416,7 @@ describe('App', () => {
     );
 
     expect(
-      await screen.findByRole('heading', { name: 'Literature Review' }),
+      await screen.findByRole('heading', { level: 2, name: 'Literature Review' }),
     ).toBeVisible();
     expect(screen.getByText('Title page scaffold')).toBeVisible();
     expect(screen.getByText('References scaffold')).toBeVisible();

@@ -191,27 +191,31 @@ export const createPaperRepository = (
     return row ? parsePaperRow(row) : null;
   };
 
-  const getAggregateById = (id: string): StoredPaperAggregate | null => {
-    const paper = getById(id);
-    const paperMetaRow = getPaperMetaByIdStatement.get(id);
-    const paperContentRow = getPaperContentByIdStatement.get(id);
+  const getAggregateById = database.transaction(
+    (id: string): StoredPaperAggregate | null => {
+      const paper = getById(id);
+      const paperMetaRow = getPaperMetaByIdStatement.get(id);
+      const paperContentRow = getPaperContentByIdStatement.get(id);
 
-    if (!paper || !paperMetaRow || !paperContentRow) {
-      return null;
-    }
+      if (!paper || !paperMetaRow || !paperContentRow) {
+        return null;
+      }
 
-    return {
-      paper,
-      paperContent: parsePaperContentRow({
-        ...paperContentRow,
-        abstractDoc: parseJsonRecord(
-          (paperContentRow as { abstractDoc: string }).abstractDoc,
-        ),
-        bodyDoc: parseJsonRecord((paperContentRow as { bodyDoc: string }).bodyDoc),
-      }),
-      paperMeta: parsePaperMetaRow(paperMetaRow),
-    };
-  };
+      return {
+        paper,
+        paperContent: parsePaperContentRow({
+          ...paperContentRow,
+          abstractDoc: parseJsonRecord(
+            (paperContentRow as { abstractDoc: string }).abstractDoc,
+          ),
+          bodyDoc: parseJsonRecord(
+            (paperContentRow as { bodyDoc: string }).bodyDoc,
+          ),
+        }),
+        paperMeta: parsePaperMetaRow(paperMetaRow),
+      };
+    },
+  );
 
   const insertPaperAggregate = database.transaction(
     (
