@@ -24,6 +24,10 @@ export const defaultPaperTypeByTemplate: Record<TemplateId, PaperType> = {
   'apa-student-abstract': 'student',
 };
 
+export const abstractEnabledTemplates: ReadonlySet<TemplateId> = new Set([
+  'apa-student-abstract',
+]);
+
 export const resolvePaperTypeFromTemplate = (
   templateId: TemplateId,
 ): PaperType => defaultPaperTypeByTemplate[templateId];

@@ -4,6 +4,7 @@ import {
   createEntityId,
   createIsoTimestamp,
 } from '@domain/shared/entity-helpers';
+import { abstractEnabledTemplates } from '@domain/shared/contracts';
 import {
   createStoredPaperInputSchema,
   paperSchema,
@@ -174,7 +175,7 @@ export const createPaperRepository = (
         null,
         null,
         null,
-        input.templateId === 'apa-student-abstract' ? 1 : 0,
+        abstractEnabledTemplates.has(input.templateId) ? 1 : 0,
         timestamp,
         timestamp,
       );

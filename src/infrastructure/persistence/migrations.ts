@@ -110,8 +110,19 @@ export const runMigrations = (database: SqliteDatabase): void => {
     if (alreadyApplied) {
       continue;
     }
+    const appliedAt = new Date().toISOString();
 
-    database.exec(migration.sql);
-    insertMigration.run(migration.id, new Date().toISOString());
+    try {
+      database.exec('BEGIN');
+      database.exec(migration.sql);
+      insertMigration.run(migration.id, appliedAt);
+      database.exec('COMMIT');
+    } catch (error) {
+      if (database.inTransaction) {
+        database.exec('ROLLBACK');
+      }
+
+      throw error;
+    }
   }
 };
