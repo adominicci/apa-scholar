@@ -14,8 +14,38 @@ describe('App', () => {
         platform: 'desktop',
         runtime: 'electron',
       },
-      workspace: {
-        status: 'placeholder',
+      courses: {
+        list: () => Promise.resolve([]),
+        create: () =>
+          Promise.resolve({
+          archivedAt: null,
+          code: null,
+          createdAt: '2026-03-07T14:00:00.000Z',
+          defaultLanguage: 'en',
+          defaultPaperTemplate: 'apa-student',
+          id: 'course-1',
+          institution: null,
+          name: 'Research Methods',
+          professorName: null,
+          semester: null,
+          updatedAt: '2026-03-07T14:00:00.000Z',
+          }),
+      },
+      papers: {
+        listByCourse: () => Promise.resolve([]),
+        create: () =>
+          Promise.resolve({
+          archivedAt: null,
+          courseId: 'course-1',
+          createdAt: '2026-03-07T14:00:00.000Z',
+          id: 'paper-1',
+          language: 'en',
+          paperType: 'student',
+          status: 'draft',
+          templateId: 'apa-student',
+          title: 'Literature Review',
+          updatedAt: '2026-03-07T14:00:00.000Z',
+          }),
       },
     };
 

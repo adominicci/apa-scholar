@@ -7,6 +7,6 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 Includes:
 
 - [x] Epic 01: Project Foundation
-- [ ] Epic 02: Persistence and Core Data Model
+- [x] Epic 02: Persistence and Core Data Model
 - [ ] Epic 03: Workspace Shell and Navigation
 - [ ] Epic 04: Template Engine and Ghost-Page View Models

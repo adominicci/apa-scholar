@@ -6,22 +6,25 @@
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {
-    "dev": "electron-forge start",
+    "dev": "npm run rebuild:native && electron-forge start",
     "start": "npm run dev",
     "build": "npm run clean && npm run build:main && npm run build:preload && npm run build:renderer",
     "build:main": "vite build --config vite.main.config.ts",
     "build:preload": "vite build --config vite.preload.config.ts",
     "build:renderer": "vite build --config vite.renderer.config.ts",
     "clean": "rm -rf .vite out playwright-report test-results",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
+    "package": "npm run rebuild:native && electron-forge package",
+    "make": "npm run rebuild:native && electron-forge make",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
+    "rebuild:native": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:native:node": "npm rebuild better-sqlite3",
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit && npm run test:e2e",
-    "test:unit": "vitest run",
-    "test:e2e": "npm run build && playwright test"
+    "test:unit": "npm run rebuild:native:node && vitest run",
+    "test:e2e": "npm run rebuild:native && npm run build && playwright test",
+    "postinstall": "npm run rebuild:native"
   },
   "keywords": [
     "electron",
@@ -35,9 +38,11 @@
   },
   "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^12.6.2",
     "electron-squirrel-startup": "^1.0.1",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
@@ -49,11 +54,13 @@
     "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron-forge/plugin-vite": "^7.11.1",
     "@electron/fuses": "^1.8.0",
+    "@electron/rebuild": "^4.0.3",
     "@eslint/js": "^9.37.0",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/node": "^25.3.5",
     "@types/react": "^19.2.14",
