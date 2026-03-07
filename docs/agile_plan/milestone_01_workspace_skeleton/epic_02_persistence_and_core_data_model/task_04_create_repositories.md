@@ -1,8 +1,8 @@
 # Task 04 - Create repositories
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: implement `CourseRepository`, `PaperRepository`, and `SettingsRepository`.
 - Why: business logic should orchestrate persistence through explicit interfaces.

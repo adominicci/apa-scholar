@@ -1,10 +1,22 @@
+import type {
+  Course,
+  CreateCourseInput,
+  CreatePaperInput,
+  Paper,
+} from '@domain/shared/persistence-models';
+
 export interface ApaScholarApi {
   meta: {
     bridgeVersion: number;
     platform: 'desktop';
     runtime: 'electron';
   };
-  workspace: {
-    status: 'placeholder';
+  courses: {
+    list: () => Promise<Course[]>;
+    create: (input: CreateCourseInput) => Promise<Course>;
+  };
+  papers: {
+    listByCourse: (courseId: string) => Promise<Paper[]>;
+    create: (input: CreatePaperInput) => Promise<Paper>;
   };
 }

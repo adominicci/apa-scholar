@@ -18,6 +18,7 @@ export default defineConfig({
       external: [
         'electron',
         'electron-squirrel-startup',
+        'better-sqlite3',
         ...builtinModules,
         ...builtinModules.map((moduleName) => `node:${moduleName}`),
       ],
