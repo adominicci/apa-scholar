@@ -25,4 +25,7 @@ export const createApaScholarApi = (
       invoke(persistenceIpcChannels.papersListByCourse, { courseId }),
     create: (input) => invoke(persistenceIpcChannels.papersCreate, input),
   },
+  search: {
+    query: (query) => invoke(persistenceIpcChannels.searchQuery, { query }),
+  },
 });

@@ -1,6 +1,7 @@
 import {
   listPapersByCoursePayloadSchema,
   persistenceIpcChannels,
+  searchQueryPayloadSchema,
 } from '@application/contracts/persistence-ipc';
 
 export interface PersistenceIpcServices {
@@ -11,6 +12,9 @@ export interface PersistenceIpcServices {
   papers: {
     listByCourse: (courseId: string) => unknown;
     create: (input: unknown) => unknown;
+  };
+  search: {
+    query: (query: string) => unknown;
   };
 }
 
@@ -26,4 +30,6 @@ export const createPersistenceIpcHandlers = (
     ),
   [persistenceIpcChannels.papersCreate]: (input: unknown) =>
     services.papers.create(input),
+  [persistenceIpcChannels.searchQuery]: (input: unknown) =>
+    services.search.query(searchQueryPayloadSchema.parse(input).query),
 });

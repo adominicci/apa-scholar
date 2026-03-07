@@ -8,4 +8,11 @@ Tracking rule: all tasks in this epic must be marked `Done` before the epic is c
 
 Epic status:
 
-- [ ] Done
+- [x] Done
+
+Audit note:
+
+- Verified against the current extracted workspace shell implementation on 2026-03-07.
+- Implementation lives across `src/renderer/app/App.tsx`, `Sidebar.tsx`, `Inspector.tsx`, `CourseModal.tsx`, `PaperModal.tsx`, and `workspace-shell-state.ts`.
+- Search placeholder plumbing is implemented through preload and main-process IPC contracts.
+- Validation coverage exists in renderer tests, unit tests for route and IPC state, and Electron smoke coverage in `tests/e2e/app.spec.js`.

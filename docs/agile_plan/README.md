@@ -5,6 +5,7 @@ This folder breaks the APA Scholar roadmap into milestone, epic, and task units 
 - `docs/apa-scholar-prd-v2.md`
 - `docs/architecture.md`
 - `docs/implementation_plan.md`
+- `docs/UI/design-system.md`
 
 Structure:
 
@@ -14,6 +15,12 @@ Structure:
 - `milestone_04_release_readiness`
 
 Each milestone contains epics derived from implementation phases, and each epic contains task files that map directly to the implementation plan.
+
+UI alignment rule:
+
+- If a future task touches layout, shell structure, navigation, panels, theme, or visual behavior, validate it against `docs/UI/design-system.md` and the current renderer implementation before coding.
+- The current shell direction is header + left sidebar + main canvas + right inspector, with a warm-dark studio design language and header-level global search.
+- If a task document drifts from the current shipped UI direction, update the task document intentionally rather than forcing the app back toward stale assumptions.
 
 Tracking rule: all task files must be marked `Done` before their parent epic or milestone can be considered complete.
 

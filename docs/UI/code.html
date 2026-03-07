@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ff8c00",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#1a1612",
+                        "panel-dark": "#231a0f",
+                        "accent-muted": "#362817",
+                        "border-muted": "#4b3820",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif": ["Georgia", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-panel {
+            background: rgba(35, 26, 15, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 56, 32, 0.5);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen overflow-hidden">
+<!-- Top Navigation Bar (macOS style) -->
+<header class="h-14 flex items-center justify-between px-6 border-b border-border-muted bg-panel-dark/50 backdrop-blur-md sticky top-0 z-50">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="size-3 rounded-full bg-red-500/80"></div>
+<div class="size-3 rounded-full bg-amber-500/80"></div>
+<div class="size-3 rounded-full bg-green-500/80"></div>
+</div>
+<div class="h-4 w-px bg-border-muted mx-2"></div>
+<div class="flex items-center gap-2 text-primary font-bold tracking-tight">
+<span class="material-symbols-outlined scale-90">auto_stories</span>
+<span class="text-sm">APA Scholar</span>
+</div>
+</div>
+<div class="flex-1 max-w-xl px-12">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-sm">search</span>
+</div>
+<input class="w-full bg-accent-muted border-none rounded-lg py-1.5 pl-10 text-sm focus:ring-1 focus:ring-primary/50 placeholder:text-slate-500" placeholder="Search library or citations..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-background-dark text-xs font-bold hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+                Draft paper
+            </button>
+<div class="flex gap-1">
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+<div class="size-8 rounded-full bg-accent-muted overflow-hidden border border-border-muted">
+<img class="w-full h-full object-cover" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALDRDcm0qHqOZnwoknszi09Y7Zfd9mrDpqhShoDW7DGMw6TZCSdXq9JHVLh2BIXXh3GxE4LWSepQkdVrdHNpyJMSi1CPaqb1MreeQQmK2czJDeNgF9VtFGFHtvgCCGfepuV3hPwgBaOMYBNYOMBlf1ww5Ulgfum9W8bhjWnbrXhM3p_0vxu9_0DBVzD-W_qhwoVqT_iYuq1RbaTrVG5N96IwV1C9YygkXL5-8nAFSZp7eiSResmG_WEKRRquvwYifTvTml3mN5mwpz"/>
+</div>
+</div>
+</header>
+<div class="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+<!-- Left Sidebar (Collapsible) -->
+<aside class="w-64 border-r border-border-muted flex flex-col bg-panel-dark/30">
+<div class="p-4 space-y-6 overflow-y-auto no-scrollbar">
+<div>
+<label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-3 mb-2 block">Workspace</label>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-accent-muted hover:text-slate-200 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">database</span>
+<span class="text-sm font-medium">Research</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-accent-muted hover:text-slate-200 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">bookmark</span>
+<span class="text-sm font-medium">Citations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-accent-muted hover:text-slate-200 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">description</span>
+<span class="text-sm font-medium">Drafts</span>
+</a>
+</nav>
+</div>
+<div>
+<label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold px-3 mb-2 block">Recent Papers</label>
+<div class="space-y-1">
+<div class="px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-accent-muted cursor-pointer truncate">Psychological impacts...</div>
+<div class="px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-accent-muted cursor-pointer truncate">Interface design theory...</div>
+<div class="px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-accent-muted cursor-pointer truncate">Cognitive load studies...</div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-4 border-t border-border-muted">
+<button class="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-primary/40 text-primary text-xs font-bold hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-sm">library_add</span>
+                    Add reference
+                </button>
+</div>
+</aside>
+<!-- Main Writing Area -->
+<main class="flex-1 bg-background-light dark:bg-[#120d09] overflow-y-auto no-scrollbar px-12 py-12 flex justify-center">
+<div class="max-w-[850px] w-full flex flex-col">
+<!-- Document Header -->
+<div class="mb-10 text-center">
+<div class="text-primary/60 text-xs font-medium uppercase tracking-[0.2em] mb-4">APA Research Paper</div>
+<h1 class="text-3xl font-bold text-slate-100 mb-2 leading-tight">Psychological impacts of digital interfaces on user retention</h1>
+<div class="flex items-center justify-center gap-4 text-slate-500 text-sm">
+<span>Last edited 2 minutes ago</span>
+<span class="size-1 rounded-full bg-slate-700"></span>
+<span>1,420 words</span>
+<span class="size-1 rounded-full bg-slate-700"></span>
+<span class="text-primary/80">APA 7th Edition</span>
+</div>
+</div>
+<!-- Floating Tool Bar -->
+<div class="sticky top-0 z-10 flex justify-center mb-8">
+<div class="glass-panel rounded-2xl px-4 py-2 flex items-center gap-1 shadow-2xl">
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_bold</span>
+</button>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_italic</span>
+</button>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_underlined</span>
+</button>
+<div class="h-6 w-px bg-border-muted mx-1"></div>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_align_left</span>
+</button>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_align_center</span>
+</button>
+<div class="h-6 w-px bg-border-muted mx-1"></div>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">link</span>
+</button>
+<button class="p-2 hover:bg-accent-muted rounded-lg text-slate-300 transition-colors">
+<span class="material-symbols-outlined">format_quote</span>
+</button>
+<div class="h-6 w-px bg-border-muted mx-1"></div>
+<button class="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-primary/20 text-primary text-xs font-bold hover:bg-primary/30 transition-colors">
+<span class="material-symbols-outlined text-sm">cc_attribution</span>
+                            Cite reference
+                        </button>
+</div>
+</div>
+<!-- Paper Canvas -->
+<div class="bg-panel-dark/20 rounded-2xl p-12 min-h-[1000px] shadow-sm border border-border-muted/30">
+<div class="space-y-6 text-slate-300 font-serif leading-relaxed text-lg">
+<h2 class="font-display font-bold text-slate-100 text-2xl">Introduction</h2>
+<p>The rapid evolution of digital interfaces has profoundly reshaped the landscape of human-computer interaction. As users spend an increasing proportion of their lives navigating virtual environments, the psychological implications of interface design have become a focal point of academic inquiry.</p>
+<p>Research suggests that the cognitive load imposed by complex navigation systems can significantly impact user satisfaction and retention. This paper explores the intersection of gestalt principles and modern interface design, specifically focusing on how aesthetic simplicity influences long-term engagement patterns in macOS-style environments.</p>
+<div class="py-4 px-8 border-l-2 border-primary/40 bg-accent-muted/20 italic text-slate-400">
+                            "The design of digital environments should prioritize human cognitive constraints over technological capabilities." (Scholar &amp; Smith, 2023)
+                        </div>
+<p>Furthermore, the use of haptic feedback and spatial audio provides sensory anchors that may mitigate the disorientation common in highly abstract web applications. By examining user behavior across three distinct interface paradigms...</p>
+<div class="h-10 w-px bg-primary/40 animate-pulse mt-1"></div>
+</div>
+</div>
+<!-- Bottom Bar Status -->
+<div class="mt-8 flex justify-between text-[11px] text-slate-500 font-medium px-4 pb-8 uppercase tracking-widest">
+<div class="flex gap-4">
+<span>UTF-8</span>
+<span>Saved to Cloud</span>
+</div>
+<div>Page 1 of 12</div>
+</div>
+</div>
+</main>
+<!-- Right Tool Panel -->
+<aside class="w-72 border-l border-border-muted bg-panel-dark/30 flex flex-col">
+<div class="p-4 space-y-8">
+<!-- Quick Styles -->
+<div>
+<h3 class="text-xs font-bold text-slate-100 uppercase tracking-widest mb-4">Quick styles</h3>
+<div class="grid grid-cols-1 gap-2">
+<button class="w-full text-left px-3 py-2.5 rounded-lg bg-accent-muted/40 border border-border-muted hover:border-primary/50 transition-all group">
+<div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Heading 1</div>
+<div class="text-sm font-bold text-slate-200">Main title style</div>
+</button>
+<button class="w-full text-left px-3 py-2.5 rounded-lg bg-accent-muted/40 border border-border-muted hover:border-primary/50 transition-all group">
+<div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Heading 2</div>
+<div class="text-sm font-bold text-slate-200">Sub-section title</div>
+</button>
+<button class="w-full text-left px-3 py-2.5 rounded-lg bg-accent-muted/40 border border-border-muted hover:border-primary/50 transition-all group">
+<div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Block Quote</div>
+<div class="text-sm italic text-slate-400">Indented citation</div>
+</button>
+<button class="w-full text-left px-3 py-2.5 rounded-lg bg-accent-muted/40 border border-border-muted hover:border-primary/50 transition-all group">
+<div class="text-[10px] text-slate-500 font-bold uppercase mb-1">Reference</div>
+<div class="text-sm font-mono text-slate-400">APA bibliography</div>
+</button>
+</div>
+</div>
+<!-- Suggestions / AI Assistant -->
+<div class="bg-primary/5 rounded-xl border border-primary/20 p-4">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-sm">lightbulb</span>
+<h4 class="text-xs font-bold text-primary uppercase">APA Assistant</h4>
+</div>
+<p class="text-xs text-slate-400 leading-relaxed">Your introductory paragraph lacks a clear thesis statement. Consider adding a sentence that outlines your primary argument.</p>
+<button class="mt-4 text-[10px] font-bold text-primary hover:underline uppercase tracking-wider">Show examples</button>
+</div>
+<!-- Outliner -->
+<div>
+<h3 class="text-xs font-bold text-slate-100 uppercase tracking-widest mb-4">Outline</h3>
+<div class="space-y-3 border-l border-border-muted ml-1 pl-4">
+<div class="text-xs text-slate-200 font-medium cursor-pointer hover:text-primary transition-colors">1. Introduction</div>
+<div class="text-xs text-slate-400 font-medium cursor-pointer hover:text-primary transition-colors">2. Literature Review</div>
+<div class="text-xs text-slate-400 font-medium cursor-pointer hover:text-primary transition-colors">3. Methodology</div>
+<div class="text-xs text-slate-400 font-medium cursor-pointer hover:text-primary transition-colors pl-2">3.1 Participant Selection</div>
+<div class="text-xs text-slate-400 font-medium cursor-pointer hover:text-primary transition-colors pl-2">3.2 Technical Setup</div>
+<div class="text-xs text-slate-400 font-medium cursor-pointer hover:text-primary transition-colors">4. Results</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

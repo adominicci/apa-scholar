@@ -9,6 +9,7 @@ export const persistenceIpcChannels = {
   coursesCreate: 'courses:create',
   papersListByCourse: 'papers:listByCourse',
   papersCreate: 'papers:create',
+  searchQuery: 'search:query',
 } as const;
 
 export type PersistenceIpcChannel =
@@ -18,8 +19,14 @@ export const listPapersByCoursePayloadSchema = z.object({
   courseId: z.string().trim().min(1, 'Course id is required.'),
 });
 
+export const searchQueryPayloadSchema = z.object({
+  query: z.string(),
+});
+
 export type ListPapersByCoursePayload = z.infer<
   typeof listPapersByCoursePayloadSchema
 >;
+
+export type SearchQueryPayload = z.infer<typeof searchQueryPayloadSchema>;
 
 export { createCourseInputSchema, createPaperInputSchema };

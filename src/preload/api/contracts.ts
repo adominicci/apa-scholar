@@ -5,6 +5,12 @@ import type {
   Paper,
 } from '@domain/shared/persistence-models';
 
+export interface WorkspaceSearchPlaceholderResult {
+  status: 'placeholder';
+  courses: Course[];
+  papers: Paper[];
+}
+
 export interface ApaScholarApi {
   meta: {
     bridgeVersion: number;
@@ -18,5 +24,8 @@ export interface ApaScholarApi {
   papers: {
     listByCourse: (courseId: string) => Promise<Paper[]>;
     create: (input: CreatePaperInput) => Promise<Paper>;
+  };
+  search: {
+    query: (query: string) => Promise<WorkspaceSearchPlaceholderResult>;
   };
 }
