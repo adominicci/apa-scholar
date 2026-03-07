@@ -301,6 +301,11 @@ export const App = () => {
       .getById(selectedPaperId)
       .then((paperDetail) => {
         if (!cancelled) {
+          if (!paperDetail) {
+            setWorkspaceError('Unable to load this paper draft right now.');
+            return;
+          }
+
           setWorkspaceError(null);
           setPaperDetails((current) => ({
             ...current,
@@ -398,6 +403,10 @@ export const App = () => {
         title: paperForm.title.trim(),
       });
       const createdPaperDetail = await api.papers.getById(createdPaper.id);
+
+      if (!createdPaperDetail) {
+        throw new Error('Created paper draft could not be loaded.');
+      }
 
       setWorkspaceError(null);
       setPaperFormError(null);

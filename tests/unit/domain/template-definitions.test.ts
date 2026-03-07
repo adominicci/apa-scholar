@@ -32,4 +32,15 @@ describe('template definitions', () => {
     expect(seed.paperContent.abstractDoc).toEqual(createEmptyRichTextDocument());
     expect(seed.paperContent.bodyDoc).toEqual(createEmptyRichTextDocument());
   });
+
+  it('keeps the professional template placeholder explicit for compatibility paths', () => {
+    const definition = getTemplateDefinition('apa-professional');
+    const seed = definition.createSeed({
+      title: 'Faculty Draft',
+    });
+
+    expect(definition.paperType).toBe('professional');
+    expect(seed.paperMeta.abstractEnabled).toBe(false);
+    expect(seed.paperContent.bodyDoc).toEqual(createEmptyRichTextDocument());
+  });
 });

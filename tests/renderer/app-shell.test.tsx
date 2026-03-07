@@ -645,4 +645,28 @@ describe('App', () => {
     ).toBeVisible();
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
   });
+
+  it('keeps the paper modal open if the created paper detail cannot be loaded', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    api.papers.getById = vi.fn(async () => null);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Load Failure Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByText('Unable to create the paper right now. Try again.'),
+    ).toBeVisible();
+    expect(screen.getByLabelText('Paper title')).toHaveValue('Load Failure Draft');
+  });
 });

@@ -68,6 +68,18 @@ const createStudentSeed = (
   },
 });
 
+const createProfessionalSeed = (input: {
+  courseCode?: string | null;
+  courseName?: string | null;
+  institution?: string | null;
+  professorName?: string | null;
+  title: string;
+}): TemplateSeedResult =>
+  // The professional template stays as a compatibility placeholder in this epic.
+  // It intentionally seeds the same empty semantic structure while preserving the
+  // professional template id and paper type for later milestones.
+  createStudentSeed(input, false);
+
 const templateDefinitions: readonly TemplateDefinition[] = [
   {
     createSeed: (input) => createStudentSeed(input, false),
@@ -82,7 +94,7 @@ const templateDefinitions: readonly TemplateDefinition[] = [
     paperType: 'student',
   },
   {
-    createSeed: (input) => createStudentSeed(input, false),
+    createSeed: createProfessionalSeed,
     id: 'apa-professional',
     label: 'APA Professional Paper',
     paperType: 'professional',

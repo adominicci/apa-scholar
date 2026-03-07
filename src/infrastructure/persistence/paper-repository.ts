@@ -1,7 +1,6 @@
 import type { PaperRepository } from '@application/contracts/persistence-repositories';
 import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import {
-  createEmptyRichTextDocument,
   createEntityId,
   createIsoTimestamp,
 } from '@domain/shared/entity-helpers';
@@ -253,8 +252,8 @@ export const createPaperRepository = (
       );
       insertPaperContentStatement.run(
         id,
-        JSON.stringify(seed.paperContent.abstractDoc ?? createEmptyRichTextDocument()),
-        JSON.stringify(seed.paperContent.bodyDoc ?? createEmptyRichTextDocument()),
+        JSON.stringify(seed.paperContent.abstractDoc),
+        JSON.stringify(seed.paperContent.bodyDoc),
         timestamp,
         timestamp,
       );
