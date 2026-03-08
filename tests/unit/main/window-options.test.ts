@@ -18,6 +18,6 @@ describe('buildMainWindowOptions', () => {
     expect(options.webPreferences?.sandbox).toBe(true);
     expect(options.webPreferences?.webSecurity).toBe(true);
     expect(options.webPreferences?.webviewTag).toBe(false);
-    expect(options.webPreferences?.spellcheck).toBe(true);
+    expect(options.webPreferences?.spellcheck).toBe(false);
   });
 });

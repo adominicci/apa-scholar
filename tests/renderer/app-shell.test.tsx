@@ -321,6 +321,39 @@ describe('App', () => {
     expect(screen.getAllByText('Dr. Santiago')[0]).toBeVisible();
   });
 
+  it('creates a course from submitted form values when native input updates lag behind state', async () => {
+    const api = createTestApi();
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+
+    const courseNameInput = screen.getByLabelText('Course name') as HTMLInputElement;
+    const professorInput = screen.getByLabelText('Professor') as HTMLInputElement;
+    const form = screen.getByRole('button', { name: 'Create course' }).closest('form');
+
+    if (!form) {
+      throw new Error('Expected the course modal form to be rendered.');
+    }
+
+    courseNameInput.value = 'Advanced Composition';
+    professorInput.value = 'Dr. Santiago';
+    fireEvent.submit(form);
+
+    expect(
+      await screen.findByRole('heading', { name: 'Advanced Composition' }),
+    ).toBeVisible();
+    expect(api.courses.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Advanced Composition',
+        professorName: 'Dr. Santiago',
+      }),
+    );
+  });
+
   it('creates a paper and opens the APA writing canvas with inspector details', async () => {
     window.apaScholar = createTestApi({
       courses: [createCourse()],

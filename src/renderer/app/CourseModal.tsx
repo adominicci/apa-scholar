@@ -53,6 +53,7 @@ export const CourseModal = ({
             Course name
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="name"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -66,6 +67,7 @@ export const CourseModal = ({
             Professor
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="professorName"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -79,6 +81,7 @@ export const CourseModal = ({
             Course code
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="code"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -92,6 +95,7 @@ export const CourseModal = ({
             Semester
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="semester"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,

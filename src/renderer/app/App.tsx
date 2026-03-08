@@ -15,6 +15,10 @@ import {
 } from '@renderer/app/workspace-shell-state';
 import { CourseModal } from '@renderer/app/CourseModal';
 import { Inspector } from '@renderer/app/Inspector';
+import {
+  readSubmittedCourseForm,
+  readSubmittedPaperForm,
+} from '@renderer/app/modal-form-data';
 import { PaperModal } from '@renderer/app/PaperModal';
 import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
 import {
@@ -398,15 +402,16 @@ export const App = () => {
   const handleCreateCourse = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!api || !courseForm.name.trim()) {
+    const submittedCourseForm = readSubmittedCourseForm(event.currentTarget, courseForm);
+
+    if (!api || !submittedCourseForm.name) {
       return;
     }
 
+    setCourseForm(submittedCourseForm);
+
     try {
-      const createdCourse = await api.courses.create({
-        ...courseForm,
-        name: courseForm.name.trim(),
-      });
+      const createdCourse = await api.courses.create(submittedCourseForm);
 
       setWorkspaceError(null);
       setCourseFormError(null);
@@ -426,15 +431,16 @@ export const App = () => {
   const handleCreatePaper = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!api || !paperForm.courseId || !paperForm.title.trim()) {
+    const submittedPaperForm = readSubmittedPaperForm(event.currentTarget, paperForm);
+
+    if (!api || !submittedPaperForm.courseId || !submittedPaperForm.title) {
       return;
     }
 
+    setPaperForm(submittedPaperForm);
+
     try {
-      const createdPaper = await api.papers.create({
-        ...paperForm,
-        title: paperForm.title.trim(),
-      });
+      const createdPaper = await api.papers.create(submittedPaperForm);
       let createdPaperDetail: PaperDraft | null = null;
 
       try {
@@ -447,7 +453,10 @@ export const App = () => {
       setPaperFormError(null);
       setCoursePapers((current) => ({
         ...current,
-        [paperForm.courseId]: [createdPaper, ...(current[paperForm.courseId] ?? [])],
+        [submittedPaperForm.courseId]: [
+          createdPaper,
+          ...(current[submittedPaperForm.courseId] ?? []),
+        ],
       }));
 
       if (createdPaperDetail) {
@@ -460,7 +469,7 @@ export const App = () => {
       setIsPaperModalOpen(false);
       dispatch({
         type: 'navigatePaper',
-        courseId: paperForm.courseId,
+        courseId: submittedPaperForm.courseId,
         paperId: createdPaper.id,
       });
     } catch {

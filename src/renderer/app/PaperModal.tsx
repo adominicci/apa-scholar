@@ -62,6 +62,7 @@ export const PaperModal = ({
             Paper title
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="title"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -76,6 +77,7 @@ export const PaperModal = ({
             Course
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="courseId"
               onChange={(event) =>
                 onFormChange((current) => {
                   const selectedCourse = courses.find(
@@ -106,6 +108,7 @@ export const PaperModal = ({
             Template
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="templateId"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
