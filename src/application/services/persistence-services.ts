@@ -4,9 +4,13 @@ import type {
   PaperRepository,
   SettingsRepository,
 } from '@application/contracts/persistence-repositories';
-import { createPaperInputSchema } from '@domain/shared/persistence-models';
+import {
+  createPaperInputSchema,
+  updatePaperMetadataInputSchema,
+} from '@domain/shared/persistence-models';
 import { resolveCreatePaperDefaults } from '@application/services/resolve-create-paper-defaults';
 import { getTemplateDefinition } from '@domain/papers/template-definitions';
+import { applyPaperMetadataUpdate } from '@domain/papers/paper-metadata';
 
 export interface PersistenceServices {
   courses: {
@@ -17,6 +21,10 @@ export interface PersistenceServices {
     getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
     listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
+    updateMetadata: (
+      paperId: string,
+      input: unknown,
+    ) => ReturnType<typeof buildPaperDraft>;
   };
 }
 
@@ -62,6 +70,22 @@ export const createPersistenceServices = (repositories: {
       });
 
       return repositories.paperRepository.create(resolvedInput, seed);
+    },
+    updateMetadata: (paperId, input) => {
+      const existingAggregate = repositories.paperRepository.getAggregateById(paperId);
+
+      if (!existingAggregate) {
+        throw new Error(`Paper "${paperId}" was not found.`);
+      }
+
+      const parsedInput = updatePaperMetadataInputSchema.parse(input);
+      const normalizedAggregate = applyPaperMetadataUpdate(existingAggregate, parsedInput);
+      const updatedAggregate = repositories.paperRepository.updateMetadata(
+        paperId,
+        normalizedAggregate,
+      );
+
+      return buildPaperDraft(updatedAggregate);
     },
   },
 });

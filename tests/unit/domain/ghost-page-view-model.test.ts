@@ -90,4 +90,45 @@ describe('buildGhostPageViewModels', () => {
       title: 'Abstract',
     });
   });
+
+  it('uses metadata titles and professional title-page cues for professional papers', () => {
+    const pages = buildGhostPageViewModels({
+      paper: createPaper({
+        paperType: 'professional',
+        templateId: 'apa-professional',
+        title: 'Old Draft Title',
+      }),
+      paperContent: createPaperContent(),
+      paperMeta: createPaperMeta({
+        abstractEnabled: true,
+        authorName: 'Avery Rivera',
+        authorNote: 'Department of Psychology',
+        institution: 'APA University',
+        runningHead: 'FACULTY DRAFT',
+        title: 'Faculty Draft',
+      }),
+    });
+
+    expect(pages.map((page) => page.kind)).toEqual([
+      'title-page',
+      'abstract-page',
+      'body-page',
+      'references-page',
+    ]);
+    expect(pages[0]).toMatchObject({
+      header: {
+        left: 'FACULTY DRAFT',
+        right: '1',
+      },
+    });
+    expect(pages[0]?.blocks.map((block) => block.text)).toEqual([
+      'Running head: FACULTY DRAFT',
+      'Faculty Draft',
+      'Avery Rivera',
+      'APA University',
+      'Author note',
+      'Department of Psychology',
+    ]);
+    expect(pages[2]?.blocks[0]?.text).toBe('Faculty Draft');
+  });
 });

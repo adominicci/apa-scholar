@@ -184,6 +184,41 @@ export const createPaperRepository = (
       WHERE id = ?
     `,
   );
+  const updatePaperMetaStatement = database.prepare<
+    [
+      string,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      number,
+      string,
+      string,
+    ]
+  >(
+    `
+      UPDATE paper_meta
+      SET
+        title = ?,
+        short_title = ?,
+        author_name = ?,
+        institution = ?,
+        course_name = ?,
+        course_code = ?,
+        professor_name = ?,
+        due_date = ?,
+        running_head = ?,
+        author_note = ?,
+        abstract_enabled = ?,
+        updated_at = ?
+      WHERE paper_id = ?
+    `,
+  );
 
   const getById = (id: string): Paper | null => {
     const row = getPaperByIdStatement.get(id);
@@ -306,6 +341,52 @@ export const createPaperRepository = (
 
       return getById(id) ?? (() => {
         throw new Error(`Updated paper "${id}" could not be reloaded.`);
+      })();
+    },
+    updateMetadata: (id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate => {
+      const updatedAt = createIsoTimestamp();
+      const updatedPaper = {
+        ...aggregate.paper,
+        updatedAt,
+      };
+      const updatedMeta = {
+        ...aggregate.paperMeta,
+        updatedAt,
+      };
+
+      database.transaction(() => {
+        const paperResult = updatePaperStatement.run(
+          updatedPaper.title,
+          updatedPaper.templateId,
+          updatedPaper.paperType,
+          updatedPaper.language,
+          updatedPaper.status,
+          updatedPaper.updatedAt,
+          id,
+        );
+        const metaResult = updatePaperMetaStatement.run(
+          updatedMeta.title,
+          toNullableString(updatedMeta.shortTitle),
+          toNullableString(updatedMeta.authorName),
+          toNullableString(updatedMeta.institution),
+          toNullableString(updatedMeta.courseName),
+          toNullableString(updatedMeta.courseCode),
+          toNullableString(updatedMeta.professorName),
+          toNullableString(updatedMeta.dueDate),
+          toNullableString(updatedMeta.runningHead),
+          toNullableString(updatedMeta.authorNote),
+          updatedMeta.abstractEnabled ? 1 : 0,
+          updatedAt,
+          id,
+        );
+
+        if (paperResult.changes === 0 || metaResult.changes === 0) {
+          throw new Error(`Paper "${id}" was not found.`);
+        }
+      })();
+
+      return getAggregateById(id) ?? (() => {
+        throw new Error(`Updated paper aggregate "${id}" could not be reloaded.`);
       })();
     },
     archive: (id: string): Paper => {

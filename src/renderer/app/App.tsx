@@ -1,7 +1,13 @@
 import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
-import type { Course, CreateCourseInput, CreatePaperInput, Paper } from '@domain/shared/persistence-models';
+import type {
+  Course,
+  CreateCourseInput,
+  CreatePaperInput,
+  Paper,
+  UpdatePaperMetadataInput,
+} from '@domain/shared/persistence-models';
 import {
   createInitialWorkspaceShellState,
   workspaceShellReducer,
@@ -10,6 +16,11 @@ import { CourseModal } from '@renderer/app/CourseModal';
 import { Inspector } from '@renderer/app/Inspector';
 import { PaperModal } from '@renderer/app/PaperModal';
 import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
+import {
+  applyOptimisticPaperMetadataUpdate,
+  getPaperInspectorValidationMessages,
+  upsertPaperInCourseCollections,
+} from '@renderer/app/paper-draft-state';
 import { Sidebar } from '@renderer/app/Sidebar';
 import { BookOpenIcon, NotificationsIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
 
@@ -24,6 +35,9 @@ const emptyPaperForm: CreatePaperInput = {
   templateId: 'apa-student',
   title: '',
 };
+
+const METADATA_SAVE_RETRY_DELAY_MS = 5000;
+const MAX_METADATA_SAVE_RETRIES = 3;
 
 const resolvePreferredTheme = (): ThemeMode => {
   if (
@@ -71,6 +85,10 @@ export const App = () => {
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
+  const metadataSaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const pendingMetadataUpdatesRef = useRef<Record<string, UpdatePaperMetadataInput>>({});
+  const paperMetadataVersionRef = useRef<Record<string, number>>({});
+  const metadataSaveRetryCountsRef = useRef<Record<string, number>>({});
 
   const activeCourse =
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
@@ -83,6 +101,7 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
+  const activePaperValidationMessages = getPaperInspectorValidationMessages(activePaperDetail);
 
   useEffect(() => {
     let cancelled = false;
@@ -128,6 +147,12 @@ export const App = () => {
   useEffect(() => {
     loadingPaperIdsRef.current = loadingPaperIds;
   }, [loadingPaperIds]);
+
+  useEffect(() => () => {
+    Object.values(metadataSaveTimeoutsRef.current).forEach((timeoutId) => {
+      clearTimeout(timeoutId);
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -432,6 +457,128 @@ export const App = () => {
     } catch {
       setPaperFormError('Unable to create the paper right now. Try again.');
     }
+  };
+
+  const persistPaperMetadataUpdate = (paperId: string, version: number) => {
+    if (!api) {
+      return;
+    }
+
+    const pendingInput = pendingMetadataUpdatesRef.current[paperId];
+
+    if (!pendingInput) {
+      return;
+    }
+
+    delete pendingMetadataUpdatesRef.current[paperId];
+
+    void api.papers
+      .updateMetadata(paperId, pendingInput)
+      .then((updatedDraft) => {
+        const hasPendingEdits = Boolean(pendingMetadataUpdatesRef.current[paperId]);
+        const latestVersion = paperMetadataVersionRef.current[paperId] ?? 0;
+
+        if (hasPendingEdits || version !== latestVersion) {
+          return;
+        }
+
+        delete metadataSaveRetryCountsRef.current[paperId];
+        setWorkspaceError(null);
+        setPaperDetails((current) => ({
+          ...current,
+          [paperId]: updatedDraft,
+        }));
+        setCoursePapers((current) =>
+          upsertPaperInCourseCollections(current, updatedDraft.paper),
+        );
+      })
+      .catch((error: unknown) => {
+        pendingMetadataUpdatesRef.current[paperId] = {
+          ...pendingInput,
+          ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
+        };
+        setWorkspaceError(
+          'Unable to save paper metadata right now. Changes remain local until save succeeds.',
+        );
+        const isValidationError =
+          error instanceof Error &&
+          (error.name === 'ZodError' ||
+            /required|must be|At least one/i.test(error.message));
+
+        if (!isValidationError) {
+          const nextRetryCount =
+            (metadataSaveRetryCountsRef.current[paperId] ?? 0) + 1;
+
+          metadataSaveRetryCountsRef.current[paperId] = nextRetryCount;
+
+          if (nextRetryCount > MAX_METADATA_SAVE_RETRIES) {
+            return;
+          }
+
+          const existingTimeout = metadataSaveTimeoutsRef.current[paperId];
+
+          if (existingTimeout) {
+            clearTimeout(existingTimeout);
+          }
+
+          metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
+            delete metadataSaveTimeoutsRef.current[paperId];
+            persistPaperMetadataUpdate(
+              paperId,
+              paperMetadataVersionRef.current[paperId] ?? version,
+            );
+          }, METADATA_SAVE_RETRY_DELAY_MS);
+          return;
+        }
+
+        delete metadataSaveRetryCountsRef.current[paperId];
+      });
+  };
+
+  const schedulePaperMetadataSave = (
+    paperId: string,
+    input: UpdatePaperMetadataInput,
+  ) => {
+    pendingMetadataUpdatesRef.current[paperId] = {
+      ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
+      ...input,
+    };
+
+    const nextVersion = (paperMetadataVersionRef.current[paperId] ?? 0) + 1;
+    paperMetadataVersionRef.current[paperId] = nextVersion;
+    delete metadataSaveRetryCountsRef.current[paperId];
+
+    const existingTimeout = metadataSaveTimeoutsRef.current[paperId];
+
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
+      delete metadataSaveTimeoutsRef.current[paperId];
+      persistPaperMetadataUpdate(paperId, nextVersion);
+    }, 400);
+  };
+
+  const handlePaperMetadataChange = (input: UpdatePaperMetadataInput) => {
+    const selectedPaperId = shellState.selectedPaperId;
+
+    if (!selectedPaperId || !activePaperDetail) {
+      return;
+    }
+
+    const updatedDraft = applyOptimisticPaperMetadataUpdate(activePaperDetail, input);
+
+    setWorkspaceError(null);
+    setPaperDetails((current) => ({
+      ...current,
+      [selectedPaperId]: updatedDraft,
+    }));
+    setCoursePapers((current) =>
+      upsertPaperInCourseCollections(current, updatedDraft.paper),
+    );
+
+    schedulePaperMetadataSave(selectedPaperId, input);
   };
 
   const renderHomeView = () => (
@@ -778,7 +925,10 @@ export const App = () => {
           collapsed={shellState.rightPanelCollapsed}
           activeCourse={activeCourse}
           activePaper={activePaper}
+          activePaperDetail={activePaperDetail}
+          paperValidationMessages={activePaperValidationMessages}
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
+          onPaperMetadataChange={handlePaperMetadataChange}
         />
       </div>
 

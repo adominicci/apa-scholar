@@ -107,6 +107,25 @@ export const updatePaperInputSchema = z
     message: 'At least one paper field must be provided.',
   });
 
+export const updatePaperMetadataInputSchema = z
+  .object({
+    abstractEnabled: z.preprocess((value) => value === 1 || value === true, z.boolean()).optional(),
+    authorName: nullableTrimmedStringSchema.optional(),
+    authorNote: nullableTrimmedStringSchema.optional(),
+    courseCode: nullableTrimmedStringSchema.optional(),
+    courseName: nullableTrimmedStringSchema.optional(),
+    dueDate: nullableTrimmedStringSchema.optional(),
+    institution: nullableTrimmedStringSchema.optional(),
+    paperType: paperTypeSchema.optional(),
+    professorName: nullableTrimmedStringSchema.optional(),
+    runningHead: nullableTrimmedStringSchema.optional(),
+    shortTitle: nullableTrimmedStringSchema.optional(),
+    title: z.string().trim().min(1, 'Paper title is required.').optional(),
+  })
+  .refine((input) => Object.keys(input).length > 0, {
+    message: 'At least one paper metadata field must be provided.',
+  });
+
 export const paperMetaSchema = z.object({
   paperId: entityIdSchema,
   title: z.string().trim().min(1, 'Paper title is required.'),
@@ -145,6 +164,7 @@ export type Paper = z.infer<typeof paperSchema>;
 export type CreatePaperInput = z.infer<typeof createPaperInputSchema>;
 export type CreateStoredPaperInput = z.infer<typeof createStoredPaperInputSchema>;
 export type UpdatePaperInput = z.infer<typeof updatePaperInputSchema>;
+export type UpdatePaperMetadataInput = z.infer<typeof updatePaperMetadataInputSchema>;
 export type PaperMeta = z.infer<typeof paperMetaSchema>;
 export type PaperContent = z.infer<typeof paperContentSchema>;
 export type AppSettings = z.infer<typeof appSettingsSchema>;

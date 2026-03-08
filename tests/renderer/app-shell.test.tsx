@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
+import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -10,6 +12,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { applyPaperMetadataUpdateToDraft } from '@domain/papers/paper-metadata';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { ApaScholarApi } from '@preload/api/contracts';
 import type { Course, Paper } from '@domain/shared/persistence-models';
@@ -63,78 +66,14 @@ const createPaperDraft = (
   const paper = createPaper(paperOverrides);
   const course = options?.course ?? createCourse({ id: paper.courseId ?? 'course-1' });
   const includeAbstract = options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
-  const ghostPages: PaperDraft['ghostPages'] = [
-    {
-      blocks: [
-        { align: 'center', id: 'paper-title', kind: 'title', text: paper.title },
-        { align: 'center', id: 'author-name', kind: 'line', text: 'Student Name' },
-        { align: 'center', id: 'institution', kind: 'line', text: course.institution ?? 'Institution' },
-        { align: 'center', id: 'course-name', kind: 'line', text: course.name },
-        { align: 'center', id: 'professor-name', kind: 'line', text: course.professorName ?? 'Professor name' },
-        { align: 'center', id: 'due-date', kind: 'line', text: 'Due date' },
-      ],
-      id: `${paper.id}-title-page`,
-      kind: 'title-page',
-      title: 'Title Page',
-    },
-  ];
-
-  if (includeAbstract) {
-    ghostPages.push({
-      blocks: [
-        { id: 'abstract-heading', kind: 'section-heading', text: 'Abstract' },
-        {
-          id: 'abstract-textarea',
-          kind: 'textarea',
-          text: 'Summarize the paper in one concise paragraph once the abstract workflow lands.',
-        },
-      ],
-      id: `${paper.id}-abstract-page`,
-      kind: 'abstract-page',
-      title: 'Abstract',
-    });
-  }
-
-  ghostPages.push(
-    {
-      blocks: [
-        { id: 'body-heading', kind: 'section-heading', text: paper.title },
-        {
-          id: 'body-textarea',
-          kind: 'textarea',
-          text: 'Start your introduction here. This local draft area is temporary until the structured body editor arrives.',
-        },
-      ],
-      id: `${paper.id}-body-page`,
-      kind: 'body-page',
-      title: 'Body Draft',
-    },
-    {
-      blocks: [
-        { id: 'references-heading', kind: 'section-heading', text: 'References' },
-        {
-          id: 'references-empty-state',
-          kind: 'empty-state',
-          text: 'References will appear here in alphabetical order once the citation and references milestone is connected.',
-        },
-      ],
-      id: `${paper.id}-references-page`,
-      kind: 'references-page',
-      title: 'References',
-    },
-  );
-
-  return {
-    ghostPages,
-    paper,
-    paperContent: {
+  const paperContent: PaperDraft['paperContent'] = {
       abstractDoc: { content: [], type: 'doc' },
       bodyDoc: { content: [], type: 'doc' },
       createdAt: paper.createdAt,
       paperId: paper.id,
       updatedAt: paper.updatedAt,
-    },
-    paperMeta: {
+    };
+  const paperMeta: PaperDraft['paperMeta'] = {
       abstractEnabled: includeAbstract,
       authorName: null,
       authorNote: null,
@@ -149,7 +88,17 @@ const createPaperDraft = (
       shortTitle: null,
       title: paper.title,
       updatedAt: paper.updatedAt,
-    },
+    };
+
+  return {
+    ghostPages: buildGhostPageViewModels({
+      paper,
+      paperContent,
+      paperMeta,
+    }),
+    paper,
+    paperContent,
+    paperMeta,
   };
 };
 
@@ -224,6 +173,29 @@ const createTestApi = (seed?: {
 
         return nextPaper;
       }),
+      updateMetadata: vi.fn(async (paperId, input) => {
+        const currentDraft = paperDraftsById.get(paperId);
+
+        if (!currentDraft) {
+          throw new Error(`Missing paper draft "${paperId}" in test API.`);
+        }
+
+        const updatedDraft = applyPaperMetadataUpdateToDraft(currentDraft, input);
+        const courseId = updatedDraft.paper.courseId;
+
+        paperDraftsById.set(paperId, updatedDraft);
+
+        if (courseId) {
+          papersByCourse.set(
+            courseId,
+            (papersByCourse.get(courseId) ?? []).map((paper) =>
+              paper.id === paperId ? updatedDraft.paper : paper,
+            ),
+          );
+        }
+
+        return updatedDraft;
+      }),
     },
     search: {
       query: vi.fn(async () => ({
@@ -239,6 +211,7 @@ const createTestApi = (seed?: {
 
 describe('App', () => {
   afterEach(() => {
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -356,7 +329,7 @@ describe('App', () => {
 
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
     expect(within(inspector).getAllByText('Paper details')[0]).toBeVisible();
-    expect(within(inspector).getByText('student')).toBeVisible();
+    expect(within(inspector).getByLabelText('Paper type')).toHaveValue('student');
   });
 
   it('creates an abstract template paper and renders the abstract page between title and body', async () => {
@@ -424,6 +397,520 @@ describe('App', () => {
     await waitFor(() => {
       expect(api.papers.getById).toHaveBeenCalledWith('paper-1');
     });
+  });
+
+  it('updates paper metadata immediately in the canvas and saves after a debounce', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Faculty Draft' },
+    });
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Faculty Draft' })).toBeVisible();
+    expect(screen.getAllByRole('heading', { name: 'Faculty Draft' })).toHaveLength(2);
+    expect(api.papers.updateMetadata).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+      title: 'Faculty Draft',
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: 'Faculty Draft' })).toBeVisible();
+      expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+      expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+        title: 'Faculty Draft',
+      });
+    });
+  });
+
+  it('retries failed metadata saves with the newest pending edit', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const initialDraft = createPaperDraft(paper, { course });
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: initialDraft,
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    const firstSave = createDeferred<PaperDraft>();
+
+    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
+      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+        return firstSave.promise;
+      }
+
+      const currentDraft = input.title === 'Title B'
+        ? applyPaperMetadataUpdateToDraft(initialDraft, input)
+        : applyPaperMetadataUpdateToDraft(initialDraft, { title: 'Unexpected stale payload' });
+
+      return currentDraft.paper.id === paperId ? currentDraft : initialDraft;
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    vi.useFakeTimers();
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Title A' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(1, 'paper-1', {
+      title: 'Title A',
+    });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Title B' },
+    });
+
+    firstSave.reject(new Error('Save failed'));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+      await Promise.resolve();
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(2, 'paper-1', {
+      title: 'Title B',
+    });
+  });
+
+  it('sends null when a nullable metadata field is cleared', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Institution'), {
+      target: { value: '' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+      institution: null,
+    });
+  });
+
+  it('retries a failed metadata save without requiring another user edit', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const initialDraft = createPaperDraft(paper, { course });
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: initialDraft,
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    const firstSave = createDeferred<PaperDraft>();
+
+    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
+      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+        return firstSave.promise;
+      }
+
+      return applyPaperMetadataUpdateToDraft(initialDraft, input);
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry Title' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(1, 'paper-1', {
+      title: 'Retry Title',
+    });
+
+    firstSave.reject(new Error('Transient failure'));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5100));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(2, 'paper-1', {
+      title: 'Retry Title',
+    });
+  }, 10000);
+
+  it('does not auto-retry validation failures returned by the save layer', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    api.papers.updateMetadata = vi.fn(async () => {
+      const error = new Error('Paper title is required.');
+
+      error.name = 'ZodError';
+      throw error;
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Rejected Title' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+    expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+      title: 'Rejected Title',
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5100));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+  }, 10000);
+
+  it('keeps the empty title visible across re-renders while showing validation feedback', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: '' },
+    });
+
+    expect(screen.getByLabelText('Paper title')).toHaveValue('');
+    expect(screen.getByText('Title is required.')).toBeVisible();
+
+    fireEvent.click(screen.getByLabelText('Include abstract'));
+
+    expect(screen.getByLabelText('Paper title')).toHaveValue('');
+  });
+
+  it('clears older retry timers before replacing them and unmounting', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    api.papers.updateMetadata = vi.fn(async () => {
+      throw new Error('Transient failure');
+    });
+    window.apaScholar = api;
+
+    const view = render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    vi.useFakeTimers();
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry One' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry Two' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(2);
+
+    view.unmount();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(2);
+  }, 10000);
+
+  it('stops retrying transient metadata save failures after the retry cap', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    api.papers.updateMetadata = vi.fn(async () => {
+      throw new Error('Persistent outage');
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    vi.useFakeTimers();
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry Ceiling' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(20000);
+      await Promise.resolve();
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(4);
+  }, 10000);
+
+  it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    window.apaScholar = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'professional' },
+    });
+    fireEvent.click(screen.getByLabelText('Include abstract'));
+
+    expect(screen.getByLabelText('Running head')).toBeVisible();
+    expect(screen.queryByLabelText('Course name')).not.toBeInTheDocument();
+    expect(screen.getByText('Running head is required.')).toBeVisible();
+    expect(screen.queryByText('Course name is required.')).not.toBeInTheDocument();
+    expect(screen.getByText('Abstract scaffold')).toBeVisible();
+    expect(screen.getAllByText('Running head: Short title')[0]).toBeVisible();
+  });
+
+  it('preserves student and professional metadata values when toggling paper types', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    window.apaScholar = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'professional' },
+    });
+    fireEvent.change(screen.getByLabelText('Running head'), {
+      target: { value: 'FACULTY DRAFT' },
+    });
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'student' },
+    });
+
+    expect(screen.getByLabelText('Course name')).toHaveValue('Advanced Composition');
+
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'professional' },
+    });
+
+    expect(screen.getByLabelText('Running head')).toHaveValue('FACULTY DRAFT');
   });
 
   it('wires the search box to the placeholder API surface', async () => {
