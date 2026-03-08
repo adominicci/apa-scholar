@@ -49,13 +49,7 @@ export const PaperInspectorPanel = ({
         />
         <InspectorTextField
           label="Paper title"
-          onChange={(title) => {
-            if (title.trim().length === 0) {
-              return;
-            }
-
-            onMetadataChange({ title });
-          }}
+          onChange={(title) => onMetadataChange({ title })}
           value={paperDraft.paperMeta.title}
         />
       </InspectorSection>

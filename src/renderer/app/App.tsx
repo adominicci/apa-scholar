@@ -36,6 +36,9 @@ const emptyPaperForm: CreatePaperInput = {
   title: '',
 };
 
+const METADATA_SAVE_RETRY_DELAY_MS = 5000;
+const MAX_METADATA_SAVE_RETRIES = 3;
+
 const resolvePreferredTheme = (): ThemeMode => {
   if (
     typeof window !== 'undefined' &&
@@ -85,6 +88,7 @@ export const App = () => {
   const metadataSaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const pendingMetadataUpdatesRef = useRef<Record<string, UpdatePaperMetadataInput>>({});
   const paperMetadataVersionRef = useRef<Record<string, number>>({});
+  const metadataSaveRetryCountsRef = useRef<Record<string, number>>({});
 
   const activeCourse =
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
@@ -478,6 +482,7 @@ export const App = () => {
           return;
         }
 
+        delete metadataSaveRetryCountsRef.current[paperId];
         setWorkspaceError(null);
         setPaperDetails((current) => ({
           ...current,
@@ -501,6 +506,15 @@ export const App = () => {
             /required|must be|At least one/i.test(error.message));
 
         if (!isValidationError) {
+          const nextRetryCount =
+            (metadataSaveRetryCountsRef.current[paperId] ?? 0) + 1;
+
+          metadataSaveRetryCountsRef.current[paperId] = nextRetryCount;
+
+          if (nextRetryCount > MAX_METADATA_SAVE_RETRIES) {
+            return;
+          }
+
           const existingTimeout = metadataSaveTimeoutsRef.current[paperId];
 
           if (existingTimeout) {
@@ -513,8 +527,11 @@ export const App = () => {
               paperId,
               paperMetadataVersionRef.current[paperId] ?? version,
             );
-          }, 5000);
+          }, METADATA_SAVE_RETRY_DELAY_MS);
+          return;
         }
+
+        delete metadataSaveRetryCountsRef.current[paperId];
       });
   };
 
@@ -529,6 +546,7 @@ export const App = () => {
 
     const nextVersion = (paperMetadataVersionRef.current[paperId] ?? 0) + 1;
     paperMetadataVersionRef.current[paperId] = nextVersion;
+    delete metadataSaveRetryCountsRef.current[paperId];
 
     const existingTimeout = metadataSaveTimeoutsRef.current[paperId];
 

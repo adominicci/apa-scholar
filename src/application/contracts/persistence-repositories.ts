@@ -7,7 +7,6 @@ import type {
   CreateStoredPaperInput,
   Paper,
   UpdateCourseInput,
-  UpdatePaperMetadataInput,
   UpdatePaperInput,
 } from '@domain/shared/persistence-models';
 
