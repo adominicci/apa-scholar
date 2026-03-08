@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { createHeadingBodyEditorFixture } from '@tests/helpers/body-editor-fixtures';
 import { createPersistenceContext } from '@infrastructure/persistence/create-persistence-context';
 
 const tempDirs: string[] = [];
@@ -198,5 +199,36 @@ describe('createPersistenceContext', () => {
       'body-page',
       'references-page',
     ]);
+  });
+
+  it('updates and reloads semantic body editor content through the paper service', () => {
+    const context = createPersistenceContext({ dbPath: createTempDbPath() });
+    const course = context.courseRepository.create({
+      code: 'PSY-500',
+      institution: 'APA University',
+      name: 'Capstone Seminar',
+      professorName: 'Dr. Rivera',
+    });
+    const createdPaper = context.paperService.create({
+      courseId: course.id,
+      title: 'Literature Review',
+    });
+
+    const updatedDraft = context.paperService.updateBodyContent(
+      createdPaper.id,
+      createHeadingBodyEditorFixture(),
+    );
+    const paperContentRow = context.database
+      .prepare(
+        'SELECT body_doc AS bodyDoc FROM paper_content WHERE paper_id = ?',
+      )
+      .get(createdPaper.id) as { bodyDoc: string } | undefined;
+
+    context.close();
+
+    expect(JSON.parse(paperContentRow?.bodyDoc ?? '{}')).toEqual(
+      createHeadingBodyEditorFixture(),
+    );
+    expect(updatedDraft.paperContent.bodyDoc).toEqual(createHeadingBodyEditorFixture());
   });
 });

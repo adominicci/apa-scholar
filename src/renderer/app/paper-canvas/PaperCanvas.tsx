@@ -1,17 +1,18 @@
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import { PaperCanvasBlock } from '@renderer/app/paper-canvas/PaperCanvasBlock';
 import { PaperCanvasPage } from '@renderer/app/paper-canvas/PaperCanvasPage';
 
 interface PaperCanvasProps {
-  bodyDraftValue: string;
+  bodyDocument: BodyEditorDocument;
   paperDraft: PaperDraft;
-  onBodyDraftChange: (value: string) => void;
+  onBodyDocumentChange: (document: BodyEditorDocument) => void;
 }
 
 export const PaperCanvas = ({
-  bodyDraftValue,
+  bodyDocument,
   paperDraft,
-  onBodyDraftChange,
+  onBodyDocumentChange,
 }: PaperCanvasProps) => (
   <div className="grid gap-6">
     {paperDraft.ghostPages.map((page) => (
@@ -20,9 +21,9 @@ export const PaperCanvas = ({
           {page.blocks.map((block) => (
             <PaperCanvasBlock
               block={block}
-              bodyDraftValue={bodyDraftValue}
+              bodyDocument={bodyDocument}
               key={block.id}
-              onBodyDraftChange={onBodyDraftChange}
+              onBodyDocumentChange={onBodyDocumentChange}
               pageKind={page.kind}
             />
           ))}
