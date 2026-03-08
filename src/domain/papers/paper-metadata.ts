@@ -73,6 +73,12 @@ export const applyPaperMetadataUpdate = (
   aggregate: StoredPaperAggregate,
   input: UpdatePaperMetadataInput,
 ): StoredPaperAggregate => {
+  const {
+    abstractEnabled: _abstractEnabled,
+    paperType: _paperType,
+    title: _title,
+    ...paperMetaFields
+  } = input;
   const nextPaperType = input.paperType ?? aggregate.paper.paperType;
   const nextAbstractEnabled = input.abstractEnabled ?? aggregate.paperMeta.abstractEnabled;
   const nextStructure = resolvePaperStructure({
@@ -91,7 +97,7 @@ export const applyPaperMetadataUpdate = (
     },
     paperMeta: {
       ...aggregate.paperMeta,
-      ...input,
+      ...paperMetaFields,
       abstractEnabled: nextStructure.abstractEnabled,
       title: nextTitle,
     },

@@ -623,7 +623,7 @@ describe('App', () => {
     });
   }, 10000);
 
-  it('does not auto-retry validation failures for invalid title updates', async () => {
+  it('does not auto-retry validation failures returned by the save layer', async () => {
     const course = createCourse();
     const paper = createPaper();
     const api = createTestApi({
@@ -656,7 +656,7 @@ describe('App', () => {
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
 
     fireEvent.change(screen.getByLabelText('Paper title'), {
-      target: { value: '' },
+      target: { value: 'Rejected Title' },
     });
 
     await act(async () => {
@@ -664,6 +664,9 @@ describe('App', () => {
     });
 
     expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+    expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+      title: 'Rejected Title',
+    });
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 5100));
@@ -671,6 +674,40 @@ describe('App', () => {
 
     expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
   }, 10000);
+
+  it('does not propagate an empty title into optimistic paper state', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: '' },
+    });
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Literature Review' })).toBeVisible();
+    expect(screen.getByLabelText('Paper title')).toHaveValue('Literature Review');
+    expect(api.papers.updateMetadata).not.toHaveBeenCalled();
+  });
 
   it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
     const course = createCourse();

@@ -4,6 +4,7 @@ import type {
   PaperMeta,
 } from '@domain/shared/persistence-models';
 import {
+  applyPaperMetadataUpdate,
   getPaperMetadataValidationMessages,
   resolvePaperStructure,
 } from '@domain/papers/paper-metadata';
@@ -115,5 +116,30 @@ describe('paper metadata helpers', () => {
       'Author name is required.',
       'Running head is required.',
     ]);
+  });
+
+  it('does not leak paper-level fields into paperMeta during aggregate updates', () => {
+    const updatedAggregate = applyPaperMetadataUpdate(
+      {
+        paper: createPaper(),
+        paperContent: {
+          abstractDoc: { content: [], type: 'doc' },
+          bodyDoc: { content: [], type: 'doc' },
+          createdAt: '2026-03-07T14:00:00.000Z',
+          paperId: 'paper-1',
+          updatedAt: '2026-03-07T14:00:00.000Z',
+        },
+        paperMeta: createPaperMeta(),
+      },
+      {
+        abstractEnabled: true,
+        paperType: 'professional',
+        title: 'Faculty Draft',
+      },
+    );
+
+    expect(updatedAggregate.paper.paperType).toBe('professional');
+    expect(updatedAggregate.paperMeta.title).toBe('Faculty Draft');
+    expect('paperType' in updatedAggregate.paperMeta).toBe(false);
   });
 });
