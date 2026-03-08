@@ -10,6 +10,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { ApaScholarApi } from '@preload/api/contracts';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import { App } from '@renderer/app/App';
@@ -55,8 +56,106 @@ const createPaper = (overrides: Partial<Paper> = {}): Paper => ({
   ...overrides,
 });
 
+const createPaperDraft = (
+  paperOverrides: Partial<Paper> = {},
+  options?: { includeAbstract?: boolean; course?: Course },
+): PaperDraft => {
+  const paper = createPaper(paperOverrides);
+  const course = options?.course ?? createCourse({ id: paper.courseId ?? 'course-1' });
+  const includeAbstract = options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
+  const ghostPages: PaperDraft['ghostPages'] = [
+    {
+      blocks: [
+        { align: 'center', id: 'paper-title', kind: 'title', text: paper.title },
+        { align: 'center', id: 'author-name', kind: 'line', text: 'Student Name' },
+        { align: 'center', id: 'institution', kind: 'line', text: course.institution ?? 'Institution' },
+        { align: 'center', id: 'course-name', kind: 'line', text: course.name },
+        { align: 'center', id: 'professor-name', kind: 'line', text: course.professorName ?? 'Professor name' },
+        { align: 'center', id: 'due-date', kind: 'line', text: 'Due date' },
+      ],
+      id: `${paper.id}-title-page`,
+      kind: 'title-page',
+      title: 'Title Page',
+    },
+  ];
+
+  if (includeAbstract) {
+    ghostPages.push({
+      blocks: [
+        { id: 'abstract-heading', kind: 'section-heading', text: 'Abstract' },
+        {
+          id: 'abstract-textarea',
+          kind: 'textarea',
+          text: 'Summarize the paper in one concise paragraph once the abstract workflow lands.',
+        },
+      ],
+      id: `${paper.id}-abstract-page`,
+      kind: 'abstract-page',
+      title: 'Abstract',
+    });
+  }
+
+  ghostPages.push(
+    {
+      blocks: [
+        { id: 'body-heading', kind: 'section-heading', text: paper.title },
+        {
+          id: 'body-textarea',
+          kind: 'textarea',
+          text: 'Start your introduction here. This local draft area is temporary until the structured body editor arrives.',
+        },
+      ],
+      id: `${paper.id}-body-page`,
+      kind: 'body-page',
+      title: 'Body Draft',
+    },
+    {
+      blocks: [
+        { id: 'references-heading', kind: 'section-heading', text: 'References' },
+        {
+          id: 'references-empty-state',
+          kind: 'empty-state',
+          text: 'References will appear here in alphabetical order once the citation and references milestone is connected.',
+        },
+      ],
+      id: `${paper.id}-references-page`,
+      kind: 'references-page',
+      title: 'References',
+    },
+  );
+
+  return {
+    ghostPages,
+    paper,
+    paperContent: {
+      abstractDoc: { content: [], type: 'doc' },
+      bodyDoc: { content: [], type: 'doc' },
+      createdAt: paper.createdAt,
+      paperId: paper.id,
+      updatedAt: paper.updatedAt,
+    },
+    paperMeta: {
+      abstractEnabled: includeAbstract,
+      authorName: null,
+      authorNote: null,
+      courseCode: course.code ?? null,
+      courseName: course.name,
+      createdAt: paper.createdAt,
+      dueDate: null,
+      institution: course.institution ?? null,
+      paperId: paper.id,
+      professorName: course.professorName ?? null,
+      runningHead: null,
+      shortTitle: null,
+      title: paper.title,
+      updatedAt: paper.updatedAt,
+    },
+  };
+};
+
 const createTestApi = (seed?: {
   courses?: Course[];
+  paperDraftsById?: Record<string, PaperDraft>;
   papersByCourse?: Record<string, Paper[]>;
 }) => {
   const courses = [...(seed?.courses ?? [])];
@@ -64,6 +163,12 @@ const createTestApi = (seed?: {
     Object.entries(seed?.papersByCourse ?? {}).map(([courseId, papers]) => [
       courseId,
       [...papers],
+    ]),
+  );
+  const paperDraftsById = new Map(
+    Object.entries(seed?.paperDraftsById ?? {}).map(([paperId, draft]) => [
+      paperId,
+      draft,
     ]),
   );
 
@@ -93,6 +198,7 @@ const createTestApi = (seed?: {
     },
     papers: {
       listByCourse: vi.fn(async (courseId) => papersByCourse.get(courseId) ?? []),
+      getById: vi.fn(async (paperId) => paperDraftsById.get(paperId) ?? null),
       create: vi.fn(async (input) => {
         const nextPaper = createPaper({
           courseId: input.courseId,
@@ -102,11 +208,19 @@ const createTestApi = (seed?: {
           templateId: input.templateId ?? 'apa-student',
           title: input.title,
         });
+        const nextCourse = courses.find((course) => course.id === input.courseId);
 
         papersByCourse.set(input.courseId, [
           nextPaper,
           ...(papersByCourse.get(input.courseId) ?? []),
         ]);
+        paperDraftsById.set(
+          nextPaper.id,
+          createPaperDraft(
+            nextPaper,
+            { course: nextCourse, includeAbstract: nextPaper.templateId === 'apa-student-abstract' },
+          ),
+        );
 
         return nextPaper;
       }),
@@ -162,6 +276,9 @@ describe('App', () => {
   it('loads courses in the sidebar and shows the selected course overview', async () => {
     window.apaScholar = createTestApi({
       courses: [createCourse()],
+      paperDraftsById: {
+        'paper-1': createPaperDraft(),
+      },
       papersByCourse: {
         'course-1': [createPaper()],
       },
@@ -231,7 +348,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByRole('heading', { name: 'Capstone Draft' }),
+      await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
     expect(screen.getByText('Title page scaffold')).toBeVisible();
     expect(screen.getByLabelText('Paper body draft')).toBeVisible();
@@ -240,6 +357,73 @@ describe('App', () => {
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
     expect(within(inspector).getAllByText('Paper details')[0]).toBeVisible();
     expect(within(inspector).getByText('student')).toBeVisible();
+  });
+
+  it('creates an abstract template paper and renders the abstract page between title and body', async () => {
+    const course = createCourse({
+      defaultPaperTemplate: 'apa-student-abstract',
+    });
+    window.apaScholar = createTestApi({
+      courses: [course],
+      papersByCourse: {
+        [course.id]: [],
+      },
+    });
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Abstract Draft' },
+    });
+    fireEvent.change(screen.getByLabelText('Template'), {
+      target: { value: 'apa-student-abstract' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Abstract Draft' }),
+    ).toBeVisible();
+    expect(screen.getByText('Abstract scaffold')).toBeVisible();
+    expect(screen.getAllByText('Abstract')[0]).toBeVisible();
+    expect(screen.getByText('Body draft')).toBeVisible();
+  });
+
+  it('reopens an existing paper by loading its persisted paper draft detail', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Literature Review' }),
+    ).toBeVisible();
+    expect(screen.getByText('Title page scaffold')).toBeVisible();
+    expect(screen.getByText('References scaffold')).toBeVisible();
+
+    await waitFor(() => {
+      expect(api.papers.getById).toHaveBeenCalledWith('paper-1');
+    });
   });
 
   it('wires the search box to the placeholder API surface', async () => {
@@ -460,5 +644,29 @@ describe('App', () => {
       await screen.findByText('Unable to create the paper right now. Try again.'),
     ).toBeVisible();
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
+  });
+
+  it('keeps the paper modal open if the created paper detail cannot be loaded', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+    });
+    api.papers.getById = vi.fn(async () => null);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Load Failure Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByText('Unable to create the paper right now. Try again.'),
+    ).toBeVisible();
+    expect(screen.getByLabelText('Paper title')).toHaveValue('Load Failure Draft');
   });
 });

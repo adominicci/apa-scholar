@@ -1,4 +1,6 @@
 import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
+import type { PaperDraft } from '@domain/papers/paper-draft';
+import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
 import type { Course, CreateCourseInput, CreatePaperInput, Paper } from '@domain/shared/persistence-models';
 import {
   createInitialWorkspaceShellState,
@@ -7,6 +9,7 @@ import {
 import { CourseModal } from '@renderer/app/CourseModal';
 import { Inspector } from '@renderer/app/Inspector';
 import { PaperModal } from '@renderer/app/PaperModal';
+import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
 import { Sidebar } from '@renderer/app/Sidebar';
 import { BookOpenIcon, NotificationsIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
 
@@ -18,6 +21,7 @@ const emptyCourseForm: CreateCourseInput = {
 
 const emptyPaperForm: CreatePaperInput = {
   courseId: '',
+  templateId: 'apa-student',
   title: '',
 };
 
@@ -49,9 +53,11 @@ export const App = () => {
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursePapers, setCoursePapers] = useState<Record<string, Paper[]>>({});
+  const [paperDetails, setPaperDetails] = useState<Record<string, PaperDraft | null>>({});
   const [paperDrafts, setPaperDrafts] = useState<Record<string, string>>({});
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingCourseIds, setLoadingCourseIds] = useState<string[]>([]);
+  const [loadingPaperIds, setLoadingPaperIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
@@ -64,6 +70,7 @@ export const App = () => {
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
+  const loadingPaperIdsRef = useRef<string[]>([]);
 
   const activeCourse =
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
@@ -73,6 +80,9 @@ export const App = () => {
           (paper) => paper.id === shellState.selectedPaperId,
         ) ?? null
       : null;
+  const activePaperDetail = shellState.selectedPaperId
+    ? paperDetails[shellState.selectedPaperId] ?? null
+    : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -114,6 +124,10 @@ export const App = () => {
   useEffect(() => {
     loadingCourseIdsRef.current = loadingCourseIds;
   }, [loadingCourseIds]);
+
+  useEffect(() => {
+    loadingPaperIdsRef.current = loadingPaperIds;
+  }, [loadingPaperIds]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -267,6 +281,56 @@ export const App = () => {
     shellState.selectedCourseId,
   ]);
 
+  useEffect(() => {
+    const selectedPaperId = shellState.selectedPaperId;
+
+    if (
+      !api ||
+      !selectedPaperId ||
+      Object.prototype.hasOwnProperty.call(paperDetails, selectedPaperId) ||
+      loadingPaperIdsRef.current.includes(selectedPaperId)
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    setLoadingPaperIds((current) => [...current, selectedPaperId]);
+
+    void api.papers
+      .getById(selectedPaperId)
+      .then((paperDetail) => {
+        if (!cancelled) {
+          if (!paperDetail) {
+            setWorkspaceError('Unable to load this paper draft right now.');
+            return;
+          }
+
+          setWorkspaceError(null);
+          setPaperDetails((current) => ({
+            ...current,
+            [selectedPaperId]: paperDetail,
+          }));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWorkspaceError('Unable to load this paper draft right now.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingPaperIds((current) =>
+            current.filter((paperId) => paperId !== selectedPaperId),
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [api, paperDetails, shellState.selectedPaperId]);
+
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
   };
@@ -286,8 +350,12 @@ export const App = () => {
   };
 
   const openPaperModal = () => {
+    const defaultCourse =
+      courses.find((course) => course.id === shellState.selectedCourseId) ?? courses[0];
+
     setPaperForm({
-      courseId: shellState.selectedCourseId ?? courses[0]?.id ?? '',
+      courseId: defaultCourse?.id ?? '',
+      templateId: resolveTemplateDefinitionId(defaultCourse?.defaultPaperTemplate),
       title: '',
     });
     setPaperFormError(null);
@@ -334,6 +402,11 @@ export const App = () => {
         ...paperForm,
         title: paperForm.title.trim(),
       });
+      const createdPaperDetail = await api.papers.getById(createdPaper.id);
+
+      if (!createdPaperDetail) {
+        throw new Error('Created paper draft could not be loaded.');
+      }
 
       setWorkspaceError(null);
       setPaperFormError(null);
@@ -344,6 +417,10 @@ export const App = () => {
       setPaperDrafts((current) => ({
         ...current,
         [createdPaper.id]: '',
+      }));
+      setPaperDetails((current) => ({
+        ...current,
+        [createdPaper.id]: createdPaperDetail,
       }));
 
       setIsPaperModalOpen(false);
@@ -497,7 +574,7 @@ export const App = () => {
     );
   };
 
-  const renderPaperView = (course: Course, paper: Paper) => (
+  const renderPaperView = (course: Course, paper: Paper, paperDetail: PaperDraft | null) => (
     <section className="flex h-full flex-col gap-6 px-6 py-8 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-line)] pb-6">
         <div>
@@ -529,73 +606,27 @@ export const App = () => {
         </div>
       </div>
 
-      <div className="grid gap-6">
-        <article className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
+      {paperDetail ? (
+        <PaperCanvas
+          bodyDraftValue={paperDrafts[paper.id] ?? ''}
+          onBodyDraftChange={(value) =>
+            setPaperDrafts((current) => ({
+              ...current,
+              [paper.id]: value,
+            }))
+          }
+          paperDraft={paperDetail}
+        />
+      ) : (
+        <div className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
           <p className="label-caps">
-            Title page scaffold
+            Loading paper scaffold
           </p>
-          <div className="mt-10 space-y-5 text-center">
-            <p className="font-[var(--font-display)] text-4xl leading-tight text-[var(--color-page-ink)]">
-              {paper.title}
-            </p>
-            <p className="text-base text-[var(--color-page-muted)]">
-              Student Name
-            </p>
-            <p className="text-base text-[var(--color-page-muted)]">
-              {course.institution ?? 'Institution'}
-            </p>
-            <p className="text-base text-[var(--color-page-muted)]">
-              {course.code ? `${course.code} · ` : ''}
-              {course.name}
-            </p>
-            <p className="text-base text-[var(--color-page-muted)]">
-              {course.professorName ?? 'Professor name'}
-            </p>
-            <p className="text-base text-[var(--color-page-muted)]">
-              Due date
-            </p>
-          </div>
-        </article>
-
-        <article className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
-          <p className="label-caps">
-            Body draft
+          <p className="mt-6 text-sm leading-7 text-[var(--color-page-muted)]">
+            Pulling the latest paper skeleton from local storage.
           </p>
-          <label
-            className="mt-6 block text-sm font-medium text-[var(--color-page-ink)]"
-            htmlFor="paper-body-draft"
-          >
-            Paper body draft
-          </label>
-          <textarea
-            className="mt-3 min-h-[260px] w-full resize-y rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]"
-            id="paper-body-draft"
-            onChange={(event) =>
-              setPaperDrafts((current) => ({
-                ...current,
-                [paper.id]: event.target.value,
-              }))
-            }
-            placeholder="Start your introduction here. This local draft area is temporary until the structured body editor arrives."
-            value={paperDrafts[paper.id] ?? ''}
-          />
-        </article>
-
-        <article className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
-          <p className="label-caps">
-            References scaffold
-          </p>
-          <div className="mt-8 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-8 text-center">
-            <h3 className="font-[var(--font-display)] text-3xl text-[var(--color-page-ink)]">
-              References
-            </h3>
-            <p className="mt-4 text-sm leading-7 text-[var(--color-page-muted)]">
-              References will appear here in alphabetical order once the citation and
-              references milestone is connected.
-            </p>
-          </div>
-        </article>
-      </div>
+        </div>
+      )}
     </section>
   );
 
@@ -619,7 +650,7 @@ export const App = () => {
     }
 
     if (shellState.route.view === 'paper' && activeCourse && activePaper) {
-      return renderPaperView(activeCourse, activePaper);
+      return renderPaperView(activeCourse, activePaper, activePaperDetail);
     }
 
     if (shellState.route.view === 'settings') {

@@ -32,7 +32,9 @@ test('creates a course and paper inside the workspace shell', async () => {
     await window.getByLabel('Paper title').fill(paperTitle);
     await window.getByRole('button', { name: 'Create paper' }).click();
 
-    await expect(window.getByRole('heading', { name: paperTitle })).toBeVisible();
+    await expect(
+      window.getByRole('heading', { level: 2, name: paperTitle }),
+    ).toBeVisible();
     await expect(window.getByText('Title page scaffold')).toBeVisible();
     await expect(window.getByText('References scaffold')).toBeVisible();
     await expect(

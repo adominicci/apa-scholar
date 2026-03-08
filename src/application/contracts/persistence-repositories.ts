@@ -1,3 +1,5 @@
+import type { TemplateSeedResult } from '@domain/papers/template-definitions';
+import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import type {
   AppSettings,
   Course,
@@ -17,8 +19,9 @@ export interface CourseRepository {
 }
 
 export interface PaperRepository {
-  create(input: CreateStoredPaperInput): Paper;
+  create(input: CreateStoredPaperInput, seed: TemplateSeedResult): Paper;
   listByCourse(courseId: string): Paper[];
+  getAggregateById(id: string): StoredPaperAggregate | null;
   getById(id: string): Paper | null;
   update(id: string, input: UpdatePaperInput): Paper;
   archive(id: string): Paper;
