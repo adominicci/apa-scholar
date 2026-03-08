@@ -4,6 +4,7 @@ import type {
   CreateCourseInput,
   CreatePaperInput,
   Paper,
+  UpdatePaperMetadataInput,
 } from '@domain/shared/persistence-models';
 
 export interface WorkspaceSearchPlaceholderResult {
@@ -26,6 +27,10 @@ export interface ApaScholarApi {
     listByCourse: (courseId: string) => Promise<Paper[]>;
     getById: (paperId: string) => Promise<PaperDraft | null>;
     create: (input: CreatePaperInput) => Promise<Paper>;
+    updateMetadata: (
+      paperId: string,
+      input: UpdatePaperMetadataInput,
+    ) => Promise<PaperDraft>;
   };
   search: {
     query: (query: string) => Promise<WorkspaceSearchPlaceholderResult>;

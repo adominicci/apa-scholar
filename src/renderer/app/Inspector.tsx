@@ -1,3 +1,4 @@
+import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import {
   AlertTriangleIcon,
@@ -5,12 +6,17 @@ import {
   InfoIcon,
   SearchIcon,
 } from '@renderer/app/icons';
+import { PaperInspectorPanel } from '@renderer/app/inspector/PaperInspectorPanel';
+import type { UpdatePaperMetadataInput } from '@domain/shared/persistence-models';
 
 interface InspectorProps {
   collapsed: boolean;
   activeCourse: Course | null;
   activePaper: Paper | null;
+  activePaperDetail: PaperDraft | null;
+  paperValidationMessages: string[];
   onCollapseToggle: () => void;
+  onPaperMetadataChange: (input: UpdatePaperMetadataInput) => void;
 }
 
 const railButtonClass =
@@ -20,7 +26,10 @@ export const Inspector = ({
   collapsed,
   activeCourse,
   activePaper,
+  activePaperDetail,
+  paperValidationMessages,
   onCollapseToggle,
+  onPaperMetadataChange,
 }: InspectorProps) => (
   <aside
     aria-label="Inspector panel"
@@ -94,32 +103,12 @@ export const Inspector = ({
       </div>
 
       <div className="border-b border-[var(--color-line)] p-4">
-        {activePaper ? (
-          <>
-            <p className="label-caps">
-              Paper details
-            </p>
-            <div className="mt-4 space-y-4 text-sm">
-              <div>
-                <p className="label-caps">
-                  Template
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">{activePaper.templateId}</p>
-              </div>
-              <div>
-                <p className="label-caps">
-                  Paper type
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">{activePaper.paperType}</p>
-              </div>
-              <div>
-                <p className="label-caps">
-                  Course
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">{activeCourse?.name}</p>
-              </div>
-            </div>
-          </>
+        {activePaper && activePaperDetail ? (
+          <PaperInspectorPanel
+            paperDraft={activePaperDetail}
+            validationMessages={paperValidationMessages}
+            onMetadataChange={onPaperMetadataChange}
+          />
         ) : activeCourse ? (
           <>
             <p className="label-caps">
@@ -170,8 +159,8 @@ export const Inspector = ({
           Issues
         </p>
         <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-          APA warnings, missing metadata, and structural prompts will surface here in a
-          later milestone.
+          APA warnings and rule-based prompts will graduate into the dedicated issues
+          workflow in a later milestone.
         </p>
       </div>
 

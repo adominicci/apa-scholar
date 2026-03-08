@@ -17,6 +17,12 @@ describe('createPersistenceIpcHandlers', () => {
     const createPaper = vi
       .fn()
       .mockResolvedValue({ id: 'paper-2', courseId: 'course-1' });
+    const updatePaperMetadata = vi
+      .fn()
+      .mockResolvedValue({
+        ghostPages: [],
+        paper: { id: 'paper-1', title: 'Faculty Draft' },
+      });
     const querySearch = vi.fn().mockResolvedValue({
       courses: [],
       papers: [],
@@ -32,6 +38,7 @@ describe('createPersistenceIpcHandlers', () => {
         create: createPaper,
         getById: getPaperById,
         listByCourse: listPapersByCourse,
+        updateMetadata: updatePaperMetadata,
       },
       search: {
         query: querySearch,
@@ -72,6 +79,19 @@ describe('createPersistenceIpcHandlers', () => {
       id: 'paper-2',
     });
     await expect(
+      handlers[persistenceIpcChannels.papersUpdateMetadata]({
+        input: {
+          abstractEnabled: true,
+          paperType: 'professional',
+          title: 'Faculty Draft',
+        },
+        paperId: 'paper-1',
+      }),
+    ).resolves.toEqual({
+      ghostPages: [],
+      paper: { id: 'paper-1', title: 'Faculty Draft' },
+    });
+    await expect(
       handlers[persistenceIpcChannels.searchQuery]({
         query: 'draft',
       }),
@@ -88,6 +108,11 @@ describe('createPersistenceIpcHandlers', () => {
     expect(createPaper).toHaveBeenCalledWith({
       courseId: 'course-1',
       title: 'Annotated Bibliography',
+    });
+    expect(updatePaperMetadata).toHaveBeenCalledWith('paper-1', {
+      abstractEnabled: true,
+      paperType: 'professional',
+      title: 'Faculty Draft',
     });
     expect(querySearch).toHaveBeenCalledWith('draft');
   });

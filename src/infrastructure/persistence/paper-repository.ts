@@ -10,11 +10,13 @@ import {
   paperContentSchema,
   paperMetaSchema,
   paperSchema,
+  updatePaperMetadataInputSchema,
   updatePaperInputSchema,
 } from '@domain/shared/persistence-models';
 import type {
   CreateStoredPaperInput,
   Paper,
+  UpdatePaperMetadataInput,
   UpdatePaperInput,
 } from '@domain/shared/persistence-models';
 import type { TemplateSeedResult } from '@domain/papers/template-definitions';
@@ -184,6 +186,41 @@ export const createPaperRepository = (
       WHERE id = ?
     `,
   );
+  const updatePaperMetaStatement = database.prepare<
+    [
+      string,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      string | null,
+      number,
+      string,
+      string,
+    ]
+  >(
+    `
+      UPDATE paper_meta
+      SET
+        title = ?,
+        short_title = ?,
+        author_name = ?,
+        institution = ?,
+        course_name = ?,
+        course_code = ?,
+        professor_name = ?,
+        due_date = ?,
+        running_head = ?,
+        author_note = ?,
+        abstract_enabled = ?,
+        updated_at = ?
+      WHERE paper_id = ?
+    `,
+  );
 
   const getById = (id: string): Paper | null => {
     const row = getPaperByIdStatement.get(id);
@@ -306,6 +343,62 @@ export const createPaperRepository = (
 
       return getById(id) ?? (() => {
         throw new Error(`Updated paper "${id}" could not be reloaded.`);
+      })();
+    },
+    updateMetadata: (id: string, input: UpdatePaperMetadataInput): StoredPaperAggregate => {
+      const existingAggregate = getAggregateById(id);
+
+      if (!existingAggregate) {
+        throw new Error(`Paper "${id}" was not found.`);
+      }
+
+      const parsedInput = updatePaperMetadataInputSchema.parse(input);
+      const updatedAt = createIsoTimestamp();
+      const updatedPaper = {
+        ...existingAggregate.paper,
+        paperType: parsedInput.paperType ?? existingAggregate.paper.paperType,
+        templateId: parsedInput.templateId ?? existingAggregate.paper.templateId,
+        title: parsedInput.title ?? existingAggregate.paper.title,
+        updatedAt,
+      };
+      const updatedMeta = {
+        ...existingAggregate.paperMeta,
+        ...parsedInput,
+        abstractEnabled:
+          parsedInput.abstractEnabled ?? existingAggregate.paperMeta.abstractEnabled,
+        title: parsedInput.title ?? existingAggregate.paperMeta.title,
+        updatedAt,
+      };
+
+      database.transaction(() => {
+        updatePaperStatement.run(
+          updatedPaper.title,
+          updatedPaper.templateId,
+          updatedPaper.paperType,
+          updatedPaper.language,
+          updatedPaper.status,
+          updatedPaper.updatedAt,
+          id,
+        );
+        updatePaperMetaStatement.run(
+          updatedMeta.title,
+          toNullableString(updatedMeta.shortTitle),
+          toNullableString(updatedMeta.authorName),
+          toNullableString(updatedMeta.institution),
+          toNullableString(updatedMeta.courseName),
+          toNullableString(updatedMeta.courseCode),
+          toNullableString(updatedMeta.professorName),
+          toNullableString(updatedMeta.dueDate),
+          toNullableString(updatedMeta.runningHead),
+          toNullableString(updatedMeta.authorNote),
+          updatedMeta.abstractEnabled ? 1 : 0,
+          updatedAt,
+          id,
+        );
+      })();
+
+      return getAggregateById(id) ?? (() => {
+        throw new Error(`Updated paper aggregate "${id}" could not be reloaded.`);
       })();
     },
     archive: (id: string): Paper => {

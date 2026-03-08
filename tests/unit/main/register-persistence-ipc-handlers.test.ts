@@ -14,6 +14,7 @@ describe('registerPersistenceIpcHandlers', () => {
         [persistenceIpcChannels.papersListByCourse]: () => [],
         [persistenceIpcChannels.papersGetById]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.papersCreate]: () => ({ id: 'paper-1' }),
+        [persistenceIpcChannels.papersUpdateMetadata]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.searchQuery]: () => ({
           courses: [],
           papers: [],
@@ -22,7 +23,7 @@ describe('registerPersistenceIpcHandlers', () => {
       },
     );
 
-    expect(handle).toHaveBeenCalledTimes(6);
+    expect(handle).toHaveBeenCalledTimes(7);
     expect(handle).toHaveBeenCalledWith(
       persistenceIpcChannels.coursesList,
       expect.any(Function),
@@ -41,6 +42,10 @@ describe('registerPersistenceIpcHandlers', () => {
     );
     expect(handle).toHaveBeenCalledWith(
       persistenceIpcChannels.papersCreate,
+      expect.any(Function),
+    );
+    expect(handle).toHaveBeenCalledWith(
+      persistenceIpcChannels.papersUpdateMetadata,
       expect.any(Function),
     );
     expect(handle).toHaveBeenCalledWith(

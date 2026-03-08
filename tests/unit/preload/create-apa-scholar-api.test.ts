@@ -14,6 +14,7 @@ describe('createApaScholarApi', () => {
     expect(api.papers.listByCourse).toBeTypeOf('function');
     expect(api.papers.getById).toBeTypeOf('function');
     expect(api.papers.create).toBeTypeOf('function');
+    expect(api.papers.updateMetadata).toBeTypeOf('function');
     expect(api.search.query).toBeTypeOf('function');
   });
 
@@ -58,6 +59,23 @@ describe('createApaScholarApi', () => {
       payload: {
         courseId: 'course-1',
         title: 'Literature Review',
+      },
+    });
+    await expect(
+      api.papers.updateMetadata('paper-1', {
+        abstractEnabled: true,
+        paperType: 'professional',
+        title: 'Faculty Draft',
+      }),
+    ).resolves.toEqual({
+      channel: persistenceIpcChannels.papersUpdateMetadata,
+      payload: {
+        input: {
+          abstractEnabled: true,
+          paperType: 'professional',
+          title: 'Faculty Draft',
+        },
+        paperId: 'paper-1',
       },
     });
     await expect(api.search.query('draft')).resolves.toEqual({

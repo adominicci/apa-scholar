@@ -132,4 +132,71 @@ describe('createPersistenceContext', () => {
     expect(archivedPaper.archivedAt).not.toBeNull();
     expect(activePapersAfterArchive).toHaveLength(0);
   });
+
+  it('updates paper metadata through the aggregate service and rebuilds ghost pages', () => {
+    const context = createPersistenceContext({ dbPath: createTempDbPath() });
+    const course = context.courseRepository.create({
+      code: 'PSY-500',
+      institution: 'APA University',
+      name: 'Capstone Seminar',
+      professorName: 'Dr. Rivera',
+    });
+    const createdPaper = context.paperService.create({
+      courseId: course.id,
+      title: 'Literature Review',
+    });
+
+    const updatedDraft = context.paperService.updateMetadata(createdPaper.id, {
+      abstractEnabled: true,
+      authorName: 'Avery Rivera',
+      authorNote: 'Department of Psychology',
+      paperType: 'professional',
+      runningHead: 'FACULTY DRAFT',
+      title: 'Faculty Draft',
+    });
+    const paperRow = context.database
+      .prepare(
+        'SELECT title, template_id AS templateId, paper_type AS paperType FROM papers WHERE id = ?',
+      )
+      .get(createdPaper.id) as
+      | { paperType: string; templateId: string; title: string }
+      | undefined;
+    const paperMetaRow = context.database
+      .prepare(
+        'SELECT title, author_name AS authorName, running_head AS runningHead, author_note AS authorNote, abstract_enabled AS abstractEnabled FROM paper_meta WHERE paper_id = ?',
+      )
+      .get(createdPaper.id) as
+      | {
+          abstractEnabled: number;
+          authorName: string | null;
+          authorNote: string | null;
+          runningHead: string | null;
+          title: string;
+        }
+      | undefined;
+
+    context.close();
+
+    expect(paperRow).toEqual({
+      paperType: 'professional',
+      templateId: 'apa-professional',
+      title: 'Faculty Draft',
+    });
+    expect(paperMetaRow).toEqual({
+      abstractEnabled: 1,
+      authorName: 'Avery Rivera',
+      authorNote: 'Department of Psychology',
+      runningHead: 'FACULTY DRAFT',
+      title: 'Faculty Draft',
+    });
+    expect(updatedDraft.paper.paperType).toBe('professional');
+    expect(updatedDraft.paper.templateId).toBe('apa-professional');
+    expect(updatedDraft.paperMeta.runningHead).toBe('FACULTY DRAFT');
+    expect(updatedDraft.ghostPages.map((page) => page.kind)).toEqual([
+      'title-page',
+      'abstract-page',
+      'body-page',
+      'references-page',
+    ]);
+  });
 });

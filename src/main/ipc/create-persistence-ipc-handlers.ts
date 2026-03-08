@@ -3,6 +3,7 @@ import {
   listPapersByCoursePayloadSchema,
   persistenceIpcChannels,
   searchQueryPayloadSchema,
+  updatePaperMetadataPayloadSchema,
 } from '@application/contracts/persistence-ipc';
 
 export interface PersistenceIpcServices {
@@ -14,6 +15,7 @@ export interface PersistenceIpcServices {
     getById: (paperId: string) => unknown;
     listByCourse: (courseId: string) => unknown;
     create: (input: unknown) => unknown;
+    updateMetadata: (paperId: string, input: unknown) => unknown;
   };
   search: {
     query: (query: string) => unknown;
@@ -34,6 +36,11 @@ export const createPersistenceIpcHandlers = (
     services.papers.getById(getPaperByIdPayloadSchema.parse(input).paperId),
   [persistenceIpcChannels.papersCreate]: (input: unknown) =>
     services.papers.create(input),
+  [persistenceIpcChannels.papersUpdateMetadata]: (input: unknown) => {
+    const payload = updatePaperMetadataPayloadSchema.parse(input);
+
+    return services.papers.updateMetadata(payload.paperId, payload.input);
+  },
   [persistenceIpcChannels.searchQuery]: (input: unknown) =>
     services.search.query(searchQueryPayloadSchema.parse(input).query),
 });
