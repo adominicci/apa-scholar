@@ -25,7 +25,7 @@ export interface PaperRepository {
   getAggregateById(id: string): StoredPaperAggregate | null;
   getById(id: string): Paper | null;
   update(id: string, input: UpdatePaperInput): Paper;
-  updateMetadata(id: string, input: UpdatePaperMetadataInput): StoredPaperAggregate;
+  updateMetadata(id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate;
   archive(id: string): Paper;
 }
 

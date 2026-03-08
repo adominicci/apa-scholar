@@ -10,13 +10,11 @@ import {
   paperContentSchema,
   paperMetaSchema,
   paperSchema,
-  updatePaperMetadataInputSchema,
   updatePaperInputSchema,
 } from '@domain/shared/persistence-models';
 import type {
   CreateStoredPaperInput,
   Paper,
-  UpdatePaperMetadataInput,
   UpdatePaperInput,
 } from '@domain/shared/persistence-models';
 import type { TemplateSeedResult } from '@domain/papers/template-definitions';
@@ -345,33 +343,19 @@ export const createPaperRepository = (
         throw new Error(`Updated paper "${id}" could not be reloaded.`);
       })();
     },
-    updateMetadata: (id: string, input: UpdatePaperMetadataInput): StoredPaperAggregate => {
-      const existingAggregate = getAggregateById(id);
-
-      if (!existingAggregate) {
-        throw new Error(`Paper "${id}" was not found.`);
-      }
-
-      const parsedInput = updatePaperMetadataInputSchema.parse(input);
+    updateMetadata: (id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate => {
       const updatedAt = createIsoTimestamp();
       const updatedPaper = {
-        ...existingAggregate.paper,
-        paperType: parsedInput.paperType ?? existingAggregate.paper.paperType,
-        templateId: parsedInput.templateId ?? existingAggregate.paper.templateId,
-        title: parsedInput.title ?? existingAggregate.paper.title,
+        ...aggregate.paper,
         updatedAt,
       };
       const updatedMeta = {
-        ...existingAggregate.paperMeta,
-        ...parsedInput,
-        abstractEnabled:
-          parsedInput.abstractEnabled ?? existingAggregate.paperMeta.abstractEnabled,
-        title: parsedInput.title ?? existingAggregate.paperMeta.title,
+        ...aggregate.paperMeta,
         updatedAt,
       };
 
       database.transaction(() => {
-        updatePaperStatement.run(
+        const paperResult = updatePaperStatement.run(
           updatedPaper.title,
           updatedPaper.templateId,
           updatedPaper.paperType,
@@ -380,7 +364,7 @@ export const createPaperRepository = (
           updatedPaper.updatedAt,
           id,
         );
-        updatePaperMetaStatement.run(
+        const metaResult = updatePaperMetaStatement.run(
           updatedMeta.title,
           toNullableString(updatedMeta.shortTitle),
           toNullableString(updatedMeta.authorName),
@@ -395,6 +379,10 @@ export const createPaperRepository = (
           updatedAt,
           id,
         );
+
+        if (paperResult.changes === 0 || metaResult.changes === 0) {
+          throw new Error(`Paper "${id}" was not found.`);
+        }
       })();
 
       return getAggregateById(id) ?? (() => {

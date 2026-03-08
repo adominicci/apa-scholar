@@ -487,7 +487,7 @@ export const App = () => {
           upsertPaperInCourseCollections(current, updatedDraft.paper),
         );
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         pendingMetadataUpdatesRef.current[paperId] = {
           ...pendingInput,
           ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
@@ -495,13 +495,20 @@ export const App = () => {
         setWorkspaceError(
           'Unable to save paper metadata right now. Changes remain local until save succeeds.',
         );
-        metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
-          delete metadataSaveTimeoutsRef.current[paperId];
-          persistPaperMetadataUpdate(
-            paperId,
-            paperMetadataVersionRef.current[paperId] ?? version,
-          );
-        }, 5000);
+        const isValidationError =
+          error instanceof Error &&
+          (error.name === 'ZodError' ||
+            /required|must be|At least one/i.test(error.message));
+
+        if (!isValidationError) {
+          metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
+            delete metadataSaveTimeoutsRef.current[paperId];
+            persistPaperMetadataUpdate(
+              paperId,
+              paperMetadataVersionRef.current[paperId] ?? version,
+            );
+          }, 5000);
+        }
       });
   };
 

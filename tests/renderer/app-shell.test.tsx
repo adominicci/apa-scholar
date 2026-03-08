@@ -623,6 +623,55 @@ describe('App', () => {
     });
   }, 10000);
 
+  it('does not auto-retry validation failures for invalid title updates', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    api.papers.updateMetadata = vi.fn(async () => {
+      const error = new Error('Paper title is required.');
+
+      error.name = 'ZodError';
+      throw error;
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: '' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5100));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+  }, 10000);
+
   it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
     const course = createCourse();
     const paper = createPaper();

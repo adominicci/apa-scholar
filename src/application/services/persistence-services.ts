@@ -80,13 +80,10 @@ export const createPersistenceServices = (repositories: {
 
       const parsedInput = updatePaperMetadataInputSchema.parse(input);
       const normalizedAggregate = applyPaperMetadataUpdate(existingAggregate, parsedInput);
-      const updatedAggregate = repositories.paperRepository.updateMetadata(paperId, {
-        ...parsedInput,
-        abstractEnabled: normalizedAggregate.paperMeta.abstractEnabled,
-        paperType: normalizedAggregate.paper.paperType,
-        templateId: normalizedAggregate.paper.templateId,
-        title: normalizedAggregate.paper.title,
-      });
+      const updatedAggregate = repositories.paperRepository.updateMetadata(
+        paperId,
+        normalizedAggregate,
+      );
 
       return buildPaperDraft(updatedAggregate);
     },

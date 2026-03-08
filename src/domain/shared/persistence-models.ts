@@ -120,7 +120,6 @@ export const updatePaperMetadataInputSchema = z
     professorName: nullableTrimmedStringSchema.optional(),
     runningHead: nullableTrimmedStringSchema.optional(),
     shortTitle: nullableTrimmedStringSchema.optional(),
-    templateId: templateIdSchema.optional(),
     title: z.string().trim().min(1, 'Paper title is required.').optional(),
   })
   .refine((input) => Object.keys(input).length > 0, {
