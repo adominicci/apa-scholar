@@ -16,6 +16,8 @@ interface PaperInspectorPanelProps {
 }
 
 const toFieldValue = (value: string | null): string => value ?? '';
+const toMetadataValue = (value: string): string | null =>
+  value.trim().length > 0 ? value : null;
 
 export const PaperInspectorPanel = ({
   paperDraft,
@@ -55,12 +57,12 @@ export const PaperInspectorPanel = ({
       <InspectorSection title={isProfessional ? 'Professional metadata' : 'Student metadata'}>
         <InspectorTextField
           label="Author name"
-          onChange={(authorName) => onMetadataChange({ authorName })}
+          onChange={(authorName) => onMetadataChange({ authorName: toMetadataValue(authorName) })}
           value={toFieldValue(paperDraft.paperMeta.authorName)}
         />
         <InspectorTextField
           label="Institution"
-          onChange={(institution) => onMetadataChange({ institution })}
+          onChange={(institution) => onMetadataChange({ institution: toMetadataValue(institution) })}
           value={toFieldValue(paperDraft.paperMeta.institution)}
         />
 
@@ -68,13 +70,13 @@ export const PaperInspectorPanel = ({
           <>
             <InspectorTextField
               label="Running head"
-              onChange={(runningHead) => onMetadataChange({ runningHead })}
+              onChange={(runningHead) => onMetadataChange({ runningHead: toMetadataValue(runningHead) })}
               placeholder="Short title"
               value={toFieldValue(paperDraft.paperMeta.runningHead)}
             />
             <InspectorTextAreaField
               label="Author note"
-              onChange={(authorNote) => onMetadataChange({ authorNote })}
+              onChange={(authorNote) => onMetadataChange({ authorNote: toMetadataValue(authorNote) })}
               placeholder="Department, acknowledgements, or funding note"
               value={toFieldValue(paperDraft.paperMeta.authorNote)}
             />
@@ -83,17 +85,17 @@ export const PaperInspectorPanel = ({
           <>
             <InspectorTextField
               label="Course name"
-              onChange={(courseName) => onMetadataChange({ courseName })}
+              onChange={(courseName) => onMetadataChange({ courseName: toMetadataValue(courseName) })}
               value={toFieldValue(paperDraft.paperMeta.courseName)}
             />
             <InspectorTextField
               label="Professor name"
-              onChange={(professorName) => onMetadataChange({ professorName })}
+              onChange={(professorName) => onMetadataChange({ professorName: toMetadataValue(professorName) })}
               value={toFieldValue(paperDraft.paperMeta.professorName)}
             />
             <InspectorTextField
               label="Due date"
-              onChange={(dueDate) => onMetadataChange({ dueDate })}
+              onChange={(dueDate) => onMetadataChange({ dueDate: toMetadataValue(dueDate) })}
               value={toFieldValue(paperDraft.paperMeta.dueDate)}
             />
           </>

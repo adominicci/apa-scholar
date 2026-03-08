@@ -523,6 +523,106 @@ describe('App', () => {
     });
   });
 
+  it('sends null when a nullable metadata field is cleared', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Institution'), {
+      target: { value: '' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
+      institution: null,
+    });
+  });
+
+  it('retries a failed metadata save without requiring another user edit', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const initialDraft = createPaperDraft(paper, { course });
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: initialDraft,
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    const firstSave = createDeferred<PaperDraft>();
+
+    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
+      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+        return firstSave.promise;
+      }
+
+      return applyPaperMetadataUpdateToDraft(initialDraft, input);
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry Title' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(1, 'paper-1', {
+      title: 'Retry Title',
+    });
+
+    firstSave.reject(new Error('Transient failure'));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 5100));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(2, 'paper-1', {
+      title: 'Retry Title',
+    });
+  }, 10000);
+
   it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
     const course = createCourse();
     const paper = createPaper();

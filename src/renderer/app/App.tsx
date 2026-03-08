@@ -495,6 +495,13 @@ export const App = () => {
         setWorkspaceError(
           'Unable to save paper metadata right now. Changes remain local until save succeeds.',
         );
+        metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
+          delete metadataSaveTimeoutsRef.current[paperId];
+          persistPaperMetadataUpdate(
+            paperId,
+            paperMetadataVersionRef.current[paperId] ?? version,
+          );
+        }, 5000);
       });
   };
 
