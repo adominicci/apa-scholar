@@ -333,15 +333,9 @@ describe('App', () => {
 
     const courseNameInput = screen.getByLabelText('Course name') as HTMLInputElement;
     const professorInput = screen.getByLabelText('Professor') as HTMLInputElement;
-    const form = screen.getByRole('button', { name: 'Create course' }).closest('form');
-
-    if (!form) {
-      throw new Error('Expected the course modal form to be rendered.');
-    }
-
     courseNameInput.value = 'Advanced Composition';
     professorInput.value = 'Dr. Santiago';
-    fireEvent.submit(form);
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
 
     expect(
       await screen.findByRole('heading', { name: 'Advanced Composition' }),
@@ -352,6 +346,24 @@ describe('App', () => {
         professorName: 'Dr. Santiago',
       }),
     );
+  });
+
+  it('shows a helpful error when the desktop bridge is unavailable for course creation', async () => {
+    window.apaScholar = undefined as unknown as ApaScholarApi;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(
+      await screen.findByText('The desktop bridge is unavailable right now. Restart the app.'),
+    ).toBeVisible();
   });
 
   it('creates a paper and opens the APA writing canvas with inspector details', async () => {

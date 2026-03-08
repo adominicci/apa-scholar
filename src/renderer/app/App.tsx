@@ -87,6 +87,8 @@ export const App = () => {
   const [paperForm, setPaperForm] = useState<CreatePaperInput>(emptyPaperForm);
   const [courseFormError, setCourseFormError] = useState<string | null>(null);
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [isCreatingPaper, setIsCreatingPaper] = useState(false);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
@@ -399,16 +401,21 @@ export const App = () => {
     setIsPaperModalOpen(true);
   };
 
-  const handleCreateCourse = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCreateCourse = async (form: HTMLFormElement) => {
+    const submittedCourseForm = readSubmittedCourseForm(form, courseForm);
 
-    const submittedCourseForm = readSubmittedCourseForm(event.currentTarget, courseForm);
+    if (!api) {
+      setCourseFormError('The desktop bridge is unavailable right now. Restart the app.');
+      return;
+    }
 
-    if (!api || !submittedCourseForm.name) {
+    if (!submittedCourseForm.name) {
+      setCourseFormError('Course name is required.');
       return;
     }
 
     setCourseForm(submittedCourseForm);
+    setIsCreatingCourse(true);
 
     try {
       const createdCourse = await api.courses.create(submittedCourseForm);
@@ -425,19 +432,31 @@ export const App = () => {
       dispatch({ type: 'navigateCourse', courseId: createdCourse.id });
     } catch {
       setCourseFormError('Unable to create the course right now. Try again.');
+    } finally {
+      setIsCreatingCourse(false);
     }
   };
 
-  const handleCreatePaper = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCreatePaper = async (form: HTMLFormElement) => {
+    const submittedPaperForm = readSubmittedPaperForm(form, paperForm);
 
-    const submittedPaperForm = readSubmittedPaperForm(event.currentTarget, paperForm);
+    if (!api) {
+      setPaperFormError('The desktop bridge is unavailable right now. Restart the app.');
+      return;
+    }
 
-    if (!api || !submittedPaperForm.courseId || !submittedPaperForm.title) {
+    if (!submittedPaperForm.courseId) {
+      setPaperFormError('Choose a course before creating the paper.');
+      return;
+    }
+
+    if (!submittedPaperForm.title) {
+      setPaperFormError('Paper title is required.');
       return;
     }
 
     setPaperForm(submittedPaperForm);
+    setIsCreatingPaper(true);
 
     try {
       const createdPaper = await api.papers.create(submittedPaperForm);
@@ -474,6 +493,8 @@ export const App = () => {
       });
     } catch {
       setPaperFormError('Unable to create the paper right now. Try again.');
+    } finally {
+      setIsCreatingPaper(false);
     }
   };
 
@@ -1066,6 +1087,7 @@ export const App = () => {
         isOpen={isCourseModalOpen}
         courseForm={courseForm}
         errorMessage={courseFormError}
+        isSubmitting={isCreatingCourse}
         onFormChange={setCourseForm}
         onSubmit={handleCreateCourse}
         onClose={() => {
@@ -1079,6 +1101,7 @@ export const App = () => {
         paperForm={paperForm}
         courses={courses}
         errorMessage={paperFormError}
+        isSubmitting={isCreatingPaper}
         onFormChange={setPaperForm}
         onSubmit={handleCreatePaper}
         onClose={() => {
