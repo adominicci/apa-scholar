@@ -74,13 +74,13 @@ Defined as CSS custom properties in `src/renderer/styles/index.css`. The light t
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--color-canvas` | `#1a1612` | Page background (warm near-black) |
-| `--color-panel` | `rgba(35, 26, 15, 0.8)` | Panel background with translucency |
-| `--color-panel-muted` | `rgba(54, 40, 23, 0.6)` | Secondary panel surfaces |
-| `--color-main` | `#120d09` | Main content area (darkest) |
-| `--color-input` | `rgba(54, 40, 23, 1)` | Input field background |
+| `--color-canvas` | `#0a0a0a` | Page background (near-black) |
+| `--color-panel` | `rgba(18, 18, 18, 0.85)` | Panel background with translucency |
+| `--color-panel-muted` | `rgba(28, 28, 28, 0.6)` | Secondary panel surfaces |
+| `--color-main` | `#050505` | Main content area (darkest) |
+| `--color-input` | `rgba(28, 28, 28, 1)` | Input field background |
 | `--color-selection` | `rgba(255, 140, 0, 0.15)` | Selected item highlight |
-| `--color-line` | `rgba(75, 56, 32, 0.5)` | Borders (warm brown) |
+| `--color-line` | `rgba(255, 255, 255, 0.1)` | Borders (subtle white) |
 | `--color-ink` | `#cbd5e1` | Primary text (slate-300) |
 | `--color-ink-strong` | `#f1f5f9` | High-emphasis text (slate-50) |
 | `--color-muted` | `#64748b` | Secondary text (slate-500) |
@@ -88,7 +88,7 @@ Defined as CSS custom properties in `src/renderer/styles/index.css`. The light t
 | `--color-accent` | `#ff8c00` | Primary accent (orange) |
 | `--color-accent-soft` | `rgba(255, 140, 0, 0.38)` | Accent borders/focus |
 | `--color-accent-strong` | `#ff8c00` | Strong accent (same as accent in dark) |
-| `--color-accent-ink` | `#1a1612` | Text on accent backgrounds |
+| `--color-accent-ink` | `#0a0a0a` | Text on accent backgrounds |
 
 ### Shadow and glow tokens
 
@@ -125,7 +125,7 @@ The workspace uses a **header + three-column flex** layout:
 │ Header bar (h-14) — logo, search, actions, settings             │
 ├───────────┬─────────────────────────────────────┬───────────────┤
 │ Sidebar   │ Main content area                   │ Inspector     │
-│ (w-256)   │ (flex-1, scrollable)                │ (w-288)       │
+│ (w-300)   │ (flex-1, scrollable)                │ (w-340)       │
 │ border-r  │                                     │ border-l      │
 │           │                                     │               │
 │           │                                     │               │
@@ -139,7 +139,7 @@ The workspace uses a **header + three-column flex** layout:
 - The header has the `drag-region` class for macOS window dragging (`-webkit-app-region: drag`). Interactive elements (buttons, inputs) use `-webkit-app-region: no-drag` via a global rule.
 
 ### Sidebar (left)
-- Fixed width: 256px expanded, 48px collapsed (icon rail)
+- Fixed width: 300px expanded, 48px collapsed (icon rail)
 - Separated from main by `border-r border-[var(--color-line)]`
 - Contains: workspace nav (Dashboard, Research, Citations, Drafts), New course / New paper buttons, course tree, "Add reference" footer
 - Collapsible: expanded content uses `.panel-content[data-collapsed]`, icon rail uses `.panel-rail[data-visible]`
@@ -149,7 +149,7 @@ The workspace uses a **header + three-column flex** layout:
 - Renders views: home, course overview, paper canvas, settings
 
 ### Inspector (right)
-- Fixed width: 288px expanded, 48px collapsed
+- Fixed width: 340px expanded, 48px collapsed
 - Separated from main by `border-l border-[var(--color-line)]`
 - Contains: contextual details (paper/course/workspace), issues placeholder, search placeholder
 - Same collapse mechanism as sidebar
@@ -200,7 +200,7 @@ State is managed via `useReducer` in `src/renderer/app/workspace-shell-state.ts`
 ## Key Design Decisions
 
 1. **Flat panels, not floating cards** — Sidebar and inspector are flush with borders, not rounded floating glass containers. This matches the Stitch reference and reduces visual noise.
-2. **Warm brown palette** — Dark theme uses `#1a1612` canvas and `#231a0f` panel tones instead of blue-grey. Accent is `#ff8c00` (orange).
+2. **Black canvas, orange accent** — Dark theme uses `#0a0a0a` near-black canvas with neutral dark panels. Accent is `#ff8c00` (orange).
 3. **Small border radii** — Uniform `0.5rem` across all elements. No large rounded containers.
 4. **Bundled fonts** — All three font families are locally bundled woff2 files. No network dependency.
 5. **Material Symbols for icons** — Consistent icon language using Google's Material Symbols Outlined font, rendered via CSS ligatures.

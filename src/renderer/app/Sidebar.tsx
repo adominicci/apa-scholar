@@ -67,7 +67,7 @@ export const Sidebar = ({
 }: SidebarProps) => (
   <aside
     className="relative flex flex-col overflow-hidden border-r border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
-    style={{ width: collapsed ? 48 : 256 }}
+    style={{ width: collapsed ? 48 : 300 }}
   >
     {/* Collapsed icon rail */}
     <div
