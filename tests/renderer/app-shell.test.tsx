@@ -424,6 +424,47 @@ describe('App', () => {
     });
   });
 
+  it('opens a newly created paper even if the immediate detail reload returns null once', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+      papersByCourse: {
+        'course-1': [],
+      },
+    });
+    const originalGetById = api.papers.getById;
+    let getByIdCalls = 0;
+
+    api.papers.getById = vi.fn(async (paperId) => {
+      getByIdCalls += 1;
+
+      if (getByIdCalls === 1) {
+        return null;
+      }
+
+      return originalGetById(paperId);
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Resilient Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Resilient Draft' }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText('Unable to create the paper right now. Try again.'),
+    ).not.toBeInTheDocument();
+    expect(api.papers.getById).toHaveBeenCalledTimes(2);
+  });
+
   it('updates paper metadata immediately in the canvas and saves after a debounce', async () => {
     const course = createCourse();
     const paper = createPaper();
@@ -1158,7 +1199,7 @@ describe('App', () => {
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
   });
 
-  it('keeps the paper modal open if the created paper detail cannot be loaded', async () => {
+  it('navigates to the created paper and shows a workspace error if the detail reload cannot be loaded', async () => {
     const api = createTestApi({
       courses: [createCourse()],
     });
@@ -1177,8 +1218,11 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByText('Unable to create the paper right now. Try again.'),
+      await screen.findByText('Unable to load this paper draft right now.'),
     ).toBeVisible();
-    expect(screen.getByLabelText('Paper title')).toHaveValue('Load Failure Draft');
+    expect(
+      screen.queryByText('Unable to create the paper right now. Try again.'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Paper title')).not.toBeInTheDocument();
   });
 });

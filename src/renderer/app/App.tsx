@@ -435,10 +435,12 @@ export const App = () => {
         ...paperForm,
         title: paperForm.title.trim(),
       });
-      const createdPaperDetail = await api.papers.getById(createdPaper.id);
+      let createdPaperDetail: PaperDraft | null = null;
 
-      if (!createdPaperDetail) {
-        throw new Error('Created paper draft could not be loaded.');
+      try {
+        createdPaperDetail = await api.papers.getById(createdPaper.id);
+      } catch {
+        createdPaperDetail = null;
       }
 
       setWorkspaceError(null);
@@ -447,10 +449,13 @@ export const App = () => {
         ...current,
         [paperForm.courseId]: [createdPaper, ...(current[paperForm.courseId] ?? [])],
       }));
-      setPaperDetails((current) => ({
-        ...current,
-        [createdPaper.id]: createdPaperDetail,
-      }));
+
+      if (createdPaperDetail) {
+        setPaperDetails((current) => ({
+          ...current,
+          [createdPaper.id]: createdPaperDetail,
+        }));
+      }
 
       setIsPaperModalOpen(false);
       dispatch({
