@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { bodyEditorDocumentSchema } from '@domain/papers/body-editor-document';
 import {
   createCourseInputSchema,
   createPaperInputSchema,
@@ -11,6 +12,7 @@ export const persistenceIpcChannels = {
   papersListByCourse: 'papers:listByCourse',
   papersGetById: 'papers:getById',
   papersCreate: 'papers:create',
+  papersUpdateBodyContent: 'papers:updateBodyContent',
   papersUpdateMetadata: 'papers:updateMetadata',
   searchQuery: 'search:query',
 } as const;
@@ -31,6 +33,11 @@ export const updatePaperMetadataPayloadSchema = z.object({
   paperId: z.string().trim().min(1, 'Paper id is required.'),
 });
 
+export const updatePaperBodyContentPayloadSchema = z.object({
+  bodyDoc: bodyEditorDocumentSchema,
+  paperId: z.string().trim().min(1, 'Paper id is required.'),
+});
+
 export const searchQueryPayloadSchema = z.object({
   query: z.string(),
 });
@@ -42,6 +49,9 @@ export type ListPapersByCoursePayload = z.infer<
 export type GetPaperByIdPayload = z.infer<typeof getPaperByIdPayloadSchema>;
 export type UpdatePaperMetadataPayload = z.infer<
   typeof updatePaperMetadataPayloadSchema
+>;
+export type UpdatePaperBodyContentPayload = z.infer<
+  typeof updatePaperBodyContentPayloadSchema
 >;
 
 export type SearchQueryPayload = z.infer<typeof searchQueryPayloadSchema>;

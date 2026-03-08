@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { bodyEditorDocumentSchema } from '@domain/papers/body-editor-document';
 import {
   supportedLanguages,
   supportedPaperStatuses,
@@ -146,7 +147,7 @@ export const paperMetaSchema = z.object({
 export const paperContentSchema = z.object({
   paperId: entityIdSchema,
   abstractDoc: z.record(z.string(), z.unknown()),
-  bodyDoc: z.record(z.string(), z.unknown()),
+  bodyDoc: bodyEditorDocumentSchema,
   createdAt: isoTimestampSchema,
   updatedAt: isoTimestampSchema,
 });

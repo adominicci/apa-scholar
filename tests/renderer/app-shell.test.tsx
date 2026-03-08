@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
+import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
+import { applyOptimisticPaperBodyUpdate } from '@renderer/app/paper-draft-state';
 import {
   act,
   cleanup,
@@ -68,7 +70,7 @@ const createPaperDraft = (
   const includeAbstract = options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
   const paperContent: PaperDraft['paperContent'] = {
       abstractDoc: { content: [], type: 'doc' },
-      bodyDoc: { content: [], type: 'doc' },
+      bodyDoc: createEmptyBodyEditorDocument(),
       createdAt: paper.createdAt,
       paperId: paper.id,
       updatedAt: paper.updatedAt,
@@ -181,6 +183,29 @@ const createTestApi = (seed?: {
         }
 
         const updatedDraft = applyPaperMetadataUpdateToDraft(currentDraft, input);
+        const courseId = updatedDraft.paper.courseId;
+
+        paperDraftsById.set(paperId, updatedDraft);
+
+        if (courseId) {
+          papersByCourse.set(
+            courseId,
+            (papersByCourse.get(courseId) ?? []).map((paper) =>
+              paper.id === paperId ? updatedDraft.paper : paper,
+            ),
+          );
+        }
+
+        return updatedDraft;
+      }),
+      updateBodyContent: vi.fn(async (paperId, bodyDoc) => {
+        const currentDraft = paperDraftsById.get(paperId);
+
+        if (!currentDraft) {
+          throw new Error(`Missing paper draft "${paperId}" in test API.`);
+        }
+
+        const updatedDraft = applyOptimisticPaperBodyUpdate(currentDraft, bodyDoc);
         const courseId = updatedDraft.paper.courseId;
 
         paperDraftsById.set(paperId, updatedDraft);
@@ -324,7 +349,7 @@ describe('App', () => {
       await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
     expect(screen.getByText('Title page scaffold')).toBeVisible();
-    expect(screen.getByLabelText('Paper body draft')).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Paper body draft' })).toBeVisible();
     expect(screen.getByText('References scaffold')).toBeVisible();
 
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });

@@ -4,6 +4,7 @@ import type {
   PaperRepository,
   SettingsRepository,
 } from '@application/contracts/persistence-repositories';
+import { serializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
 import {
   createPaperInputSchema,
   updatePaperMetadataInputSchema,
@@ -21,6 +22,10 @@ export interface PersistenceServices {
     getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
     listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
+    updateBodyContent: (
+      paperId: string,
+      bodyDoc: unknown,
+    ) => ReturnType<typeof buildPaperDraft>;
     updateMetadata: (
       paperId: string,
       input: unknown,
@@ -70,6 +75,20 @@ export const createPersistenceServices = (repositories: {
       });
 
       return repositories.paperRepository.create(resolvedInput, seed);
+    },
+    updateBodyContent: (paperId, bodyDoc) => {
+      const existingAggregate = repositories.paperRepository.getAggregateById(paperId);
+
+      if (!existingAggregate) {
+        throw new Error(`Paper "${paperId}" was not found.`);
+      }
+
+      const updatedAggregate = repositories.paperRepository.updateBodyContent(
+        paperId,
+        serializeBodyEditorDocument(bodyDoc),
+      );
+
+      return buildPaperDraft(updatedAggregate);
     },
     updateMetadata: (paperId, input) => {
       const existingAggregate = repositories.paperRepository.getAggregateById(paperId);

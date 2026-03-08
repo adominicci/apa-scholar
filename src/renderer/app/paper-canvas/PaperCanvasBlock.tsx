@@ -1,16 +1,18 @@
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { GhostPageBlockViewModel, GhostPageViewModel } from '@domain/papers/ghost-page-view-model';
+import { BodyEditor } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 
 interface PaperCanvasBlockProps {
   block: GhostPageBlockViewModel;
-  bodyDraftValue: string;
-  onBodyDraftChange: (value: string) => void;
+  bodyDocument: BodyEditorDocument;
+  onBodyDocumentChange: (document: BodyEditorDocument) => void;
   pageKind: GhostPageViewModel['kind'];
 }
 
 export const PaperCanvasBlock = ({
   block,
-  bodyDraftValue,
-  onBodyDraftChange,
+  bodyDocument,
+  onBodyDocumentChange,
   pageKind,
 }: PaperCanvasBlockProps) => {
   if (block.kind === 'title') {
@@ -69,24 +71,13 @@ export const PaperCanvasBlock = ({
     );
   }
 
-  if (pageKind === 'body-page') {
+  if (block.kind === 'body-editor') {
     return (
-      <>
-        <label
-          className="mt-6 block text-sm font-medium text-[var(--color-page-ink)]"
-          htmlFor="paper-body-draft"
-        >
-          Paper body draft
-        </label>
-        <textarea
-          aria-label="Paper body draft"
-          className="mt-3 min-h-[260px] w-full resize-y rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]"
-          id="paper-body-draft"
-          onChange={(event) => onBodyDraftChange(event.target.value)}
-          placeholder={block.text}
-          value={bodyDraftValue}
-        />
-      </>
+      <BodyEditor
+        document={block.document ?? bodyDocument}
+        onChange={onBodyDocumentChange}
+        placeholder={block.text}
+      />
     );
   }
 

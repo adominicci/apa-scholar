@@ -1,4 +1,5 @@
 import type { TemplateSeedResult } from '@domain/papers/template-definitions';
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import type {
   AppSettings,
@@ -24,6 +25,7 @@ export interface PaperRepository {
   getAggregateById(id: string): StoredPaperAggregate | null;
   getById(id: string): Paper | null;
   update(id: string, input: UpdatePaperInput): Paper;
+  updateBodyContent(id: string, bodyDoc: BodyEditorDocument): StoredPaperAggregate;
   updateMetadata(id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate;
   archive(id: string): Paper;
 }

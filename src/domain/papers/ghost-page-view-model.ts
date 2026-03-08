@@ -1,3 +1,5 @@
+import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import { abstractEnabledTemplates } from '@domain/shared/contracts';
 import type {
   Paper,
@@ -7,8 +9,9 @@ import type {
 
 export interface GhostPageBlockViewModel {
   align?: 'center' | 'left';
+  document?: BodyEditorDocument;
   id: string;
-  kind: 'empty-state' | 'line' | 'section-heading' | 'textarea' | 'title';
+  kind: 'body-editor' | 'empty-state' | 'line' | 'section-heading' | 'textarea' | 'title';
   text: string;
 }
 
@@ -164,9 +167,10 @@ export const buildGhostPageViewModels = (input: {
           text: input.paperMeta.title,
         },
         {
-          id: 'body-textarea',
-          kind: 'textarea',
-          text: 'Start your introduction here. This local draft area is temporary until the structured body editor arrives.',
+          document: deserializeBodyEditorDocument(input.paperContent.bodyDoc),
+          id: 'body-editor',
+          kind: 'body-editor',
+          text: 'Start your introduction here.',
         },
       ],
       header: getPageHeader(input.paper, input.paperMeta, pages.length + 1),
