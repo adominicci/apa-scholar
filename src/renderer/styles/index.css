@@ -81,19 +81,19 @@ body {
 }
 
 [data-theme='dark'] {
-  --color-canvas: #1a1612;
-  --color-panel: rgba(35, 26, 15, 0.8);
-  --color-panel-muted: rgba(54, 40, 23, 0.6);
-  --color-main: #120d09;
-  --color-main-soft: rgba(18, 13, 9, 0.98);
+  --color-canvas: #0a0a0a;
+  --color-panel: rgba(18, 18, 18, 0.85);
+  --color-panel-muted: rgba(28, 28, 28, 0.6);
+  --color-main: #050505;
+  --color-main-soft: rgba(5, 5, 5, 0.98);
   --color-page: #f4efe6;
   --color-page-muted-surface: #ece4d6;
   --color-page-line: rgba(78, 63, 41, 0.18);
   --color-page-ink: #23180e;
   --color-page-muted: #6f5d49;
-  --color-input: rgba(54, 40, 23, 1);
+  --color-input: rgba(28, 28, 28, 1);
   --color-selection: rgba(255, 140, 0, 0.15);
-  --color-line: rgba(75, 56, 32, 0.5);
+  --color-line: rgba(255, 255, 255, 0.1);
   --color-ink: #cbd5e1;
   --color-ink-strong: #f1f5f9;
   --color-muted: #64748b;
@@ -101,9 +101,9 @@ body {
   --color-accent: #ff8c00;
   --color-accent-soft: rgba(255, 140, 0, 0.38);
   --color-accent-strong: #ff8c00;
-  --color-accent-ink: #1a1612;
-  --shadow-shell: 0 32px 120px rgba(0, 0, 0, 0.38);
-  --shadow-page: 0 34px 120px rgba(0, 0, 0, 0.22);
+  --color-accent-ink: #0a0a0a;
+  --shadow-shell: 0 32px 120px rgba(0, 0, 0, 0.5);
+  --shadow-page: 0 34px 120px rgba(0, 0, 0, 0.3);
   --color-glow: rgba(255, 140, 0, 0.08);
   --color-glow-strong: rgba(255, 140, 0, 0.15);
   --shadow-glow: 0 0 24px rgba(255, 140, 0, 0.06);

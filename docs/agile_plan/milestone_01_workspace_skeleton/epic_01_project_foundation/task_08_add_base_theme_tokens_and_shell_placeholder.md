@@ -26,7 +26,7 @@ Font stacks:
 
 ### Color palette
 Warm-dark studio aesthetic inspired by the Stitch reference (`docs/UI/`):
-- Dark canvas: `#1a1612`, panels: `rgba(35, 26, 15, 0.8)`, accent: `#ff8c00`
+- Dark canvas: `#0a0a0a`, panels: `rgba(18, 18, 18, 0.85)`, accent: `#ff8c00`
 - Light canvas: `#f8f7f5`, panels: `rgba(255, 255, 255, 0.8)`, accent: `#be8452`
 - See `docs/UI/design-system.md` for the complete token table
 

@@ -26,7 +26,7 @@ export const Inspector = ({
     aria-label="Inspector panel"
     className="relative flex flex-col overflow-hidden border-l border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
     role="complementary"
-    style={{ width: collapsed ? 48 : 288 }}
+    style={{ width: collapsed ? 48 : 340 }}
   >
     {/* Collapsed icon rail */}
     <div
