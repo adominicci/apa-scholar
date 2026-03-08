@@ -489,8 +489,8 @@ export const App = () => {
       })
       .catch(() => {
         pendingMetadataUpdatesRef.current[paperId] = {
-          ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
           ...pendingInput,
+          ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
         };
         setWorkspaceError(
           'Unable to save paper metadata right now. Changes remain local until save succeeds.',

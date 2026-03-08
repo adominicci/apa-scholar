@@ -453,6 +453,76 @@ describe('App', () => {
     });
   });
 
+  it('retries failed metadata saves with the newest pending edit', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const initialDraft = createPaperDraft(paper, { course });
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: initialDraft,
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    const firstSave = createDeferred<PaperDraft>();
+
+    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
+      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+        return firstSave.promise;
+      }
+
+      const currentDraft = input.title === 'Title B'
+        ? applyPaperMetadataUpdateToDraft(initialDraft, input)
+        : applyPaperMetadataUpdateToDraft(initialDraft, { title: 'Unexpected stale payload' });
+
+      return currentDraft.paper.id === paperId ? currentDraft : initialDraft;
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Title A' },
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(1, 'paper-1', {
+      title: 'Title A',
+    });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Title B' },
+    });
+
+    firstSave.reject(new Error('Save failed'));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(2, 'paper-1', {
+      title: 'Title B',
+    });
+  });
+
   it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
     const course = createCourse();
     const paper = createPaper();
