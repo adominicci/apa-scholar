@@ -501,6 +501,12 @@ export const App = () => {
             /required|must be|At least one/i.test(error.message));
 
         if (!isValidationError) {
+          const existingTimeout = metadataSaveTimeoutsRef.current[paperId];
+
+          if (existingTimeout) {
+            clearTimeout(existingTimeout);
+          }
+
           metadataSaveTimeoutsRef.current[paperId] = setTimeout(() => {
             delete metadataSaveTimeoutsRef.current[paperId];
             persistPaperMetadataUpdate(

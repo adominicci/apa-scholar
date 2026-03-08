@@ -492,12 +492,15 @@ describe('App', () => {
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
 
+    vi.useFakeTimers();
+
     fireEvent.change(screen.getByLabelText('Paper title'), {
       target: { value: 'Title A' },
     });
 
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 450));
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
     });
 
     expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(1, 'paper-1', {
@@ -515,7 +518,14 @@ describe('App', () => {
     });
 
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 450));
+      await vi.advanceTimersByTimeAsync(450);
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+      await Promise.resolve();
     });
 
     expect(api.papers.updateMetadata).toHaveBeenNthCalledWith(2, 'paper-1', {
@@ -708,6 +718,66 @@ describe('App', () => {
     expect(screen.getByLabelText('Paper title')).toHaveValue('Literature Review');
     expect(api.papers.updateMetadata).not.toHaveBeenCalled();
   });
+
+  it('clears older retry timers before replacing them and unmounting', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    api.papers.updateMetadata = vi.fn(async () => {
+      throw new Error('Transient failure');
+    });
+    window.apaScholar = api;
+
+    const view = render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    vi.useFakeTimers();
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry One' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Retry Two' },
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(450);
+      await Promise.resolve();
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(2);
+
+    view.unmount();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(5000);
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenCalledTimes(2);
+  }, 10000);
 
   it('switches to professional paper settings, updates validation, and changes the ghost-page structure', async () => {
     const course = createCourse();
