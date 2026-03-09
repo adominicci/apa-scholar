@@ -41,7 +41,9 @@ export const PaperModal = ({
         className="glass-panel w-full max-w-xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]"
         onSubmit={(event) => {
           event.preventDefault();
-          onSubmit(event.currentTarget);
+          if (!isSubmitting) {
+            onSubmit(event.currentTarget);
+          }
         }}
       >
         <div className="flex items-start justify-between gap-4">

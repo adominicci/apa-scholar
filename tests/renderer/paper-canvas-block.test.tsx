@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { PaperCanvasBlock } from '@renderer/app/paper-canvas/PaperCanvasBlock';
@@ -31,6 +31,29 @@ describe('PaperCanvasBlock', () => {
       'contenteditable',
       'true',
     );
+  });
+
+  it('focuses the body editor when the field label is clicked', () => {
+    render(
+      <PaperCanvasBlock
+        block={{
+          document: createEmptyBodyEditorDocument(),
+          id: 'body-editor',
+          kind: 'body-editor',
+          text: 'Start your introduction here.',
+        }}
+        bodyDocument={createEmptyBodyEditorDocument()}
+        onBodyDocumentChange={vi.fn()}
+        pageKind="body-page"
+      />,
+    );
+
+    const editor = screen.getByRole('textbox', { name: 'Paper body draft' });
+    const focusSpy = vi.spyOn(editor, 'focus');
+
+    fireEvent.click(screen.getByText('Paper body draft'));
+
+    expect(focusSpy).toHaveBeenCalled();
   });
 
   it('exposes the body-page section heading with heading semantics', () => {

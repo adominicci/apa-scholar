@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
@@ -15,6 +15,7 @@ export const BodyEditor = ({
   onChange,
   placeholder,
 }: BodyEditorProps) => {
+  const editorRootRef = useRef<HTMLDivElement | null>(null);
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
     editorProps: {
@@ -52,12 +53,16 @@ export const BodyEditor = ({
     <div className="mt-6">
       <label
         className="block text-sm font-medium text-[var(--color-page-ink)]"
-        htmlFor="paper-body-editor"
+        onClick={() => {
+          editorRootRef.current
+            ?.querySelector<HTMLElement>('[contenteditable="true"]')
+            ?.focus();
+        }}
       >
         Paper body draft
       </label>
-      <div className="mt-3">
-        <EditorContent editor={editor} id="paper-body-editor" />
+      <div className="mt-3" ref={editorRootRef}>
+        <EditorContent editor={editor} />
       </div>
       <p className="mt-3 text-sm leading-7 text-[var(--color-page-muted)]">
         {placeholder}

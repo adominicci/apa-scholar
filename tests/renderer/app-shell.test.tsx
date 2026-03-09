@@ -366,6 +366,43 @@ describe('App', () => {
     ).toBeVisible();
   });
 
+  it('prevents duplicate course submits while the first request is still in flight', async () => {
+    const api = createTestApi();
+    const createCourseDeferred = createDeferred<Course>();
+    api.courses.create = vi.fn(() => createCourseDeferred.promise);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(await screen.findByRole('button', { name: 'Creating course' })).toBeDisabled();
+
+    const form = screen.getByRole('button', { name: 'Creating course' }).closest('form');
+
+    if (!form) {
+      throw new Error('Expected the course modal form to be rendered.');
+    }
+
+    fireEvent.submit(form);
+
+    expect(api.courses.create).toHaveBeenCalledTimes(1);
+
+    createCourseDeferred.resolve(
+      createCourse({ id: 'course-2', name: 'Advanced Composition' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Advanced Composition' }),
+    ).toBeVisible();
+  });
+
   it('creates a paper and opens the APA writing canvas with inspector details', async () => {
     window.apaScholar = createTestApi({
       courses: [createCourse()],
@@ -1242,6 +1279,50 @@ describe('App', () => {
       await screen.findByText('Unable to create the paper right now. Try again.'),
     ).toBeVisible();
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
+  });
+
+  it('prevents duplicate paper submits while the first request is still in flight', async () => {
+    const course = createCourse();
+    const api = createTestApi({
+      courses: [course],
+      papersByCourse: {
+        [course.id]: [],
+      },
+    });
+    const createPaperDeferred = createDeferred<Paper>();
+    api.papers.create = vi.fn(() => createPaperDeferred.promise);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Capstone Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(await screen.findByRole('button', { name: 'Creating paper' })).toBeDisabled();
+
+    const form = screen.getByRole('button', { name: 'Creating paper' }).closest('form');
+
+    if (!form) {
+      throw new Error('Expected the paper modal form to be rendered.');
+    }
+
+    fireEvent.submit(form);
+
+    expect(api.papers.create).toHaveBeenCalledTimes(1);
+
+    createPaperDeferred.resolve(
+      createPaper({ courseId: course.id, id: 'paper-2', title: 'Capstone Draft' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
+    ).toBeVisible();
   });
 
   it('navigates to the created paper and shows a workspace error if the detail reload cannot be loaded', async () => {
