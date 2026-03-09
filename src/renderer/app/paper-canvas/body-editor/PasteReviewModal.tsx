@@ -19,6 +19,7 @@ export const PasteReviewModal = ({
   onConfirm,
 }: PasteReviewModalProps) => {
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,6 +31,45 @@ export const PasteReviewModal = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onCancel();
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusableElements = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((element) => !element.hasAttribute('disabled'));
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement || !lastElement) {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      const dialogElement = dialogRef.current;
+      const focusOutsideDialog = !activeElement || !dialogElement?.contains(activeElement);
+
+      if (focusOutsideDialog) {
+        event.preventDefault();
+        (event.shiftKey ? lastElement : firstElement).focus();
+        return;
+      }
+
+      if (!event.shiftKey && activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+        return;
+      }
+
+      if (event.shiftKey && activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
       }
     };
 
@@ -49,6 +89,7 @@ export const PasteReviewModal = ({
       aria-labelledby="paste-review-title"
       aria-modal="true"
       className="fixed inset-0 z-20 flex items-center justify-center bg-[rgba(7,9,14,0.62)] px-4 backdrop-blur-sm"
+      ref={dialogRef}
       role="dialog"
     >
       <div className="glass-panel w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]">

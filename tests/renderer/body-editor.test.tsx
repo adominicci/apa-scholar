@@ -289,6 +289,51 @@ describe('BodyEditor', () => {
     expect(insertButton).toHaveFocus();
   });
 
+  it('keeps keyboard focus trapped inside the review dialog', () => {
+    render(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    act(() => {
+      initialEditorConfig?.editorProps?.handlePaste?.(
+        {} as never,
+        {
+          clipboardData: {
+            getData: (type: string) => {
+              if (type === 'text/html') {
+                return createSuspiciousPasteHtmlFixture();
+              }
+
+              return 'Tabular content\n\nParagraph after the table.';
+            },
+          },
+        } as ClipboardEvent,
+      );
+    });
+
+    const closeButton = screen.getByRole('button', { name: 'Close' });
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    const insertButton = screen.getByRole('button', { name: 'Insert cleaned copy' });
+
+    expect(closeButton).toHaveFocus();
+
+    insertButton.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(closeButton).toHaveFocus();
+
+    closeButton.focus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(insertButton).toHaveFocus();
+
+    cancelButton.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(cancelButton).toHaveFocus();
+  });
+
   it('restores focus to the dedicated editor surface fallback when the modal closes', () => {
     renderEditorSurfaceWithoutContentEditable = true;
     const rafSpy = vi
