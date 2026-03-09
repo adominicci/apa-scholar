@@ -10,8 +10,9 @@ interface PaperModalProps {
   paperForm: CreatePaperInput;
   courses: Course[];
   errorMessage?: string | null;
+  isSubmitting?: boolean;
   onFormChange: (updater: (current: CreatePaperInput) => CreatePaperInput) => void;
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (form: HTMLFormElement) => void;
   onClose: () => void;
 }
 
@@ -23,6 +24,7 @@ export const PaperModal = ({
   paperForm,
   courses,
   errorMessage,
+  isSubmitting = false,
   onFormChange,
   onSubmit,
   onClose,
@@ -37,7 +39,12 @@ export const PaperModal = ({
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-[rgba(7,9,14,0.62)] px-4 backdrop-blur-sm">
       <form
         className="glass-panel w-full max-w-xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]"
-        onSubmit={onSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!isSubmitting) {
+            onSubmit(event.currentTarget);
+          }
+        }}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -62,6 +69,7 @@ export const PaperModal = ({
             Paper title
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="title"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -76,6 +84,7 @@ export const PaperModal = ({
             Course
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="courseId"
               onChange={(event) =>
                 onFormChange((current) => {
                   const selectedCourse = courses.find(
@@ -106,6 +115,7 @@ export const PaperModal = ({
             Template
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="templateId"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -141,10 +151,20 @@ export const PaperModal = ({
           </button>
           <button
             className={`${shellButtonClass} border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
-            disabled={!paperForm.courseId}
-            type="submit"
+            disabled={!paperForm.courseId || isSubmitting}
+            onClick={(event) => {
+              const form = event.currentTarget.form;
+
+              if (!form) {
+                return;
+              }
+
+              event.preventDefault();
+              onSubmit(form);
+            }}
+            type="button"
           >
-            Create paper
+            {isSubmitting ? 'Creating paper' : 'Create paper'}
           </button>
         </div>
       </form>

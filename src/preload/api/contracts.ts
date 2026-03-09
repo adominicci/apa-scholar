@@ -1,3 +1,4 @@
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type {
   Course,
@@ -27,6 +28,10 @@ export interface ApaScholarApi {
     listByCourse: (courseId: string) => Promise<Paper[]>;
     getById: (paperId: string) => Promise<PaperDraft | null>;
     create: (input: CreatePaperInput) => Promise<Paper>;
+    updateBodyContent: (
+      paperId: string,
+      bodyDoc: BodyEditorDocument,
+    ) => Promise<PaperDraft>;
     updateMetadata: (
       paperId: string,
       input: UpdatePaperMetadataInput,

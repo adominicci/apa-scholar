@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
+import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
+import { applyOptimisticPaperBodyUpdate } from '@renderer/app/paper-draft-state';
 import {
   act,
   cleanup,
@@ -68,7 +70,7 @@ const createPaperDraft = (
   const includeAbstract = options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
   const paperContent: PaperDraft['paperContent'] = {
       abstractDoc: { content: [], type: 'doc' },
-      bodyDoc: { content: [], type: 'doc' },
+      bodyDoc: createEmptyBodyEditorDocument(),
       createdAt: paper.createdAt,
       paperId: paper.id,
       updatedAt: paper.updatedAt,
@@ -196,6 +198,29 @@ const createTestApi = (seed?: {
 
         return updatedDraft;
       }),
+      updateBodyContent: vi.fn(async (paperId, bodyDoc) => {
+        const currentDraft = paperDraftsById.get(paperId);
+
+        if (!currentDraft) {
+          throw new Error(`Missing paper draft "${paperId}" in test API.`);
+        }
+
+        const updatedDraft = applyOptimisticPaperBodyUpdate(currentDraft, bodyDoc);
+        const courseId = updatedDraft.paper.courseId;
+
+        paperDraftsById.set(paperId, updatedDraft);
+
+        if (courseId) {
+          papersByCourse.set(
+            courseId,
+            (papersByCourse.get(courseId) ?? []).map((paper) =>
+              paper.id === paperId ? updatedDraft.paper : paper,
+            ),
+          );
+        }
+
+        return updatedDraft;
+      }),
     },
     search: {
       query: vi.fn(async () => ({
@@ -296,6 +321,88 @@ describe('App', () => {
     expect(screen.getAllByText('Dr. Santiago')[0]).toBeVisible();
   });
 
+  it('creates a course from submitted form values when native input updates lag behind state', async () => {
+    const api = createTestApi();
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+
+    const courseNameInput = screen.getByLabelText('Course name') as HTMLInputElement;
+    const professorInput = screen.getByLabelText('Professor') as HTMLInputElement;
+    courseNameInput.value = 'Advanced Composition';
+    professorInput.value = 'Dr. Santiago';
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(
+      await screen.findByRole('heading', { name: 'Advanced Composition' }),
+    ).toBeVisible();
+    expect(api.courses.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Advanced Composition',
+        professorName: 'Dr. Santiago',
+      }),
+    );
+  });
+
+  it('shows a helpful error when the desktop bridge is unavailable for course creation', async () => {
+    window.apaScholar = undefined as unknown as ApaScholarApi;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(
+      await screen.findByText('The desktop bridge is unavailable right now. Restart the app.'),
+    ).toBeVisible();
+  });
+
+  it('prevents duplicate course submits while the first request is still in flight', async () => {
+    const api = createTestApi();
+    const createCourseDeferred = createDeferred<Course>();
+    api.courses.create = vi.fn(() => createCourseDeferred.promise);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Create your first course' }),
+    );
+    fireEvent.change(screen.getByLabelText('Course name'), {
+      target: { value: 'Advanced Composition' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
+
+    expect(await screen.findByRole('button', { name: 'Creating course' })).toBeDisabled();
+
+    const form = screen.getByRole('button', { name: 'Creating course' }).closest('form');
+
+    if (!form) {
+      throw new Error('Expected the course modal form to be rendered.');
+    }
+
+    fireEvent.submit(form);
+
+    expect(api.courses.create).toHaveBeenCalledTimes(1);
+
+    createCourseDeferred.resolve(
+      createCourse({ id: 'course-2', name: 'Advanced Composition' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Advanced Composition' }),
+    ).toBeVisible();
+  });
+
   it('creates a paper and opens the APA writing canvas with inspector details', async () => {
     window.apaScholar = createTestApi({
       courses: [createCourse()],
@@ -324,7 +431,7 @@ describe('App', () => {
       await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
     expect(screen.getByText('Title page scaffold')).toBeVisible();
-    expect(screen.getByLabelText('Paper body draft')).toBeVisible();
+    expect(screen.getByRole('textbox', { name: 'Paper body draft' })).toBeVisible();
     expect(screen.getByText('References scaffold')).toBeVisible();
 
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
@@ -397,6 +504,47 @@ describe('App', () => {
     await waitFor(() => {
       expect(api.papers.getById).toHaveBeenCalledWith('paper-1');
     });
+  });
+
+  it('opens a newly created paper even if the immediate detail reload returns null once', async () => {
+    const api = createTestApi({
+      courses: [createCourse()],
+      papersByCourse: {
+        'course-1': [],
+      },
+    });
+    const originalGetById = api.papers.getById;
+    let getByIdCalls = 0;
+
+    api.papers.getById = vi.fn(async (paperId) => {
+      getByIdCalls += 1;
+
+      if (getByIdCalls === 1) {
+        return null;
+      }
+
+      return originalGetById(paperId);
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Resilient Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Resilient Draft' }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText('Unable to create the paper right now. Try again.'),
+    ).not.toBeInTheDocument();
+    expect(api.papers.getById).toHaveBeenCalledTimes(2);
   });
 
   it('updates paper metadata immediately in the canvas and saves after a debounce', async () => {
@@ -1133,7 +1281,51 @@ describe('App', () => {
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
   });
 
-  it('keeps the paper modal open if the created paper detail cannot be loaded', async () => {
+  it('prevents duplicate paper submits while the first request is still in flight', async () => {
+    const course = createCourse();
+    const api = createTestApi({
+      courses: [course],
+      papersByCourse: {
+        [course.id]: [],
+      },
+    });
+    const createPaperDeferred = createDeferred<Paper>();
+    api.papers.create = vi.fn(() => createPaperDeferred.promise);
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
+    fireEvent.change(screen.getByLabelText('Paper title'), {
+      target: { value: 'Capstone Draft' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
+
+    expect(await screen.findByRole('button', { name: 'Creating paper' })).toBeDisabled();
+
+    const form = screen.getByRole('button', { name: 'Creating paper' }).closest('form');
+
+    if (!form) {
+      throw new Error('Expected the paper modal form to be rendered.');
+    }
+
+    fireEvent.submit(form);
+
+    expect(api.papers.create).toHaveBeenCalledTimes(1);
+
+    createPaperDeferred.resolve(
+      createPaper({ courseId: course.id, id: 'paper-2', title: 'Capstone Draft' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
+    ).toBeVisible();
+  });
+
+  it('navigates to the created paper and shows a workspace error if the detail reload cannot be loaded', async () => {
     const api = createTestApi({
       courses: [createCourse()],
     });
@@ -1152,8 +1344,11 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByText('Unable to create the paper right now. Try again.'),
+      await screen.findByText('Unable to load this paper draft right now.'),
     ).toBeVisible();
-    expect(screen.getByLabelText('Paper title')).toHaveValue('Load Failure Draft');
+    expect(
+      screen.queryByText('Unable to create the paper right now. Try again.'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Paper title')).not.toBeInTheDocument();
   });
 });

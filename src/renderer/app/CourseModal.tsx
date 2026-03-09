@@ -4,8 +4,9 @@ interface CourseModalProps {
   isOpen: boolean;
   courseForm: CreateCourseInput;
   errorMessage?: string | null;
+  isSubmitting?: boolean;
   onFormChange: (updater: (current: CreateCourseInput) => CreateCourseInput) => void;
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (form: HTMLFormElement) => void;
   onClose: () => void;
 }
 
@@ -16,6 +17,7 @@ export const CourseModal = ({
   isOpen,
   courseForm,
   errorMessage,
+  isSubmitting = false,
   onFormChange,
   onSubmit,
   onClose,
@@ -28,7 +30,12 @@ export const CourseModal = ({
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-[rgba(7,9,14,0.62)] px-4 backdrop-blur-sm">
       <form
         className="glass-panel w-full max-w-xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]"
-        onSubmit={onSubmit}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!isSubmitting) {
+            onSubmit(event.currentTarget);
+          }
+        }}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -53,6 +60,7 @@ export const CourseModal = ({
             Course name
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="name"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -66,6 +74,7 @@ export const CourseModal = ({
             Professor
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="professorName"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -79,6 +88,7 @@ export const CourseModal = ({
             Course code
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="code"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -92,6 +102,7 @@ export const CourseModal = ({
             Semester
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              name="semester"
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -119,9 +130,20 @@ export const CourseModal = ({
           </button>
           <button
             className={`${shellButtonClass} border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
-            type="submit"
+            disabled={isSubmitting}
+            onClick={(event) => {
+              const form = event.currentTarget.form;
+
+              if (!form) {
+                return;
+              }
+
+              event.preventDefault();
+              onSubmit(form);
+            }}
+            type="button"
           >
-            Create course
+            {isSubmitting ? 'Creating course' : 'Create course'}
           </button>
         </div>
       </form>

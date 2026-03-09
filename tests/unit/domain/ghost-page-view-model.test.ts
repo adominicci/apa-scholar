@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { createEmptyRichTextDocument } from '@domain/shared/entity-helpers';
 import type {
   Paper,
@@ -43,7 +44,7 @@ const createPaperContent = (
   overrides: Partial<PaperContent> = {},
 ): PaperContent => ({
   abstractDoc: createEmptyRichTextDocument(),
-  bodyDoc: createEmptyRichTextDocument(),
+  bodyDoc: createEmptyBodyEditorDocument(),
   createdAt: '2026-03-07T14:00:00.000Z',
   paperId: 'paper-1',
   updatedAt: '2026-03-07T14:00:00.000Z',

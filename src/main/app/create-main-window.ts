@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { BrowserWindow } from 'electron';
+import { resolvePreloadEntryPath } from '@main/app/preload-entry-path';
 import { buildMainWindowOptions } from '@main/app/window-options';
 
 const getMainWindowName = (): string =>
@@ -27,7 +28,7 @@ const loadMainWindow = async (mainWindow: BrowserWindow): Promise<void> => {
 };
 
 export const createMainWindow = async (): Promise<BrowserWindow> => {
-  const preloadPath = path.join(__dirname, 'preload.js');
+  const preloadPath = resolvePreloadEntryPath(__dirname);
   const mainWindow = new BrowserWindow(buildMainWindowOptions(preloadPath));
 
   mainWindow.once('ready-to-show', () => {

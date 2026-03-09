@@ -1,3 +1,4 @@
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperRepository } from '@application/contracts/persistence-repositories';
 import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import {
@@ -219,6 +220,22 @@ export const createPaperRepository = (
       WHERE paper_id = ?
     `,
   );
+  const updatePaperContentStatement = database.prepare<[string, string, string]>(
+    `
+      UPDATE paper_content
+      SET
+        body_doc = ?,
+        updated_at = ?
+      WHERE paper_id = ?
+    `,
+  );
+  const updatePaperTimestampStatement = database.prepare<[string, string]>(
+    `
+      UPDATE papers
+      SET updated_at = ?
+      WHERE id = ?
+    `,
+  );
 
   const getById = (id: string): Paper | null => {
     const row = getPaperByIdStatement.get(id);
@@ -381,6 +398,29 @@ export const createPaperRepository = (
         );
 
         if (paperResult.changes === 0 || metaResult.changes === 0) {
+          throw new Error(`Paper "${id}" was not found.`);
+        }
+      })();
+
+      return getAggregateById(id) ?? (() => {
+        throw new Error(`Updated paper aggregate "${id}" could not be reloaded.`);
+      })();
+    },
+    updateBodyContent: (
+      id: string,
+      bodyDoc: BodyEditorDocument,
+    ): StoredPaperAggregate => {
+      const updatedAt = createIsoTimestamp();
+
+      database.transaction(() => {
+        const paperResult = updatePaperTimestampStatement.run(updatedAt, id);
+        const paperContentResult = updatePaperContentStatement.run(
+          JSON.stringify(bodyDoc),
+          updatedAt,
+          id,
+        );
+
+        if (paperResult.changes === 0 || paperContentResult.changes === 0) {
           throw new Error(`Paper "${id}" was not found.`);
         }
       })();

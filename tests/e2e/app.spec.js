@@ -22,14 +22,14 @@ test('creates a course and paper inside the workspace shell', async () => {
       .first();
     await createCourseButton.click();
 
-    await window.getByLabel('Course name').fill(courseName);
-    await window.getByLabel('Professor').fill('Dr. Rivera');
+    await window.getByLabel('Course name').pressSequentially(courseName);
+    await window.getByLabel('Professor').pressSequentially('Dr. Rivera');
     await window.getByRole('button', { name: 'Create course' }).click();
 
     await expect(window.getByRole('heading', { name: courseName })).toBeVisible();
 
     await window.getByRole('button', { name: 'New paper' }).first().click();
-    await window.getByLabel('Paper title').fill(paperTitle);
+    await window.getByLabel('Paper title').pressSequentially(paperTitle);
     await window.getByRole('button', { name: 'Create paper' }).click();
 
     await expect(

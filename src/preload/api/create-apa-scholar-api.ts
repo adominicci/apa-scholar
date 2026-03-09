@@ -26,6 +26,8 @@ export const createApaScholarApi = (
     getById: (paperId) =>
       invoke(persistenceIpcChannels.papersGetById, { paperId }),
     create: (input) => invoke(persistenceIpcChannels.papersCreate, input),
+    updateBodyContent: (paperId, bodyDoc) =>
+      invoke(persistenceIpcChannels.papersUpdateBodyContent, { bodyDoc, paperId }),
     updateMetadata: (paperId, input) =>
       invoke(persistenceIpcChannels.papersUpdateMetadata, { input, paperId }),
   },

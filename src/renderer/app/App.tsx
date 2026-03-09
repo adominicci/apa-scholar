@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
+import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
 import type {
@@ -14,9 +15,14 @@ import {
 } from '@renderer/app/workspace-shell-state';
 import { CourseModal } from '@renderer/app/CourseModal';
 import { Inspector } from '@renderer/app/Inspector';
+import {
+  readSubmittedCourseForm,
+  readSubmittedPaperForm,
+} from '@renderer/app/modal-form-data';
 import { PaperModal } from '@renderer/app/PaperModal';
 import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
 import {
+  applyOptimisticPaperBodyUpdate,
   applyOptimisticPaperMetadataUpdate,
   getPaperInspectorValidationMessages,
   upsertPaperInCourseCollections,
@@ -68,7 +74,6 @@ export const App = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursePapers, setCoursePapers] = useState<Record<string, Paper[]>>({});
   const [paperDetails, setPaperDetails] = useState<Record<string, PaperDraft | null>>({});
-  const [paperDrafts, setPaperDrafts] = useState<Record<string, string>>({});
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingCourseIds, setLoadingCourseIds] = useState<string[]>([]);
   const [loadingPaperIds, setLoadingPaperIds] = useState<string[]>([]);
@@ -82,9 +87,15 @@ export const App = () => {
   const [paperForm, setPaperForm] = useState<CreatePaperInput>(emptyPaperForm);
   const [courseFormError, setCourseFormError] = useState<string | null>(null);
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
+  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
+  const [isCreatingPaper, setIsCreatingPaper] = useState(false);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
+  const bodySaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const pendingBodyUpdatesRef = useRef<Record<string, BodyEditorDocument>>({});
+  const paperBodyVersionRef = useRef<Record<string, number>>({});
+  const bodySaveRetryCountsRef = useRef<Record<string, number>>({});
   const metadataSaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const pendingMetadataUpdatesRef = useRef<Record<string, UpdatePaperMetadataInput>>({});
   const paperMetadataVersionRef = useRef<Record<string, number>>({});
@@ -149,6 +160,9 @@ export const App = () => {
   }, [loadingPaperIds]);
 
   useEffect(() => () => {
+    Object.values(bodySaveTimeoutsRef.current).forEach((timeoutId) => {
+      clearTimeout(timeoutId);
+    });
     Object.values(metadataSaveTimeoutsRef.current).forEach((timeoutId) => {
       clearTimeout(timeoutId);
     });
@@ -387,18 +401,24 @@ export const App = () => {
     setIsPaperModalOpen(true);
   };
 
-  const handleCreateCourse = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCreateCourse = async (form: HTMLFormElement) => {
+    const submittedCourseForm = readSubmittedCourseForm(form, courseForm);
 
-    if (!api || !courseForm.name.trim()) {
+    if (!api) {
+      setCourseFormError('The desktop bridge is unavailable right now. Restart the app.');
       return;
     }
 
+    if (!submittedCourseForm.name) {
+      setCourseFormError('Course name is required.');
+      return;
+    }
+
+    setCourseForm(submittedCourseForm);
+    setIsCreatingCourse(true);
+
     try {
-      const createdCourse = await api.courses.create({
-        ...courseForm,
-        name: courseForm.name.trim(),
-      });
+      const createdCourse = await api.courses.create(submittedCourseForm);
 
       setWorkspaceError(null);
       setCourseFormError(null);
@@ -412,50 +432,69 @@ export const App = () => {
       dispatch({ type: 'navigateCourse', courseId: createdCourse.id });
     } catch {
       setCourseFormError('Unable to create the course right now. Try again.');
+    } finally {
+      setIsCreatingCourse(false);
     }
   };
 
-  const handleCreatePaper = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCreatePaper = async (form: HTMLFormElement) => {
+    const submittedPaperForm = readSubmittedPaperForm(form, paperForm);
 
-    if (!api || !paperForm.courseId || !paperForm.title.trim()) {
+    if (!api) {
+      setPaperFormError('The desktop bridge is unavailable right now. Restart the app.');
       return;
     }
 
-    try {
-      const createdPaper = await api.papers.create({
-        ...paperForm,
-        title: paperForm.title.trim(),
-      });
-      const createdPaperDetail = await api.papers.getById(createdPaper.id);
+    if (!submittedPaperForm.courseId) {
+      setPaperFormError('Choose a course before creating the paper.');
+      return;
+    }
 
-      if (!createdPaperDetail) {
-        throw new Error('Created paper draft could not be loaded.');
+    if (!submittedPaperForm.title) {
+      setPaperFormError('Paper title is required.');
+      return;
+    }
+
+    setPaperForm(submittedPaperForm);
+    setIsCreatingPaper(true);
+
+    try {
+      const createdPaper = await api.papers.create(submittedPaperForm);
+      let createdPaperDetail: PaperDraft | null = null;
+
+      try {
+        createdPaperDetail = await api.papers.getById(createdPaper.id);
+      } catch {
+        createdPaperDetail = null;
       }
 
       setWorkspaceError(null);
       setPaperFormError(null);
       setCoursePapers((current) => ({
         ...current,
-        [paperForm.courseId]: [createdPaper, ...(current[paperForm.courseId] ?? [])],
+        [submittedPaperForm.courseId]: [
+          createdPaper,
+          ...(current[submittedPaperForm.courseId] ?? []),
+        ],
       }));
-      setPaperDrafts((current) => ({
-        ...current,
-        [createdPaper.id]: '',
-      }));
-      setPaperDetails((current) => ({
-        ...current,
-        [createdPaper.id]: createdPaperDetail,
-      }));
+
+      if (createdPaperDetail) {
+        setPaperDetails((current) => ({
+          ...current,
+          [createdPaper.id]: createdPaperDetail,
+        }));
+      }
 
       setIsPaperModalOpen(false);
       dispatch({
         type: 'navigatePaper',
-        courseId: paperForm.courseId,
+        courseId: submittedPaperForm.courseId,
         paperId: createdPaper.id,
       });
     } catch {
       setPaperFormError('Unable to create the paper right now. Try again.');
+    } finally {
+      setIsCreatingPaper(false);
     }
   };
 
@@ -535,6 +574,80 @@ export const App = () => {
       });
   };
 
+  const persistPaperBodyUpdate = (paperId: string, version: number) => {
+    if (!api) {
+      return;
+    }
+
+    const pendingBodyDocument = pendingBodyUpdatesRef.current[paperId];
+
+    if (!pendingBodyDocument) {
+      return;
+    }
+
+    delete pendingBodyUpdatesRef.current[paperId];
+
+    void api.papers
+      .updateBodyContent(paperId, pendingBodyDocument)
+      .then((updatedDraft) => {
+        const hasPendingEdits = Boolean(pendingBodyUpdatesRef.current[paperId]);
+        const latestVersion = paperBodyVersionRef.current[paperId] ?? 0;
+
+        if (hasPendingEdits || version !== latestVersion) {
+          return;
+        }
+
+        delete bodySaveRetryCountsRef.current[paperId];
+        setWorkspaceError(null);
+        setPaperDetails((current) => ({
+          ...current,
+          [paperId]: updatedDraft,
+        }));
+        setCoursePapers((current) =>
+          upsertPaperInCourseCollections(current, updatedDraft.paper),
+        );
+      })
+      .catch((error: unknown) => {
+        pendingBodyUpdatesRef.current[paperId] =
+          pendingBodyUpdatesRef.current[paperId] ?? pendingBodyDocument;
+        setWorkspaceError(
+          'Unable to save paper body right now. Changes remain local until save succeeds.',
+        );
+
+        const isValidationError =
+          error instanceof Error &&
+          (error.name === 'ZodError' ||
+            /required|must be|At least one/i.test(error.message));
+
+        if (!isValidationError) {
+          const nextRetryCount = (bodySaveRetryCountsRef.current[paperId] ?? 0) + 1;
+
+          bodySaveRetryCountsRef.current[paperId] = nextRetryCount;
+
+          if (nextRetryCount > MAX_METADATA_SAVE_RETRIES) {
+            return;
+          }
+
+          const existingTimeout = bodySaveTimeoutsRef.current[paperId];
+
+          if (existingTimeout) {
+            clearTimeout(existingTimeout);
+          }
+
+          bodySaveTimeoutsRef.current[paperId] = setTimeout(() => {
+            delete bodySaveTimeoutsRef.current[paperId];
+            persistPaperBodyUpdate(
+              paperId,
+              paperBodyVersionRef.current[paperId] ?? version,
+            );
+          }, METADATA_SAVE_RETRY_DELAY_MS);
+          return;
+        }
+
+        delete bodySaveRetryCountsRef.current[paperId];
+      });
+  };
+
   const schedulePaperMetadataSave = (
     paperId: string,
     input: UpdatePaperMetadataInput,
@@ -558,6 +671,47 @@ export const App = () => {
       delete metadataSaveTimeoutsRef.current[paperId];
       persistPaperMetadataUpdate(paperId, nextVersion);
     }, 400);
+  };
+
+  const schedulePaperBodySave = (
+    paperId: string,
+    bodyDocument: BodyEditorDocument,
+  ) => {
+    pendingBodyUpdatesRef.current[paperId] = bodyDocument;
+
+    const nextVersion = (paperBodyVersionRef.current[paperId] ?? 0) + 1;
+    paperBodyVersionRef.current[paperId] = nextVersion;
+    delete bodySaveRetryCountsRef.current[paperId];
+
+    const existingTimeout = bodySaveTimeoutsRef.current[paperId];
+
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    bodySaveTimeoutsRef.current[paperId] = setTimeout(() => {
+      delete bodySaveTimeoutsRef.current[paperId];
+      persistPaperBodyUpdate(paperId, nextVersion);
+    }, 400);
+  };
+
+  const handleBodyDocumentChange = (
+    paperId: string,
+    nextDocument: BodyEditorDocument,
+  ) => {
+    setPaperDetails((current) => {
+      const currentDraft = current[paperId];
+
+      if (!currentDraft) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [paperId]: applyOptimisticPaperBodyUpdate(currentDraft, nextDocument),
+      };
+    });
+    schedulePaperBodySave(paperId, nextDocument);
   };
 
   const handlePaperMetadataChange = (input: UpdatePaperMetadataInput) => {
@@ -755,12 +909,9 @@ export const App = () => {
 
       {paperDetail ? (
         <PaperCanvas
-          bodyDraftValue={paperDrafts[paper.id] ?? ''}
-          onBodyDraftChange={(value) =>
-            setPaperDrafts((current) => ({
-              ...current,
-              [paper.id]: value,
-            }))
+          bodyDocument={paperDetail.paperContent.bodyDoc}
+          onBodyDocumentChange={(document) =>
+            handleBodyDocumentChange(paper.id, document)
           }
           paperDraft={paperDetail}
         />
@@ -936,6 +1087,7 @@ export const App = () => {
         isOpen={isCourseModalOpen}
         courseForm={courseForm}
         errorMessage={courseFormError}
+        isSubmitting={isCreatingCourse}
         onFormChange={setCourseForm}
         onSubmit={handleCreateCourse}
         onClose={() => {
@@ -949,6 +1101,7 @@ export const App = () => {
         paperForm={paperForm}
         courses={courses}
         errorMessage={paperFormError}
+        isSubmitting={isCreatingPaper}
         onFormChange={setPaperForm}
         onSubmit={handleCreatePaper}
         onClose={() => {
