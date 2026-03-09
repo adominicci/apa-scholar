@@ -16,6 +16,12 @@ export const BodyEditor = ({
   placeholder,
 }: BodyEditorProps) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
     editorProps: {
@@ -25,12 +31,13 @@ export const BodyEditor = ({
         class:
           'min-h-[260px] rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]',
         role: 'textbox',
+        spellcheck: 'false',
       },
     },
     extensions: createBodyEditorExtensions(),
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
-      onChange(deserializeBodyEditorDocument(currentEditor.getJSON()));
+      onChangeRef.current(deserializeBodyEditorDocument(currentEditor.getJSON()));
     },
   });
 

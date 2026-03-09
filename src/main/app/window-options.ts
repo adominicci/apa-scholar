@@ -17,6 +17,6 @@ export const buildMainWindowOptions = (
     sandbox: true,
     webSecurity: true,
     webviewTag: false,
-    spellcheck: false,
+    spellcheck: true,
   },
 });
