@@ -1,4 +1,5 @@
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import type { PaperIssue } from '@domain/papers/paper-issues';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import {
   AlertTriangleIcon,
@@ -14,8 +15,9 @@ interface InspectorProps {
   activeCourse: Course | null;
   activePaper: Paper | null;
   activePaperDetail: PaperDraft | null;
-  paperValidationMessages: string[];
+  paperIssues: PaperIssue[];
   onCollapseToggle: () => void;
+  onPaperIssueAutofix: (issue: PaperIssue) => void;
   onPaperMetadataChange: (input: UpdatePaperMetadataInput) => void;
 }
 
@@ -27,8 +29,9 @@ export const Inspector = ({
   activeCourse,
   activePaper,
   activePaperDetail,
-  paperValidationMessages,
+  paperIssues,
   onCollapseToggle,
+  onPaperIssueAutofix,
   onPaperMetadataChange,
 }: InspectorProps) => (
   <aside
@@ -105,8 +108,9 @@ export const Inspector = ({
       <div className="border-b border-[var(--color-line)] p-4">
         {activePaper && activePaperDetail ? (
           <PaperInspectorPanel
+            issues={paperIssues}
             paperDraft={activePaperDetail}
-            validationMessages={paperValidationMessages}
+            onIssueAutofix={onPaperIssueAutofix}
             onMetadataChange={onPaperMetadataChange}
           />
         ) : activeCourse ? (
@@ -154,15 +158,17 @@ export const Inspector = ({
         )}
       </div>
 
-      <div className="border-b border-[var(--color-line)] p-4">
-        <p className="label-caps">
-          Issues
-        </p>
-        <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-          APA warnings and rule-based prompts will graduate into the dedicated issues
-          workflow in a later milestone.
-        </p>
-      </div>
+      {!activePaper && (
+        <div className="border-b border-[var(--color-line)] p-4">
+          <p className="label-caps">
+            Issues
+          </p>
+          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+            APA warnings and rule-based prompts will graduate into the dedicated issues
+            workflow in a later milestone.
+          </p>
+        </div>
+      )}
 
       <div className="p-4">
         <p className="label-caps">

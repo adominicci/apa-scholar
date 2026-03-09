@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import type { PaperIssue } from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
 import type {
   Course,
@@ -24,7 +25,7 @@ import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
 import {
   applyOptimisticPaperBodyUpdate,
   applyOptimisticPaperMetadataUpdate,
-  getPaperInspectorValidationMessages,
+  getPaperInspectorIssues,
   upsertPaperInCourseCollections,
 } from '@renderer/app/paper-draft-state';
 import { Sidebar } from '@renderer/app/Sidebar';
@@ -112,7 +113,7 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
-  const activePaperValidationMessages = getPaperInspectorValidationMessages(activePaperDetail);
+  const activePaperIssues = getPaperInspectorIssues(activePaperDetail);
 
   useEffect(() => {
     let cancelled = false;
@@ -735,6 +736,14 @@ export const App = () => {
     schedulePaperMetadataSave(selectedPaperId, input);
   };
 
+  const handlePaperIssueAutofix = (issue: PaperIssue) => {
+    if (!issue.autofix || issue.autofix.kind !== 'update-paper-metadata') {
+      return;
+    }
+
+    handlePaperMetadataChange(issue.autofix.input);
+  };
+
   const renderHomeView = () => (
     <section className="flex h-full flex-col justify-center px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <p className="label-caps text-[var(--color-accent-strong)]">
@@ -1077,8 +1086,9 @@ export const App = () => {
           activeCourse={activeCourse}
           activePaper={activePaper}
           activePaperDetail={activePaperDetail}
-          paperValidationMessages={activePaperValidationMessages}
+          paperIssues={activePaperIssues}
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
+          onPaperIssueAutofix={handlePaperIssueAutofix}
           onPaperMetadataChange={handlePaperMetadataChange}
         />
       </div>

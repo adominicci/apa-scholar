@@ -870,6 +870,106 @@ describe('App', () => {
     expect(screen.getByLabelText('Paper title')).toHaveValue('');
   });
 
+  it('groups paper issues by severity inside the inspector workflow', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    window.apaScholar = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
+    expect(within(inspector).getByText('Issues')).toBeVisible();
+    expect(within(inspector).getByText('High priority')).toBeVisible();
+    expect(within(inspector).getByText('Author name is required.')).toBeVisible();
+
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'professional' },
+    });
+    fireEvent.change(screen.getByLabelText('Running head'), {
+      target: { value: 'FACULTY DRAFT' },
+    });
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'student' },
+    });
+
+    expect(within(inspector).getByText('Medium priority')).toBeVisible();
+    expect(
+      within(inspector).getByText('Running head is not used for student papers.'),
+    ).toBeVisible();
+  });
+
+  it('applies issue autofixes through the debounced metadata persistence flow', async () => {
+    const course = createCourse();
+    const paper = createPaper();
+    const api = createTestApi({
+      courses: [course],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper, { course }),
+      },
+      papersByCourse: {
+        [course.id]: [paper],
+      },
+    });
+    window.apaScholar = api;
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open course research methods/i }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: /open paper literature review/i }),
+    );
+
+    await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
+
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'professional' },
+    });
+    fireEvent.change(screen.getByLabelText('Running head'), {
+      target: { value: 'FACULTY DRAFT' },
+    });
+    fireEvent.change(screen.getByLabelText('Paper type'), {
+      target: { value: 'student' },
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Clear the leftover running head' }),
+    );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(api.papers.updateMetadata).toHaveBeenLastCalledWith(
+      'paper-1',
+      expect.objectContaining({
+        paperType: 'student',
+        runningHead: null,
+      }),
+    );
+    expect(
+      screen.queryByText('Running head is not used for student papers.'),
+    ).not.toBeInTheDocument();
+  });
+
   it('clears older retry timers before replacing them and unmounting', async () => {
     const course = createCourse();
     const paper = createPaper();

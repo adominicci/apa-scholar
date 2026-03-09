@@ -1,8 +1,11 @@
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
 import {
   applyPaperMetadataUpdateToDraft,
-  getPaperMetadataValidationMessages,
 } from '@domain/papers/paper-metadata';
+import {
+  evaluatePaperIssues,
+  type PaperIssue,
+} from '@domain/papers/paper-issues';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type {
@@ -33,10 +36,9 @@ export const applyOptimisticPaperBodyUpdate = (
   };
 };
 
-export const getPaperInspectorValidationMessages = (
+export const getPaperInspectorIssues = (
   draft: PaperDraft | null,
-): string[] =>
-  draft ? getPaperMetadataValidationMessages(draft.paper, draft.paperMeta) : [];
+): PaperIssue[] => (draft ? evaluatePaperIssues(draft) : []);
 
 export const upsertPaperInCourseCollections = (
   coursePapers: Record<string, Paper[]>,
