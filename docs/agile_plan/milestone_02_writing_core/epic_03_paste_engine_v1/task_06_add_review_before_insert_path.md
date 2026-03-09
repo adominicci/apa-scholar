@@ -1,8 +1,8 @@
 # Task 06 - Add review-before-insert path
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: let users review especially complex pasted content before final insertion.
 - Why: paste safety should balance convenience with correctness.

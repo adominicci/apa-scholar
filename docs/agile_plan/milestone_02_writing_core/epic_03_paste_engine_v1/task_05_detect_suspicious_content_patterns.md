@@ -1,8 +1,8 @@
 # Task 05 - Detect suspicious content patterns
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: identify pasted content that may need user review.
 - Why: some clipboard payloads are too complex to trust blindly.

@@ -1,8 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { BodyEditorPasteResult } from '@application/services/paste-engine';
+import {
+  sanitizeBodyEditorClipboardPayload,
+  transformBodyEditorPastedHtml,
+  transformBodyEditorPastedText,
+} from '@application/services/paste-engine';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
 import { createBodyEditorExtensions } from '@renderer/app/paper-canvas/body-editor/create-body-editor-extensions';
+import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteReviewModal';
 
 interface BodyEditorProps {
   document: BodyEditorDocument;
@@ -17,6 +24,7 @@ export const BodyEditor = ({
 }: BodyEditorProps) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
+  const [pendingPaste, setPendingPaste] = useState<BodyEditorPasteResult | null>(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -33,6 +41,27 @@ export const BodyEditor = ({
         role: 'textbox',
         spellcheck: 'false',
       },
+      handlePaste: (_view, event) => {
+        const clipboardData = event.clipboardData;
+
+        if (!clipboardData) {
+          return false;
+        }
+
+        const result = sanitizeBodyEditorClipboardPayload({
+          html: clipboardData.getData('text/html'),
+          text: clipboardData.getData('text/plain'),
+        });
+
+        if (!result.requiresReview) {
+          return false;
+        }
+
+        setPendingPaste(result);
+        return true;
+      },
+      transformPastedHTML: transformBodyEditorPastedHtml,
+      transformPastedText: transformBodyEditorPastedText,
     },
     extensions: createBodyEditorExtensions(),
     immediatelyRender: false,
@@ -74,6 +103,19 @@ export const BodyEditor = ({
       <p className="mt-3 text-sm leading-7 text-[var(--color-page-muted)]">
         {placeholder}
       </p>
+      <PasteReviewModal
+        isOpen={pendingPaste !== null}
+        onCancel={() => setPendingPaste(null)}
+        onConfirm={() => {
+          if (editor && pendingPaste) {
+            editor.commands.insertContent(pendingPaste.document.content);
+          }
+
+          setPendingPaste(null);
+        }}
+        previewText={pendingPaste?.previewText ?? ''}
+        warnings={pendingPaste?.warnings ?? []}
+      />
     </div>
   );
 };
