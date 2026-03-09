@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import * as pasteEngine from '@application/services/paste-engine';
@@ -22,13 +22,14 @@ const editorInstance = {
 };
 
 let initialEditorConfig: Record<string, any> | null = null;
+let renderEditorSurfaceWithoutContentEditable = false;
 
 vi.mock('@tiptap/react', () => ({
   EditorContent: () =>
     React.createElement('div', {
       'aria-label': 'Paper body draft',
-      contentEditable: true,
-      'data-testid': 'editor-content',
+      'data-editor-surface': 'true',
+      contentEditable: renderEditorSurfaceWithoutContentEditable ? undefined : true,
       role: 'textbox',
       tabIndex: 0,
     }),
@@ -44,6 +45,7 @@ vi.mock('@tiptap/react', () => ({
 describe('BodyEditor', () => {
   beforeEach(() => {
     initialEditorConfig = null;
+    renderEditorSurfaceWithoutContentEditable = false;
     editorInstance.commands.insertContent.mockReset();
     editorInstance.commands.setContent.mockReset();
     editorInstance.getJSON.mockReset();
@@ -51,6 +53,7 @@ describe('BodyEditor', () => {
   });
 
   afterEach(() => {
+    cleanup();
     vi.clearAllMocks();
   });
 
@@ -244,5 +247,88 @@ describe('BodyEditor', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Review cleaned paste' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('does not steal focus back to the close button when the editor rerenders while the modal is open', () => {
+    const { rerender } = render(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    act(() => {
+      initialEditorConfig?.editorProps?.handlePaste?.(
+        {} as never,
+        {
+          clipboardData: {
+            getData: (type: string) => {
+              if (type === 'text/html') {
+                return createSuspiciousPasteHtmlFixture();
+              }
+
+              return 'Tabular content\n\nParagraph after the table.';
+            },
+          },
+        } as ClipboardEvent,
+      );
+    });
+
+    const insertButton = screen.getByRole('button', { name: 'Insert cleaned copy' });
+    insertButton.focus();
+
+    rerender(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    expect(insertButton).toHaveFocus();
+  });
+
+  it('restores focus to the dedicated editor surface fallback when the modal closes', () => {
+    renderEditorSurfaceWithoutContentEditable = true;
+    const rafSpy = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback: FrameRequestCallback) => {
+        callback(0);
+        return 1;
+      });
+
+    render(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    const editorSurface = screen.getByRole('textbox', { name: 'Paper body draft' });
+    const focusSpy = vi.spyOn(editorSurface, 'focus');
+
+    act(() => {
+      initialEditorConfig?.editorProps?.handlePaste?.(
+        {} as never,
+        {
+          clipboardData: {
+            getData: (type: string) => {
+              if (type === 'text/html') {
+                return createSuspiciousPasteHtmlFixture();
+              }
+
+              return 'Tabular content\n\nParagraph after the table.';
+            },
+          },
+        } as ClipboardEvent,
+      );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(focusSpy).toHaveBeenCalled();
+    rafSpy.mockRestore();
   });
 });

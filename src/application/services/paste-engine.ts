@@ -346,7 +346,7 @@ const renderDocumentAsHtml = (document: BodyEditorDocument): string =>
     })
     .join('');
 
-const renderDocumentAsText = (document: BodyEditorDocument): string =>
+export const renderBodyEditorDocumentAsText = (document: BodyEditorDocument): string =>
   document.content
     .map((block) => {
       if (block.type === 'blockquote') {
@@ -372,13 +372,14 @@ export const sanitizeBodyEditorClipboardPayload = (
   const text = payload.text?.trim();
   const document = html ? sanitizeHtml(html) : sanitizePlainText(text ?? '');
   const warnings = detectBodyEditorClipboardWarnings(payload);
+  const sanitizedText = renderBodyEditorDocumentAsText(document);
 
   return {
     document,
-    previewText: renderDocumentAsText(document),
+    previewText: sanitizedText,
     requiresReview: warnings.length > 0,
     sanitizedHtml: renderDocumentAsHtml(document),
-    sanitizedText: renderDocumentAsText(document),
+    sanitizedText,
     warnings,
   };
 };

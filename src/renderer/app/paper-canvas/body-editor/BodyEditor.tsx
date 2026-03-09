@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BodyEditorPasteResult } from '@application/services/paste-engine';
 import {
   detectBodyEditorClipboardWarnings,
@@ -31,7 +31,7 @@ export const BodyEditor = ({
     onChangeRef.current = onChange;
   }, [onChange]);
 
-  const focusEditorSurface = () => {
+  const focusEditorSurface = useCallback(() => {
     const editorSurface = editorRootRef.current
       ?.querySelector<HTMLElement>('[contenteditable="true"]');
 
@@ -40,16 +40,16 @@ export const BodyEditor = ({
       return;
     }
 
-    editorRootRef.current?.querySelector<HTMLElement>('[data-testid="editor-content"]')
+    editorRootRef.current?.querySelector<HTMLElement>('[data-editor-surface="true"]')
       ?.focus();
-  };
+  }, []);
 
-  const closePendingPaste = () => {
+  const closePendingPaste = useCallback(() => {
     setPendingPaste(null);
     requestAnimationFrame(() => {
       focusEditorSurface();
     });
-  };
+  }, [focusEditorSurface]);
 
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
@@ -59,6 +59,7 @@ export const BodyEditor = ({
         'aria-multiline': 'true',
         class:
           'min-h-[260px] rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]',
+        'data-editor-surface': 'true',
         role: 'textbox',
         spellcheck: 'false',
       },
