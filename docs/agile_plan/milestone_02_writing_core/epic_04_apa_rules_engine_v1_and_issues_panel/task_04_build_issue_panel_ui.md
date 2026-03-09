@@ -1,8 +1,8 @@
 # Task 04 - Build issue panel UI
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: surface issues in a panel grouped by severity and context.
 - Why: users need understandable feedback, not hidden validation failures.

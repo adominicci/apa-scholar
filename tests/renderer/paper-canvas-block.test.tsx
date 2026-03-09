@@ -22,6 +22,7 @@ describe('PaperCanvasBlock', () => {
         }}
         bodyDocument={createEmptyBodyEditorDocument()}
         onBodyDocumentChange={vi.fn()}
+        onPasteWarningsChange={vi.fn()}
         pageKind="body-page"
       />,
     );
@@ -44,6 +45,7 @@ describe('PaperCanvasBlock', () => {
         }}
         bodyDocument={createEmptyBodyEditorDocument()}
         onBodyDocumentChange={vi.fn()}
+        onPasteWarningsChange={vi.fn()}
         pageKind="body-page"
       />,
     );
@@ -62,6 +64,7 @@ describe('PaperCanvasBlock', () => {
         block={{ id: 'body-heading', kind: 'section-heading', text: 'Capstone Draft' }}
         bodyDocument={createEmptyBodyEditorDocument()}
         onBodyDocumentChange={vi.fn()}
+        onPasteWarningsChange={vi.fn()}
         pageKind="body-page"
       />,
     );
@@ -81,6 +84,7 @@ describe('PaperCanvasBlock', () => {
         }}
         bodyDocument={createEmptyBodyEditorDocument()}
         onBodyDocumentChange={vi.fn()}
+        onPasteWarningsChange={vi.fn()}
         pageKind="abstract-page"
       />,
     );

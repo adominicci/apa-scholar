@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import {
+  buildPasteWarningIssues,
   evaluatePaperIssues,
   paperIssueSchema,
 } from '@domain/papers/paper-issues';
@@ -226,5 +227,31 @@ describe('paper issues', () => {
         )
         .every((issue) => issue.severity === 'low' && issue.scope === 'body'),
     ).toBe(true);
+  });
+
+  it('converts suspicious paste warnings into shared advisory issues', () => {
+    expect(
+      buildPasteWarningIssues([
+        'Complex table structure was flattened and should be reviewed before insertion.',
+        'Embedded media was removed from the pasted content.',
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        category: 'advisory',
+        code: 'suspicious-paste-warning-0',
+        scope: 'body',
+        severity: 'medium',
+        suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+        title: 'Suspicious pasted formatting detected.',
+      }),
+      expect.objectContaining({
+        category: 'advisory',
+        code: 'suspicious-paste-warning-1',
+        scope: 'body',
+        severity: 'medium',
+        suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+        title: 'Suspicious pasted formatting detected.',
+      }),
+    ]);
   });
 });

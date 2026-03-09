@@ -1,7 +1,10 @@
 import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
-import type { PaperIssue } from '@domain/papers/paper-issues';
+import {
+  buildPasteWarningIssues,
+  type PaperIssue,
+} from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
 import type {
   Course,
@@ -82,6 +85,7 @@ export const App = () => {
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
+  const [activePasteIssues, setActivePasteIssues] = useState<PaperIssue[]>([]);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
   const [courseForm, setCourseForm] = useState<CreateCourseInput>(emptyCourseForm);
@@ -113,7 +117,7 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
-  const activePaperIssues = getPaperInspectorIssues(activePaperDetail);
+  const activePaperIssues = getPaperInspectorIssues(activePaperDetail, activePasteIssues);
 
   useEffect(() => {
     let cancelled = false;
@@ -168,6 +172,10 @@ export const App = () => {
       clearTimeout(timeoutId);
     });
   }, []);
+
+  useEffect(() => {
+    setActivePasteIssues([]);
+  }, [shellState.selectedPaperId]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -700,6 +708,10 @@ export const App = () => {
     paperId: string,
     nextDocument: BodyEditorDocument,
   ) => {
+    if (paperId === shellState.selectedPaperId) {
+      setActivePasteIssues([]);
+    }
+
     setPaperDetails((current) => {
       const currentDraft = current[paperId];
 
@@ -713,6 +725,10 @@ export const App = () => {
       };
     });
     schedulePaperBodySave(paperId, nextDocument);
+  };
+
+  const handlePaperPasteWarningsChange = (warnings: string[]) => {
+    setActivePasteIssues(buildPasteWarningIssues(warnings));
   };
 
   const handlePaperMetadataChange = (input: UpdatePaperMetadataInput) => {
@@ -922,6 +938,7 @@ export const App = () => {
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
+          onPasteWarningsChange={handlePaperPasteWarningsChange}
           paperDraft={paperDetail}
         />
       ) : (

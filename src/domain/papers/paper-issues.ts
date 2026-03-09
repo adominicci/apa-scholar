@@ -144,6 +144,20 @@ const createMetadataConflictIssue = (input: {
     title: input.title,
   });
 
+export const buildPasteWarningIssues = (warnings: string[]): PaperIssue[] =>
+  warnings.map((warning, index) =>
+    createIssue({
+      autofix: null,
+      category: 'advisory',
+      code: `suspicious-paste-warning-${index}`,
+      description: warning,
+      scope: 'body',
+      severity: 'medium',
+      suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+      title: 'Suspicious pasted formatting detected.',
+    }),
+  );
+
 export const evaluatePaperIssues = (draft: PaperDraft): PaperIssue[] => {
   const issues: PaperIssue[] = [];
 

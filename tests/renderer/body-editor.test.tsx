@@ -132,10 +132,13 @@ describe('BodyEditor', () => {
   });
 
   it('routes suspicious paste payloads through review before manual insertion', () => {
+    const onPasteWarningsChange = vi.fn();
+
     render(
       <BodyEditor
         document={createEmptyBodyEditorDocument()}
         onChange={vi.fn()}
+        onPasteWarningsChange={onPasteWarningsChange}
         placeholder="Body placeholder"
       />,
     );
@@ -176,10 +179,16 @@ describe('BodyEditor', () => {
     expect(
       screen.getByText('Complex table structure was flattened and should be reviewed before insertion.'),
     ).toBeInTheDocument();
+    expect(onPasteWarningsChange).toHaveBeenCalledWith([
+      'Complex table structure was flattened and should be reviewed before insertion.',
+      'Embedded media was removed from the pasted content.',
+      'Potentially unsafe embedded content was removed before insertion.',
+    ]);
 
     fireEvent.click(screen.getByRole('button', { name: 'Insert cleaned copy' }));
 
     expect(editorInstance.commands.insertContent).toHaveBeenCalledWith(expectedInsert);
+    expect(onPasteWarningsChange).toHaveBeenLastCalledWith([]);
   });
 
   it('lets safe paste continue through the normal editor pipeline', () => {
@@ -192,6 +201,7 @@ describe('BodyEditor', () => {
       <BodyEditor
         document={createEmptyBodyEditorDocument()}
         onChange={vi.fn()}
+        onPasteWarningsChange={vi.fn()}
         placeholder="Body placeholder"
       />,
     );

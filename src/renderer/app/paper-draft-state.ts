@@ -38,7 +38,8 @@ export const applyOptimisticPaperBodyUpdate = (
 
 export const getPaperInspectorIssues = (
   draft: PaperDraft | null,
-): PaperIssue[] => (draft ? evaluatePaperIssues(draft) : []);
+  supplementaryIssues: PaperIssue[] = [],
+): PaperIssue[] => (draft ? [...evaluatePaperIssues(draft), ...supplementaryIssues] : supplementaryIssues);
 
 export const upsertPaperInCourseCollections = (
   coursePapers: Record<string, Paper[]>,
