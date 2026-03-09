@@ -122,28 +122,6 @@ export const InspectorToggleField = ({
   </label>
 );
 
-export const InspectorValidationList = ({
-  messages,
-}: {
-  messages: string[];
-}) => (
-  <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3">
-    {messages.length > 0 ? (
-      <ul className="space-y-2 text-sm text-[var(--color-ink-strong)]">
-        {messages.map((message) => (
-          <li key={message}>
-            {message}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p className="text-sm leading-6 text-[var(--color-muted)]">
-        Required title-page fields are complete for the current paper type.
-      </p>
-    )}
-  </div>
-);
-
 const issueSeverityLabels: Record<PaperIssueSeverity, string> = {
   high: 'High priority',
   low: 'Low priority',
