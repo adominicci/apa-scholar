@@ -1,8 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { BodyEditorPasteResult } from '@application/services/paste-engine';
+import {
+  detectBodyEditorClipboardWarnings,
+  sanitizeBodyEditorClipboardPayload,
+  transformBodyEditorPastedHtml,
+  transformBodyEditorPastedText,
+} from '@application/services/paste-engine';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
 import { createBodyEditorExtensions } from '@renderer/app/paper-canvas/body-editor/create-body-editor-extensions';
+import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteReviewModal';
 
 interface BodyEditorProps {
   document: BodyEditorDocument;
@@ -17,10 +25,31 @@ export const BodyEditor = ({
 }: BodyEditorProps) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
+  const [pendingPaste, setPendingPaste] = useState<BodyEditorPasteResult | null>(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  const focusEditorSurface = useCallback(() => {
+    const editorSurface = editorRootRef.current
+      ?.querySelector<HTMLElement>('[contenteditable="true"]');
+
+    if (editorSurface) {
+      editorSurface.focus();
+      return;
+    }
+
+    editorRootRef.current?.querySelector<HTMLElement>('[data-editor-surface="true"]')
+      ?.focus();
+  }, []);
+
+  const closePendingPaste = useCallback(() => {
+    setPendingPaste(null);
+    requestAnimationFrame(() => {
+      focusEditorSurface();
+    });
+  }, [focusEditorSurface]);
 
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
@@ -30,9 +59,32 @@ export const BodyEditor = ({
         'aria-multiline': 'true',
         class:
           'min-h-[260px] rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]',
+        'data-editor-surface': 'true',
         role: 'textbox',
         spellcheck: 'false',
       },
+      handlePaste: (_view, event) => {
+        const clipboardData = event.clipboardData;
+
+        if (!clipboardData) {
+          return false;
+        }
+
+        const clipboardPayload = {
+          html: clipboardData.getData('text/html'),
+          text: clipboardData.getData('text/plain'),
+        };
+        const warnings = detectBodyEditorClipboardWarnings(clipboardPayload);
+
+        if (warnings.length === 0) {
+          return false;
+        }
+
+        setPendingPaste(sanitizeBodyEditorClipboardPayload(clipboardPayload));
+        return true;
+      },
+      transformPastedHTML: transformBodyEditorPastedHtml,
+      transformPastedText: transformBodyEditorPastedText,
     },
     extensions: createBodyEditorExtensions(),
     immediatelyRender: false,
@@ -60,11 +112,7 @@ export const BodyEditor = ({
     <div className="mt-6">
       <label
         className="block text-sm font-medium text-[var(--color-page-ink)]"
-        onClick={() => {
-          editorRootRef.current
-            ?.querySelector<HTMLElement>('[contenteditable="true"]')
-            ?.focus();
-        }}
+        onClick={focusEditorSurface}
       >
         Paper body draft
       </label>
@@ -74,6 +122,19 @@ export const BodyEditor = ({
       <p className="mt-3 text-sm leading-7 text-[var(--color-page-muted)]">
         {placeholder}
       </p>
+      <PasteReviewModal
+        isOpen={pendingPaste !== null}
+        onCancel={closePendingPaste}
+        onConfirm={() => {
+          if (editor && pendingPaste) {
+            editor.commands.insertContent(pendingPaste.document.content);
+          }
+
+          closePendingPaste();
+        }}
+        previewText={pendingPaste?.previewText ?? ''}
+        warnings={pendingPaste?.warnings ?? []}
+      />
     </div>
   );
 };

@@ -1,8 +1,8 @@
 # Task 01 - Add paste interceptors
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: intercept both HTML and plain-text paste flows before insertion.
 - Why: copy-paste is a primary workflow, not a side feature.

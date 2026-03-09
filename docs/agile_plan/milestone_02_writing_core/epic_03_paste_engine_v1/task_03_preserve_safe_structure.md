@@ -1,8 +1,8 @@
 # Task 03 - Preserve safe structure
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: preserve paragraph boundaries and safe inline emphasis when possible.
 - Why: cleaning should not flatten the user’s writing structure unnecessarily.
