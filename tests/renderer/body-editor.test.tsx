@@ -376,4 +376,23 @@ describe('BodyEditor', () => {
     expect(focusSpy).toHaveBeenCalled();
     rafSpy.mockRestore();
   });
+
+  it('focuses the dedicated editor surface fallback when the label is clicked', () => {
+    renderEditorSurfaceWithoutContentEditable = true;
+
+    render(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    const editorSurface = screen.getByRole('textbox', { name: 'Paper body draft' });
+    const focusSpy = vi.spyOn(editorSurface, 'focus');
+
+    fireEvent.click(screen.getByText('Paper body draft'));
+
+    expect(focusSpy).toHaveBeenCalled();
+  });
 });

@@ -112,11 +112,7 @@ export const BodyEditor = ({
     <div className="mt-6">
       <label
         className="block text-sm font-medium text-[var(--color-page-ink)]"
-        onClick={() => {
-          editorRootRef.current
-            ?.querySelector<HTMLElement>('[contenteditable="true"]')
-            ?.focus();
-        }}
+        onClick={focusEditorSurface}
       >
         Paper body draft
       </label>
