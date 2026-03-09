@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import {
@@ -117,7 +117,10 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
-  const activePaperIssues = getPaperInspectorIssues(activePaperDetail, activePasteIssues);
+  const activePaperIssues = useMemo(
+    () => getPaperInspectorIssues(activePaperDetail, activePasteIssues),
+    [activePaperDetail, activePasteIssues],
+  );
 
   useEffect(() => {
     let cancelled = false;
