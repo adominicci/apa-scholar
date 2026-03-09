@@ -7,12 +7,14 @@ interface PaperCanvasProps {
   bodyDocument: BodyEditorDocument;
   paperDraft: PaperDraft;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
+  onPasteWarningsChange: (warnings: string[]) => void;
 }
 
 export const PaperCanvas = ({
   bodyDocument,
   paperDraft,
   onBodyDocumentChange,
+  onPasteWarningsChange,
 }: PaperCanvasProps) => (
   <div className="grid gap-6">
     {paperDraft.ghostPages.map((page) => (
@@ -24,6 +26,7 @@ export const PaperCanvas = ({
               bodyDocument={bodyDocument}
               key={block.id}
               onBodyDocumentChange={onBodyDocumentChange}
+              onPasteWarningsChange={onPasteWarningsChange}
               pageKind={page.kind}
             />
           ))}

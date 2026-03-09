@@ -1,6 +1,10 @@
-import { useDeferredValue, useEffect, useReducer, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import {
+  buildPasteWarningIssues,
+  type PaperIssue,
+} from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
 import type {
   Course,
@@ -24,7 +28,7 @@ import { PaperCanvas } from '@renderer/app/paper-canvas/PaperCanvas';
 import {
   applyOptimisticPaperBodyUpdate,
   applyOptimisticPaperMetadataUpdate,
-  getPaperInspectorValidationMessages,
+  getPaperInspectorIssues,
   upsertPaperInCourseCollections,
 } from '@renderer/app/paper-draft-state';
 import { Sidebar } from '@renderer/app/Sidebar';
@@ -81,6 +85,7 @@ export const App = () => {
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
+  const [activePasteIssues, setActivePasteIssues] = useState<PaperIssue[]>([]);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
   const [courseForm, setCourseForm] = useState<CreateCourseInput>(emptyCourseForm);
@@ -112,7 +117,10 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
-  const activePaperValidationMessages = getPaperInspectorValidationMessages(activePaperDetail);
+  const activePaperIssues = useMemo(
+    () => getPaperInspectorIssues(activePaperDetail, activePasteIssues),
+    [activePaperDetail, activePasteIssues],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -167,6 +175,10 @@ export const App = () => {
       clearTimeout(timeoutId);
     });
   }, []);
+
+  useEffect(() => {
+    setActivePasteIssues([]);
+  }, [shellState.selectedPaperId]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -699,6 +711,10 @@ export const App = () => {
     paperId: string,
     nextDocument: BodyEditorDocument,
   ) => {
+    if (paperId === shellState.selectedPaperId) {
+      setActivePasteIssues([]);
+    }
+
     setPaperDetails((current) => {
       const currentDraft = current[paperId];
 
@@ -712,6 +728,10 @@ export const App = () => {
       };
     });
     schedulePaperBodySave(paperId, nextDocument);
+  };
+
+  const handlePaperPasteWarningsChange = (warnings: string[]) => {
+    setActivePasteIssues(buildPasteWarningIssues(warnings));
   };
 
   const handlePaperMetadataChange = (input: UpdatePaperMetadataInput) => {
@@ -733,6 +753,14 @@ export const App = () => {
     );
 
     schedulePaperMetadataSave(selectedPaperId, input);
+  };
+
+  const handlePaperIssueAutofix = (issue: PaperIssue) => {
+    if (!issue.autofix || issue.autofix.kind !== 'update-paper-metadata') {
+      return;
+    }
+
+    handlePaperMetadataChange(issue.autofix.input);
   };
 
   const renderHomeView = () => (
@@ -913,6 +941,7 @@ export const App = () => {
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
+          onPasteWarningsChange={handlePaperPasteWarningsChange}
           paperDraft={paperDetail}
         />
       ) : (
@@ -1077,8 +1106,9 @@ export const App = () => {
           activeCourse={activeCourse}
           activePaper={activePaper}
           activePaperDetail={activePaperDetail}
-          paperValidationMessages={activePaperValidationMessages}
+          paperIssues={activePaperIssues}
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
+          onPaperIssueAutofix={handlePaperIssueAutofix}
           onPaperMetadataChange={handlePaperMetadataChange}
         />
       </div>

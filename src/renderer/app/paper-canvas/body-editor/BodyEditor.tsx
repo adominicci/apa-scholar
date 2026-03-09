@@ -15,12 +15,14 @@ import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteRe
 interface BodyEditorProps {
   document: BodyEditorDocument;
   onChange: (document: BodyEditorDocument) => void;
+  onPasteWarningsChange?: (warnings: string[]) => void;
   placeholder: string;
 }
 
 export const BodyEditor = ({
   document,
   onChange,
+  onPasteWarningsChange,
   placeholder,
 }: BodyEditorProps) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
@@ -46,10 +48,11 @@ export const BodyEditor = ({
 
   const closePendingPaste = useCallback(() => {
     setPendingPaste(null);
+    onPasteWarningsChange?.([]);
     requestAnimationFrame(() => {
       focusEditorSurface();
     });
-  }, [focusEditorSurface]);
+  }, [focusEditorSurface, onPasteWarningsChange]);
 
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
@@ -77,10 +80,14 @@ export const BodyEditor = ({
         const warnings = detectBodyEditorClipboardWarnings(clipboardPayload);
 
         if (warnings.length === 0) {
+          onPasteWarningsChange?.([]);
           return false;
         }
 
-        setPendingPaste(sanitizeBodyEditorClipboardPayload(clipboardPayload));
+        const sanitizedPaste = sanitizeBodyEditorClipboardPayload(clipboardPayload);
+
+        setPendingPaste(sanitizedPaste);
+        onPasteWarningsChange?.(sanitizedPaste.warnings);
         return true;
       },
       transformPastedHTML: transformBodyEditorPastedHtml,

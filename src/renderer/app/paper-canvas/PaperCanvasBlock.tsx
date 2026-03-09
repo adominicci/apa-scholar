@@ -6,6 +6,7 @@ interface PaperCanvasBlockProps {
   block: GhostPageBlockViewModel;
   bodyDocument: BodyEditorDocument;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
+  onPasteWarningsChange: (warnings: string[]) => void;
   pageKind: GhostPageViewModel['kind'];
 }
 
@@ -13,6 +14,7 @@ export const PaperCanvasBlock = ({
   block,
   bodyDocument,
   onBodyDocumentChange,
+  onPasteWarningsChange,
   pageKind,
 }: PaperCanvasBlockProps) => {
   if (block.kind === 'title') {
@@ -76,6 +78,7 @@ export const PaperCanvasBlock = ({
       <BodyEditor
         document={block.document ?? bodyDocument}
         onChange={onBodyDocumentChange}
+        onPasteWarningsChange={onPasteWarningsChange}
         placeholder={block.text}
       />
     );

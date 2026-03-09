@@ -1,17 +1,19 @@
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import type { PaperIssue } from '@domain/papers/paper-issues';
 import type { UpdatePaperMetadataInput } from '@domain/shared/persistence-models';
 import {
+  InspectorIssuesList,
   InspectorSection,
   InspectorSelectField,
   InspectorTextAreaField,
   InspectorTextField,
   InspectorToggleField,
-  InspectorValidationList,
 } from '@renderer/app/inspector/InspectorControls';
 
 interface PaperInspectorPanelProps {
+  issues: PaperIssue[];
   paperDraft: PaperDraft;
-  validationMessages: string[];
+  onIssueAutofix: (issue: PaperIssue) => void;
   onMetadataChange: (input: UpdatePaperMetadataInput) => void;
 }
 
@@ -20,8 +22,9 @@ const toMetadataValue = (value: string): string | null =>
   value.trim().length > 0 ? value : null;
 
 export const PaperInspectorPanel = ({
+  issues,
   paperDraft,
-  validationMessages,
+  onIssueAutofix,
   onMetadataChange,
 }: PaperInspectorPanelProps) => {
   const isProfessional = paperDraft.paper.paperType === 'professional';
@@ -102,8 +105,11 @@ export const PaperInspectorPanel = ({
         )}
       </InspectorSection>
 
-      <InspectorSection title="Validation">
-        <InspectorValidationList messages={validationMessages} />
+      <InspectorSection title="Issues">
+        <InspectorIssuesList
+          issues={issues}
+          onAutofix={onIssueAutofix}
+        />
       </InspectorSection>
     </>
   );
