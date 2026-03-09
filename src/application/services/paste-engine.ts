@@ -33,6 +33,18 @@ export interface BodyEditorPasteResult {
   warnings: string[];
 }
 
+export const detectBodyEditorClipboardWarnings = ({
+  html,
+}: ClipboardPayload): string[] => {
+  if (!html) {
+    return [];
+  }
+
+  return markupReviewRules
+    .filter((rule) => rule.pattern.test(html))
+    .map((rule) => rule.message);
+};
+
 const blockElementNames = new Set([
   'article',
   'aside',
@@ -353,23 +365,13 @@ const renderDocumentAsText = (document: BodyEditorDocument): string =>
     })
     .join('\n\n');
 
-const detectSuspiciousPatterns = ({ html }: ClipboardPayload): string[] => {
-  if (!html) {
-    return [];
-  }
-
-  return markupReviewRules
-    .filter((rule) => rule.pattern.test(html))
-    .map((rule) => rule.message);
-};
-
 export const sanitizeBodyEditorClipboardPayload = (
   payload: ClipboardPayload,
 ): BodyEditorPasteResult => {
   const html = payload.html?.trim();
   const text = payload.text?.trim();
   const document = html ? sanitizeHtml(html) : sanitizePlainText(text ?? '');
-  const warnings = detectSuspiciousPatterns(payload);
+  const warnings = detectBodyEditorClipboardWarnings(payload);
 
   return {
     document,

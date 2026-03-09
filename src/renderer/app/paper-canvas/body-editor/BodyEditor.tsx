@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BodyEditorPasteResult } from '@application/services/paste-engine';
 import {
+  detectBodyEditorClipboardWarnings,
   sanitizeBodyEditorClipboardPayload,
   transformBodyEditorPastedHtml,
   transformBodyEditorPastedText,
@@ -30,6 +31,26 @@ export const BodyEditor = ({
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const focusEditorSurface = () => {
+    const editorSurface = editorRootRef.current
+      ?.querySelector<HTMLElement>('[contenteditable="true"]');
+
+    if (editorSurface) {
+      editorSurface.focus();
+      return;
+    }
+
+    editorRootRef.current?.querySelector<HTMLElement>('[data-testid="editor-content"]')
+      ?.focus();
+  };
+
+  const closePendingPaste = () => {
+    setPendingPaste(null);
+    requestAnimationFrame(() => {
+      focusEditorSurface();
+    });
+  };
+
   const editor = useEditor({
     content: deserializeBodyEditorDocument(document),
     editorProps: {
@@ -48,16 +69,17 @@ export const BodyEditor = ({
           return false;
         }
 
-        const result = sanitizeBodyEditorClipboardPayload({
+        const clipboardPayload = {
           html: clipboardData.getData('text/html'),
           text: clipboardData.getData('text/plain'),
-        });
+        };
+        const warnings = detectBodyEditorClipboardWarnings(clipboardPayload);
 
-        if (!result.requiresReview) {
+        if (warnings.length === 0) {
           return false;
         }
 
-        setPendingPaste(result);
+        setPendingPaste(sanitizeBodyEditorClipboardPayload(clipboardPayload));
         return true;
       },
       transformPastedHTML: transformBodyEditorPastedHtml,
@@ -105,13 +127,13 @@ export const BodyEditor = ({
       </p>
       <PasteReviewModal
         isOpen={pendingPaste !== null}
-        onCancel={() => setPendingPaste(null)}
+        onCancel={closePendingPaste}
         onConfirm={() => {
           if (editor && pendingPaste) {
             editor.commands.insertContent(pendingPaste.document.content);
           }
 
-          setPendingPaste(null);
+          closePendingPaste();
         }}
         previewText={pendingPaste?.previewText ?? ''}
         warnings={pendingPaste?.warnings ?? []}

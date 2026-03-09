@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { sanitizeBodyEditorClipboardPayload } from '@application/services/paste-engine';
+import * as pasteEngine from '@application/services/paste-engine';
 import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { BodyEditor } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 import {
@@ -24,7 +24,14 @@ const editorInstance = {
 let initialEditorConfig: Record<string, any> | null = null;
 
 vi.mock('@tiptap/react', () => ({
-  EditorContent: () => React.createElement('div', { 'data-testid': 'editor-content' }),
+  EditorContent: () =>
+    React.createElement('div', {
+      'aria-label': 'Paper body draft',
+      contentEditable: true,
+      'data-testid': 'editor-content',
+      role: 'textbox',
+      tabIndex: 0,
+    }),
   useEditor: (config: Record<string, any>) => {
     if (!initialEditorConfig) {
       initialEditorConfig = config;
@@ -131,7 +138,7 @@ describe('BodyEditor', () => {
     );
 
     const suspiciousText = 'Tabular content\n\nParagraph after the table.';
-    const expectedInsert = sanitizeBodyEditorClipboardPayload({
+    const expectedInsert = pasteEngine.sanitizeBodyEditorClipboardPayload({
       html: createSuspiciousPasteHtmlFixture(),
       text: suspiciousText,
     }).document.content;
@@ -173,6 +180,11 @@ describe('BodyEditor', () => {
   });
 
   it('lets safe paste continue through the normal editor pipeline', () => {
+    const sanitizeSpy = vi.spyOn(
+      pasteEngine,
+      'sanitizeBodyEditorClipboardPayload',
+    );
+
     render(
       <BodyEditor
         document={createEmptyBodyEditorDocument()}
@@ -191,8 +203,46 @@ describe('BodyEditor', () => {
     );
 
     expect(handled).toBe(false);
+    expect(sanitizeSpy).not.toHaveBeenCalled();
     expect(
       screen.queryByRole('heading', { name: 'Review cleaned paste' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('announces the review surface as an accessible dialog and closes on Escape', () => {
+    render(
+      <BodyEditor
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    act(() => {
+      initialEditorConfig?.editorProps?.handlePaste?.(
+        {} as never,
+        {
+          clipboardData: {
+            getData: (type: string) => {
+              if (type === 'text/html') {
+                return createSuspiciousPasteHtmlFixture();
+              }
+
+              return 'Tabular content\n\nParagraph after the table.';
+            },
+          },
+        } as ClipboardEvent,
+      );
+    });
+
+    const dialog = screen.getByRole('dialog', { name: 'Review cleaned paste' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby', 'paste-review-title');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Review cleaned paste' }),
     ).not.toBeInTheDocument();
   });
 });

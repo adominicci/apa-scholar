@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 interface PasteReviewModalProps {
   isOpen: boolean;
   previewText: string;
@@ -16,25 +18,56 @@ export const PasteReviewModal = ({
   onCancel,
   onConfirm,
 }: PasteReviewModalProps) => {
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onCancel]);
+
   if (!isOpen) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-[rgba(7,9,14,0.62)] px-4 backdrop-blur-sm">
+    <div
+      aria-labelledby="paste-review-title"
+      aria-modal="true"
+      className="fixed inset-0 z-20 flex items-center justify-center bg-[rgba(7,9,14,0.62)] px-4 backdrop-blur-sm"
+      role="dialog"
+    >
       <div className="glass-panel w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="label-caps">
               Paste review
             </p>
-            <h2 className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]">
+            <h2
+              className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]"
+              id="paste-review-title"
+            >
               Review cleaned paste
             </h2>
           </div>
           <button
             className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
             onClick={onCancel}
+            ref={closeButtonRef}
             type="button"
           >
             Close
