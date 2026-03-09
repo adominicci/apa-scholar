@@ -1,8 +1,8 @@
 # Task 01 - Define TipTap schema
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: define the editor schema around the semantic domain model.
 - Why: the editor cannot become an arbitrary style canvas.

@@ -1,8 +1,8 @@
 # Task 05 - Restrict unsupported formatting
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: prevent unsupported rich-text options from entering the document model.
 - Why: arbitrary formatting would undermine APA enforcement and export reliability.

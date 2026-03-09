@@ -1,8 +1,8 @@
 # Task 06 - Add editor serialization
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: implement serialization and deserialization between editor state and stored paper content.
 - Why: persistence and export both depend on a stable semantic round-trip.

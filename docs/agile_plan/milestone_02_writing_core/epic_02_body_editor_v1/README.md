@@ -29,7 +29,7 @@ Tracking rule: all tasks in this epic must be marked `Done` before the epic is c
 
 Epic status:
 
-- [ ] Done
+- [x] Done
 
 Current implementation anchors:
 

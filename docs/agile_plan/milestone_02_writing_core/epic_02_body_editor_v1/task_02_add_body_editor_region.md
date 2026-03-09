@@ -1,8 +1,8 @@
 # Task 02 - Add body editor region
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: place the editor inside the ghost-page canvas where body content belongs.
 - Why: writing should happen within the guided page-like experience.

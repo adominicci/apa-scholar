@@ -1,8 +1,8 @@
 # Task 04 - Support block quotations
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: add block quotation support to the semantic editor.
 - Why: common academic paper structures need more than plain paragraphs.
