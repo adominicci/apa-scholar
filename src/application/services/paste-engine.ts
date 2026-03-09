@@ -14,6 +14,7 @@ import {
 export const suspiciousPastePatternMessages = {
   embeddedMedia: 'Embedded media was removed from the pasted content.',
   executableContent: 'Potentially unsafe embedded content was removed before insertion.',
+  figureStructure: 'Figure containers were restructured into plain text and should be reviewed before insertion.',
   tableStructure: 'Complex table structure was flattened and should be reviewed before insertion.',
 } as const;
 
@@ -73,8 +74,12 @@ const markupReviewRules = [
     pattern: /<table\b/i,
   },
   {
+    message: suspiciousPastePatternMessages.figureStructure,
+    pattern: /<figure\b/i,
+  },
+  {
     message: suspiciousPastePatternMessages.embeddedMedia,
-    pattern: /<(?:audio|canvas|figure|img|svg|video)\b/i,
+    pattern: /<(?:audio|canvas|img|svg|video)\b/i,
   },
   {
     message: suspiciousPastePatternMessages.executableContent,

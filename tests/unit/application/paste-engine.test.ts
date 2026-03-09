@@ -50,6 +50,25 @@ describe('paste-engine', () => {
     expect(result.previewText).toContain('Paragraph after the table.');
   });
 
+  it('warns about figure containers without claiming preserved text was removed as media', () => {
+    const result = pasteEngine.sanitizeBodyEditorClipboardPayload({
+      html: `
+        <figure>
+          <figcaption>Some cited text</figcaption>
+        </figure>
+      `,
+    });
+
+    expect(result.requiresReview).toBe(true);
+    expect(result.warnings).toEqual([
+      pasteEngine.suspiciousPastePatternMessages.figureStructure,
+    ]);
+    expect(result.warnings).not.toContain(
+      pasteEngine.suspiciousPastePatternMessages.embeddedMedia,
+    );
+    expect(result.previewText).toBe('Some cited text');
+  });
+
   it('renders the plain-text preview once and reuses it for previewText and sanitizedText', () => {
     const result = pasteEngine.sanitizeBodyEditorClipboardPayload({
       html: createWordPasteHtmlFixture(),
