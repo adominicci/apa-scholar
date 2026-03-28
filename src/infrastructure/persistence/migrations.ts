@@ -83,6 +83,23 @@ const migrations: Migration[] = [
       WHERE archived_at IS NULL;
     `,
   },
+  {
+    id: '002_references_table',
+    sql: `
+      CREATE TABLE "references" (
+        id TEXT PRIMARY KEY,
+        paper_id TEXT NOT NULL REFERENCES papers(id) ON DELETE CASCADE,
+        reference_type TEXT NOT NULL,
+        fields TEXT NOT NULL,
+        sort_key TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX idx_references_paper_id ON "references"(paper_id);
+      CREATE INDEX idx_references_sort_key ON "references"(paper_id, sort_key);
+    `,
+  },
 ];
 
 const ensureMigrationsTable = (database: SqliteDatabase): void => {

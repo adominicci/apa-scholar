@@ -19,7 +19,7 @@ export const PaperCanvasBlock = ({
 }: PaperCanvasBlockProps) => {
   if (block.kind === 'title') {
     return (
-      <p className="font-[var(--font-display)] text-4xl leading-tight text-[var(--color-page-ink)]">
+      <p className="font-[var(--font-display)] text-base font-bold leading-[2] text-[var(--color-page-ink)]">
         {block.text}
       </p>
     );
@@ -28,7 +28,7 @@ export const PaperCanvasBlock = ({
   if (block.kind === 'line') {
     return (
       <p
-        className={`text-base text-[var(--color-page-muted)] ${
+        className={`font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)] ${
           block.align === 'center' ? 'text-center' : ''
         }`}
       >
@@ -38,34 +38,20 @@ export const PaperCanvasBlock = ({
   }
 
   if (block.kind === 'section-heading') {
-    if (pageKind === 'body-page') {
-      return (
-        <p
-          aria-level={3}
-          className="font-[var(--font-display)] text-3xl text-[var(--color-page-ink)]"
-          role="heading"
-        >
-          {block.text}
-        </p>
-      );
-    }
-
-    const centered = pageKind === 'abstract-page' || pageKind === 'references-page';
-
     return (
-      <h3
-        className={`font-[var(--font-display)] text-3xl text-[var(--color-page-ink)] ${
-          centered ? 'text-center' : ''
-        }`}
+      <p
+        aria-level={pageKind === 'body-page' ? 3 : undefined}
+        className="font-[var(--font-display)] text-base font-bold leading-[2] text-center text-[var(--color-page-ink)]"
+        role={pageKind === 'body-page' ? 'heading' : undefined}
       >
         {block.text}
-      </h3>
+      </p>
     );
   }
 
   if (block.kind === 'empty-state') {
     return (
-      <div className="mt-8 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-8 text-center">
+      <div className="mt-4 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-6 text-center">
         <p className="text-sm leading-7 text-[var(--color-page-muted)]">
           {block.text}
         </p>
@@ -86,7 +72,7 @@ export const PaperCanvasBlock = ({
 
   if (block.kind === 'textarea') {
     return (
-      <div className="mt-8 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-8">
+      <div className="mt-4 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-6">
         <p className="text-sm leading-7 text-[var(--color-page-muted)]">
           {block.text}
         </p>
@@ -95,7 +81,7 @@ export const PaperCanvasBlock = ({
   }
 
   return (
-    <div className="mt-8 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-8">
+    <div className="mt-4 rounded-[var(--radius-card)] border border-dashed border-[var(--color-page-line)] px-6 py-6">
       <p className="text-sm leading-7 text-[var(--color-page-muted)]">
         {block.text}
       </p>

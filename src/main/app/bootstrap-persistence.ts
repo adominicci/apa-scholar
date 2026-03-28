@@ -15,6 +15,7 @@ export const bootstrapPersistence = () => {
     createPersistenceIpcHandlers({
       courses: persistenceContext.courseService,
       papers: persistenceContext.paperService,
+      references: persistenceContext.referenceService,
       search: {
         query: (): WorkspaceSearchPlaceholderResult => ({
           courses: [],

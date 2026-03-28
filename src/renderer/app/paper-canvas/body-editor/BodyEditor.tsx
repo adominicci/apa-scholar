@@ -61,8 +61,9 @@ export const BodyEditor = ({
         'aria-label': 'Paper body draft',
         'aria-multiline': 'true',
         class:
-          'min-h-[260px] rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]',
+          'min-h-[200px] font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)] outline-none',
         'data-editor-surface': 'true',
+        'data-placeholder': placeholder,
         role: 'textbox',
         spellcheck: 'false',
       },
@@ -116,19 +117,8 @@ export const BodyEditor = ({
   }, [document, editor]);
 
   return (
-    <div className="mt-6">
-      <label
-        className="block text-sm font-medium text-[var(--color-page-ink)]"
-        onClick={focusEditorSurface}
-      >
-        Paper body draft
-      </label>
-      <div className="mt-3" ref={editorRootRef}>
-        <EditorContent editor={editor} />
-      </div>
-      <p className="mt-3 text-sm leading-7 text-[var(--color-page-muted)]">
-        {placeholder}
-      </p>
+    <div className="apa-body-editor" ref={editorRootRef}>
+      <EditorContent editor={editor} />
       <PasteReviewModal
         isOpen={pendingPaste !== null}
         onCancel={closePendingPaste}

@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { bodyEditorDocumentSchema } from '@domain/papers/body-editor-document';
 import {
+  createReferenceInputSchema,
+  updateReferenceInputSchema,
+} from '@domain/references/reference-entry';
+import {
   createCourseInputSchema,
   createPaperInputSchema,
   updatePaperMetadataInputSchema,
@@ -14,6 +18,11 @@ export const persistenceIpcChannels = {
   papersCreate: 'papers:create',
   papersUpdateBodyContent: 'papers:updateBodyContent',
   papersUpdateMetadata: 'papers:updateMetadata',
+  referencesListByPaper: 'references:listByPaper',
+  referencesCreate: 'references:create',
+  referencesGetById: 'references:getById',
+  referencesUpdate: 'references:update',
+  referencesDelete: 'references:delete',
   searchQuery: 'search:query',
 } as const;
 
@@ -38,6 +47,23 @@ export const updatePaperBodyContentPayloadSchema = z.object({
   paperId: z.string().trim().min(1, 'Paper id is required.'),
 });
 
+export const listReferencesByPaperPayloadSchema = z.object({
+  paperId: z.string().trim().min(1, 'Paper id is required.'),
+});
+
+export const getReferenceByIdPayloadSchema = z.object({
+  referenceId: z.string().trim().min(1, 'Reference id is required.'),
+});
+
+export const updateReferencePayloadSchema = z.object({
+  referenceId: z.string().trim().min(1, 'Reference id is required.'),
+  input: updateReferenceInputSchema,
+});
+
+export const deleteReferencePayloadSchema = z.object({
+  referenceId: z.string().trim().min(1, 'Reference id is required.'),
+});
+
 export const searchQueryPayloadSchema = z.object({
   query: z.string(),
 });
@@ -54,10 +80,15 @@ export type UpdatePaperBodyContentPayload = z.infer<
   typeof updatePaperBodyContentPayloadSchema
 >;
 
+export type ListReferencesByPaperPayload = z.infer<typeof listReferencesByPaperPayloadSchema>;
+export type GetReferenceByIdPayload = z.infer<typeof getReferenceByIdPayloadSchema>;
+export type UpdateReferencePayload = z.infer<typeof updateReferencePayloadSchema>;
+export type DeleteReferencePayload = z.infer<typeof deleteReferencePayloadSchema>;
 export type SearchQueryPayload = z.infer<typeof searchQueryPayloadSchema>;
 
 export {
   createCourseInputSchema,
   createPaperInputSchema,
+  createReferenceInputSchema,
   updatePaperMetadataInputSchema,
 };

@@ -35,8 +35,7 @@ test('creates a course and paper inside the workspace shell', async () => {
     await expect(
       window.getByRole('heading', { level: 2, name: paperTitle }),
     ).toBeVisible();
-    await expect(window.getByText('Title page scaffold')).toBeVisible();
-    await expect(window.getByText('References scaffold')).toBeVisible();
+    await expect(window.getByText(paperTitle).first()).toBeVisible();
     await expect(
       window.getByRole('complementary', { name: 'Inspector panel' }),
     ).toContainText('Paper details');

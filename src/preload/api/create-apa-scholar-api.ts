@@ -31,6 +31,17 @@ export const createApaScholarApi = (
     updateMetadata: (paperId, input) =>
       invoke(persistenceIpcChannels.papersUpdateMetadata, { input, paperId }),
   },
+  references: {
+    listByPaper: (paperId) =>
+      invoke(persistenceIpcChannels.referencesListByPaper, { paperId }),
+    create: (input) => invoke(persistenceIpcChannels.referencesCreate, input),
+    getById: (referenceId) =>
+      invoke(persistenceIpcChannels.referencesGetById, { referenceId }),
+    update: (referenceId, input) =>
+      invoke(persistenceIpcChannels.referencesUpdate, { referenceId, input }),
+    delete: (referenceId) =>
+      invoke(persistenceIpcChannels.referencesDelete, { referenceId }),
+  },
   search: {
     query: (query) => invoke(persistenceIpcChannels.searchQuery, { query }),
   },

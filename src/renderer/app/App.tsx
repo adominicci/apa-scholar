@@ -6,6 +6,7 @@ import {
   type PaperIssue,
 } from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
 import type {
   Course,
   CreateCourseInput,
@@ -13,6 +14,14 @@ import type {
   Paper,
   UpdatePaperMetadataInput,
 } from '@domain/shared/persistence-models';
+import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
+import {
+  createEmptyFormState,
+  formStateToFields,
+  referenceToFormState,
+  validateFormState,
+} from '@renderer/app/inspector/reference-form-helpers';
+import { ReferenceFormModal } from '@renderer/app/inspector/ReferenceFormModal';
 import {
   createInitialWorkspaceShellState,
   workspaceShellReducer,
@@ -86,6 +95,7 @@ export const App = () => {
   const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [activePasteIssues, setActivePasteIssues] = useState<PaperIssue[]>([]);
+  const [paperReferences, setPaperReferences] = useState<Record<string, ReferenceEntry[]>>({});
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
   const [courseForm, setCourseForm] = useState<CreateCourseInput>(emptyCourseForm);
@@ -94,6 +104,11 @@ export const App = () => {
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [isCreatingPaper, setIsCreatingPaper] = useState(false);
+  const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
+  const [referenceForm, setReferenceForm] = useState<ReferenceFormState>(createEmptyFormState);
+  const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
+  const [referenceFormError, setReferenceFormError] = useState<string | null>(null);
+  const [isSavingReference, setIsSavingReference] = useState(false);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
@@ -381,6 +396,38 @@ export const App = () => {
       cancelled = true;
     };
   }, [api, paperDetails, shellState.selectedPaperId]);
+
+  useEffect(() => {
+    const selectedPaperId = shellState.selectedPaperId;
+
+    if (!api || !selectedPaperId) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void api.references
+      .listByPaper(selectedPaperId)
+      .then((refs) => {
+        if (!cancelled) {
+          setPaperReferences((current) => ({
+            ...current,
+            [selectedPaperId]: refs,
+          }));
+        }
+      })
+      .catch(() => {
+        // Silently fail — references are non-critical for paper viewing
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [api, shellState.selectedPaperId]);
+
+  const activePaperReferences = shellState.selectedPaperId
+    ? paperReferences[shellState.selectedPaperId] ?? []
+    : [];
 
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
@@ -763,6 +810,94 @@ export const App = () => {
     handlePaperMetadataChange(issue.autofix.input);
   };
 
+  const openAddReferenceModal = () => {
+    setReferenceForm(createEmptyFormState());
+    setEditingReferenceId(null);
+    setReferenceFormError(null);
+    setIsReferenceModalOpen(true);
+  };
+
+  const openEditReferenceModal = (referenceId: string) => {
+    const ref = activePaperReferences.find((r) => r.id === referenceId);
+
+    if (!ref) {
+      return;
+    }
+
+    setReferenceForm(referenceToFormState(ref));
+    setEditingReferenceId(referenceId);
+    setReferenceFormError(null);
+    setIsReferenceModalOpen(true);
+  };
+
+  const handleReferenceFormSubmit = async () => {
+    const selectedPaperId = shellState.selectedPaperId;
+
+    if (!api || !selectedPaperId) {
+      setReferenceFormError('The desktop bridge is unavailable right now.');
+      return;
+    }
+
+    const validationError = validateFormState(referenceForm);
+
+    if (validationError) {
+      setReferenceFormError(validationError);
+      return;
+    }
+
+    setIsSavingReference(true);
+    setReferenceFormError(null);
+
+    try {
+      const fields = formStateToFields(referenceForm);
+
+      if (editingReferenceId) {
+        await api.references.update(editingReferenceId, {
+          referenceType: referenceForm.referenceType,
+          fields,
+        });
+      } else {
+        await api.references.create({
+          paperId: selectedPaperId,
+          referenceType: referenceForm.referenceType,
+          fields,
+        });
+      }
+
+      const updatedRefs = await api.references.listByPaper(selectedPaperId);
+
+      setPaperReferences((current) => ({
+        ...current,
+        [selectedPaperId]: updatedRefs,
+      }));
+      setIsReferenceModalOpen(false);
+    } catch {
+      setReferenceFormError('Unable to save the reference right now. Try again.');
+    } finally {
+      setIsSavingReference(false);
+    }
+  };
+
+  const handleDeleteReference = async (referenceId: string) => {
+    const selectedPaperId = shellState.selectedPaperId;
+
+    if (!api || !selectedPaperId) {
+      return;
+    }
+
+    try {
+      await api.references.delete(referenceId);
+      const updatedRefs = await api.references.listByPaper(selectedPaperId);
+
+      setPaperReferences((current) => ({
+        ...current,
+        [selectedPaperId]: updatedRefs,
+      }));
+    } catch {
+      setWorkspaceError('Unable to delete the reference right now.');
+    }
+  };
+
   const renderHomeView = () => (
     <section className="flex h-full flex-col justify-center px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <p className="label-caps text-[var(--color-accent-strong)]">
@@ -905,18 +1040,15 @@ export const App = () => {
 
   const renderPaperView = (course: Course, paper: Paper, paperDetail: PaperDraft | null) => (
     <section className="flex h-full flex-col gap-6 px-6 py-8 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-line)] pb-6">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] pb-4">
+        <div className="flex items-center gap-3">
           <p className="label-caps text-[var(--color-accent-strong)]">
             {course.name}
           </p>
-          <h2 className="mt-3 font-[var(--font-display)] text-4xl text-[var(--color-ink-strong)]">
+          <span className="text-[var(--color-line)]">/</span>
+          <h2 className="font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
             {paper.title}
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
-            A calm paper shell that teaches structure while leaving room for the full
-            writing engine in the next milestone.
-          </p>
         </div>
 
         <div className="flex gap-3">
@@ -1106,8 +1238,14 @@ export const App = () => {
           activeCourse={activeCourse}
           activePaper={activePaper}
           activePaperDetail={activePaperDetail}
+          inspectorTab={shellState.inspectorTab}
           paperIssues={activePaperIssues}
+          paperReferences={activePaperReferences}
+          onAddReference={openAddReferenceModal}
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
+          onDeleteReference={handleDeleteReference}
+          onEditReference={openEditReferenceModal}
+          onInspectorTabChange={(tab) => dispatch({ type: 'set-inspector-tab', tab })}
           onPaperIssueAutofix={handlePaperIssueAutofix}
           onPaperMetadataChange={handlePaperMetadataChange}
         />
@@ -1137,6 +1275,20 @@ export const App = () => {
         onClose={() => {
           setPaperFormError(null);
           setIsPaperModalOpen(false);
+        }}
+      />
+
+      <ReferenceFormModal
+        isOpen={isReferenceModalOpen}
+        form={referenceForm}
+        editingReferenceId={editingReferenceId}
+        errorMessage={referenceFormError}
+        isSubmitting={isSavingReference}
+        onFormChange={setReferenceForm}
+        onSubmit={handleReferenceFormSubmit}
+        onClose={() => {
+          setReferenceFormError(null);
+          setIsReferenceModalOpen(false);
         }}
       />
     </div>

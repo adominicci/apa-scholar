@@ -2,6 +2,11 @@ import type { TemplateSeedResult } from '@domain/papers/template-definitions';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import type {
+  CreateReferenceInput,
+  ReferenceEntry,
+  UpdateReferenceInput,
+} from '@domain/references/reference-entry';
+import type {
   AppSettings,
   Course,
   CreateCourseInput,
@@ -28,6 +33,14 @@ export interface PaperRepository {
   updateBodyContent(id: string, bodyDoc: BodyEditorDocument): StoredPaperAggregate;
   updateMetadata(id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate;
   archive(id: string): Paper;
+}
+
+export interface ReferenceRepository {
+  create(input: CreateReferenceInput): ReferenceEntry;
+  listByPaper(paperId: string): ReferenceEntry[];
+  getById(id: string): ReferenceEntry | null;
+  update(id: string, input: UpdateReferenceInput): ReferenceEntry;
+  delete(id: string): void;
 }
 
 export interface SettingsRepository {
