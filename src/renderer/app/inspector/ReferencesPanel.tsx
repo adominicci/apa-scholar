@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReferenceEntry, ReferenceType } from '@domain/references/reference-entry';
 
 interface ReferencesPanelProps {
@@ -39,7 +40,19 @@ export const ReferencesPanel = ({
   onAddReference,
   onEditReference,
   onDeleteReference,
-}: ReferencesPanelProps) => (
+}: ReferencesPanelProps) => {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const handleDeleteClick = (id: string) => {
+    if (pendingDeleteId === id) {
+      onDeleteReference(id);
+      setPendingDeleteId(null);
+    } else {
+      setPendingDeleteId(id);
+    }
+  };
+
+  return (
   <div>
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -94,11 +107,16 @@ export const ReferencesPanel = ({
                 Edit
               </button>
               <button
-                className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition hover:text-[var(--color-ink-strong)]"
-                onClick={() => onDeleteReference(ref.id)}
+                className={`text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] transition ${
+                  pendingDeleteId === ref.id
+                    ? 'text-[var(--color-accent-strong)] hover:underline'
+                    : 'text-[var(--color-muted)] hover:text-[var(--color-ink-strong)]'
+                }`}
+                onClick={() => handleDeleteClick(ref.id)}
+                onBlur={() => setPendingDeleteId(null)}
                 type="button"
               >
-                Delete
+                {pendingDeleteId === ref.id ? 'Confirm?' : 'Delete'}
               </button>
             </div>
           </div>
@@ -106,4 +124,5 @@ export const ReferencesPanel = ({
       </div>
     )}
   </div>
-);
+  );
+};

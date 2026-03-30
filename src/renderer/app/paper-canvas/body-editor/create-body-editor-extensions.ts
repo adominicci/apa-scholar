@@ -5,12 +5,14 @@ import HardBreak from '@tiptap/extension-hard-break';
 import Heading from '@tiptap/extension-heading';
 import History from '@tiptap/extension-history';
 import Italic from '@tiptap/extension-italic';
+import Placeholder from '@tiptap/extension-placeholder';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import type { Extensions } from '@tiptap/react';
 import { supportedBodyEditorHeadingLevels } from '@domain/papers/body-editor-schema';
 
-export const createBodyEditorExtensions = (): Extensions => [
+export const createBodyEditorExtensions = (placeholder: string): Extensions => [
+  Placeholder.configure({ placeholder }),
   Document,
   Paragraph,
   Text,

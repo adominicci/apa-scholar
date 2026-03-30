@@ -63,7 +63,6 @@ export const BodyEditor = ({
         class:
           'min-h-[200px] font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)] outline-none',
         'data-editor-surface': 'true',
-        'data-placeholder': placeholder,
         role: 'textbox',
         spellcheck: 'false',
       },
@@ -94,7 +93,7 @@ export const BodyEditor = ({
       transformPastedHTML: transformBodyEditorPastedHtml,
       transformPastedText: transformBodyEditorPastedText,
     },
-    extensions: createBodyEditorExtensions(),
+    extensions: createBodyEditorExtensions(placeholder),
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
       onChangeRef.current(deserializeBodyEditorDocument(currentEditor.getJSON()));
