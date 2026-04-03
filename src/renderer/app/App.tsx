@@ -432,23 +432,28 @@ export const App = () => {
     };
   }, [api, shellState.selectedPaperId]);
 
-  // Rebuild ghost pages when references change so the references page stays current.
-  const prevReferencesRef = useRef<ReferenceEntry[] | null>(null);
+  // Rebuild ghost pages when references or the draft change so the references page stays current.
+  const prevReferencesRef = useRef<ReferenceEntry[] | undefined>(undefined);
+  const prevDraftRef = useRef<PaperDraft | null>(null);
   useEffect(() => {
     const selectedPaperId = shellState.selectedPaperId;
     if (!selectedPaperId) return;
-    const refs = paperReferences[selectedPaperId] ?? [];
-    if (refs === prevReferencesRef.current) return;
+    const refs = paperReferences[selectedPaperId];
+    const draft = paperDetails[selectedPaperId] ?? null;
+    if (refs === prevReferencesRef.current && draft === prevDraftRef.current) return;
     prevReferencesRef.current = refs;
+    prevDraftRef.current = draft;
+    if (!draft) return;
+    const refsToUse = refs ?? [];
     setPaperDetails((current) => {
-      const draft = current[selectedPaperId];
-      if (!draft) return current;
+      const currentDraft = current[selectedPaperId];
+      if (!currentDraft) return current;
       return {
         ...current,
-        [selectedPaperId]: rebuildGhostPagesWithReferences(draft, refs),
+        [selectedPaperId]: rebuildGhostPagesWithReferences(currentDraft, refsToUse),
       };
     });
-  }, [paperReferences, shellState.selectedPaperId]);
+  }, [paperReferences, paperDetails, shellState.selectedPaperId]);
 
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
@@ -792,7 +797,11 @@ export const App = () => {
 
       return {
         ...current,
-        [paperId]: applyOptimisticPaperBodyUpdate(currentDraft, nextDocument),
+        [paperId]: applyOptimisticPaperBodyUpdate(
+          currentDraft,
+          nextDocument,
+          paperReferences[paperId],
+        ),
       };
     });
     schedulePaperBodySave(paperId, nextDocument);
@@ -809,7 +818,11 @@ export const App = () => {
       return;
     }
 
-    const updatedDraft = applyOptimisticPaperMetadataUpdate(activePaperDetail, input);
+    const updatedDraft = applyOptimisticPaperMetadataUpdate(
+      activePaperDetail,
+      input,
+      paperReferences[selectedPaperId],
+    );
 
     setWorkspaceError(null);
     setPaperDetails((current) => ({

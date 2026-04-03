@@ -196,6 +196,8 @@ const formatConferencePaper = (fields: Fields): ReferenceFormattedSegment[] => {
   if (conference) {
     const locationSuffix = location ? `, ${location}` : '';
     segs.push({ text: ` [Paper presentation]. ${conference}${locationSuffix}.`, italic: false });
+  } else {
+    segs.push({ text: '.', italic: false });
   }
 
   const link = doiOrUrl(fields);

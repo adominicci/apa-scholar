@@ -66,10 +66,11 @@ const buildReferencesPageBlocks = (
     ];
   }
 
-  // References are already sorted by sortKey from the repository
+  // Sort alphabetically by sortKey regardless of caller order.
+  const sorted = [...references].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   return [
     heading,
-    ...references.map((ref) => ({
+    ...sorted.map((ref) => ({
       id: `reference-${ref.id}`,
       kind: 'reference-line' as const,
       text: formatReferenceApaPlainText(ref),
