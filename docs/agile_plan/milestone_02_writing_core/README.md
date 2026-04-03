@@ -6,7 +6,7 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 
 Includes:
 
-- [ ] Epic 01: Paper Metadata and Inspector Panels
-- [ ] Epic 02: Body Editor v1
-- [ ] Epic 03: Paste Engine v1
-- [ ] Epic 04: APA Rules Engine v1 and Issues Panel
+- [x] Epic 01: Paper Metadata and Inspector Panels
+- [x] Epic 02: Body Editor v1
+- [x] Epic 03: Paste Engine v1
+- [x] Epic 04: APA Rules Engine v1 and Issues Panel

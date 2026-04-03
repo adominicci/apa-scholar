@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import type { ReferenceEntry, ReferenceType } from '@domain/references/reference-entry';
+import { formatReferenceApa } from '@domain/references/apa-formatter';
 
 interface ReferencesPanelProps {
   references: ReferenceEntry[];
   onAddReference: () => void;
   onEditReference: (referenceId: string) => void;
   onDeleteReference: (referenceId: string) => void;
+  onInsertCitation?: (referenceId: string) => void;
 }
 
 const typeLabels: Record<ReferenceType, string> = {
@@ -40,6 +42,7 @@ export const ReferencesPanel = ({
   onAddReference,
   onEditReference,
   onDeleteReference,
+  onInsertCitation,
 }: ReferencesPanelProps) => {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
@@ -98,7 +101,23 @@ export const ReferencesPanel = ({
                 {typeLabels[ref.referenceType]}
               </span>
             </div>
+            <p className="mt-1.5 text-xs leading-5 text-[var(--color-ink-soft)]" style={{ paddingLeft: '1.5em', textIndent: '-1.5em' }}>
+              {formatReferenceApa(ref).map((seg, i) => (
+                <span key={i} className={seg.italic ? 'italic' : undefined}>
+                  {seg.text}
+                </span>
+              ))}
+            </p>
             <div className="mt-2 flex gap-2">
+              {onInsertCitation && (
+                <button
+                  className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
+                  onClick={() => onInsertCitation(ref.id)}
+                  type="button"
+                >
+                  Cite
+                </button>
+              )}
               <button
                 className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
                 onClick={() => onEditReference(ref.id)}

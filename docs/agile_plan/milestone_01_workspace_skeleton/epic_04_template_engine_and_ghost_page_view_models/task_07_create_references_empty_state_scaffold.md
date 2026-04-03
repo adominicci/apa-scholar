@@ -1,8 +1,8 @@
 # Task 07 - Create references empty-state scaffold
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: add a references page scaffold that appears even before reference data exists.
 - Why: users should understand where the references section belongs from the start.

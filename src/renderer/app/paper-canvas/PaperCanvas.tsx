@@ -1,12 +1,15 @@
+import type { Ref } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { GhostPageViewModel } from '@domain/papers/ghost-page-view-model';
+import type { BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 import { PaperCanvasBlock } from '@renderer/app/paper-canvas/PaperCanvasBlock';
 import { PaperCanvasPage } from '@renderer/app/paper-canvas/PaperCanvasPage';
 import { PaperCanvasToolbar } from '@renderer/app/paper-canvas/PaperCanvasToolbar';
 
 interface PaperCanvasProps {
   bodyDocument: BodyEditorDocument;
+  bodyEditorRef?: Ref<BodyEditorHandle>;
   paperDraft: PaperDraft;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
   onPasteWarningsChange: (warnings: string[]) => void;
@@ -21,6 +24,7 @@ const getBlocksWrapperClass = (kind: GhostPageViewModel['kind']): string => {
 
 export const PaperCanvas = ({
   bodyDocument,
+  bodyEditorRef,
   paperDraft,
   onBodyDocumentChange,
   onPasteWarningsChange,
@@ -35,6 +39,7 @@ export const PaperCanvas = ({
               <PaperCanvasBlock
                 block={block}
                 bodyDocument={bodyDocument}
+                bodyEditorRef={block.kind === 'body-editor' ? bodyEditorRef : undefined}
                 key={block.id}
                 onBodyDocumentChange={onBodyDocumentChange}
                 onPasteWarningsChange={onPasteWarningsChange}

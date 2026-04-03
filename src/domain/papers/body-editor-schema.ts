@@ -1,13 +1,25 @@
 import { z } from 'zod';
 
 export const supportedBodyEditorHeadingLevels = [1, 2, 3, 4, 5] as const;
-export const supportedBodyEditorMarks = ['bold', 'italic'] as const;
+export const supportedBodyEditorMarks = ['bold', 'italic', 'citation'] as const;
 type SupportedBodyEditorHeadingLevel =
   (typeof supportedBodyEditorHeadingLevels)[number];
 
-const bodyEditorMarkSchema = z.object({
-  type: z.enum(supportedBodyEditorMarks),
+const bodyEditorSimpleMarkSchema = z.object({
+  type: z.enum(['bold', 'italic']),
 });
+
+const bodyEditorCitationMarkSchema = z.object({
+  attrs: z.object({
+    referenceId: z.string().min(1),
+  }),
+  type: z.literal('citation'),
+});
+
+const bodyEditorMarkSchema = z.union([
+  bodyEditorSimpleMarkSchema,
+  bodyEditorCitationMarkSchema,
+]);
 
 const bodyEditorHardBreakSchema = z.object({
   type: z.literal('hardBreak'),
@@ -88,7 +100,13 @@ const normalizeMarks = (value: unknown): BodyEditorMark[] | undefined => {
   }
 
   const marks = value
-    .map((mark) => bodyEditorMarkSchema.safeParse(mark))
+    .map((raw) => {
+      const candidate = raw as { type?: unknown; attrs?: unknown };
+      if (candidate.type === 'citation') {
+        return bodyEditorCitationMarkSchema.safeParse(candidate);
+      }
+      return bodyEditorSimpleMarkSchema.safeParse(candidate);
+    })
     .filter((result) => result.success)
     .map((result) => result.data);
 

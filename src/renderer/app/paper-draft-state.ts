@@ -8,6 +8,7 @@ import {
 } from '@domain/papers/paper-issues';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
 import type {
   Paper,
   UpdatePaperMetadataInput,
@@ -16,11 +17,17 @@ import type {
 export const applyOptimisticPaperMetadataUpdate = (
   draft: PaperDraft,
   input: UpdatePaperMetadataInput,
-): PaperDraft => applyPaperMetadataUpdateToDraft(draft, input);
+  references?: ReferenceEntry[],
+): PaperDraft => {
+  const updated = applyPaperMetadataUpdateToDraft(draft, input);
+  if (!references) return updated;
+  return { ...updated, ghostPages: buildGhostPageViewModels({ ...updated, references }) };
+};
 
 export const applyOptimisticPaperBodyUpdate = (
   draft: PaperDraft,
   bodyDoc: BodyEditorDocument,
+  references?: ReferenceEntry[],
 ): PaperDraft => {
   const nextDraft: PaperDraft = {
     ...draft,
@@ -32,14 +39,23 @@ export const applyOptimisticPaperBodyUpdate = (
 
   return {
     ...nextDraft,
-    ghostPages: buildGhostPageViewModels(nextDraft),
+    ghostPages: buildGhostPageViewModels({ ...nextDraft, references }),
   };
 };
+
+export const rebuildGhostPagesWithReferences = (
+  draft: PaperDraft,
+  references: ReferenceEntry[],
+): PaperDraft => ({
+  ...draft,
+  ghostPages: buildGhostPageViewModels({ ...draft, references }),
+});
 
 export const getPaperInspectorIssues = (
   draft: PaperDraft | null,
   supplementaryIssues: PaperIssue[] = [],
-): PaperIssue[] => (draft ? [...evaluatePaperIssues(draft), ...supplementaryIssues] : supplementaryIssues);
+  references: ReferenceEntry[] = [],
+): PaperIssue[] => (draft ? [...evaluatePaperIssues(draft, references), ...supplementaryIssues] : supplementaryIssues);
 
 export const upsertPaperInCourseCollections = (
   coursePapers: Record<string, Paper[]>,

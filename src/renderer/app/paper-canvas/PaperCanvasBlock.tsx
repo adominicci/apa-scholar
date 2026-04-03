@@ -1,10 +1,12 @@
+import type { Ref } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { GhostPageBlockViewModel, GhostPageViewModel } from '@domain/papers/ghost-page-view-model';
-import { BodyEditor } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
+import { BodyEditor, type BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 
 interface PaperCanvasBlockProps {
   block: GhostPageBlockViewModel;
   bodyDocument: BodyEditorDocument;
+  bodyEditorRef?: Ref<BodyEditorHandle>;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
   onPasteWarningsChange: (warnings: string[]) => void;
   pageKind: GhostPageViewModel['kind'];
@@ -13,6 +15,7 @@ interface PaperCanvasBlockProps {
 export const PaperCanvasBlock = ({
   block,
   bodyDocument,
+  bodyEditorRef,
   onBodyDocumentChange,
   onPasteWarningsChange,
   pageKind,
@@ -59,9 +62,21 @@ export const PaperCanvasBlock = ({
     );
   }
 
+  if (block.kind === 'reference-line') {
+    return (
+      <p
+        className="font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)]"
+        style={{ paddingLeft: '2em', textIndent: '-2em' }}
+      >
+        {block.text}
+      </p>
+    );
+  }
+
   if (block.kind === 'body-editor') {
     return (
       <BodyEditor
+        ref={bodyEditorRef}
         document={block.document ?? bodyDocument}
         onChange={onBodyDocumentChange}
         onPasteWarningsChange={onPasteWarningsChange}
