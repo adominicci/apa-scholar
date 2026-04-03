@@ -432,18 +432,14 @@ export const App = () => {
     };
   }, [api, shellState.selectedPaperId]);
 
-  // Rebuild ghost pages when references or the draft change so the references page stays current.
+  // Rebuild ghost pages when references change so the references page stays current.
   const prevReferencesRef = useRef<ReferenceEntry[] | undefined>(undefined);
-  const prevDraftRef = useRef<PaperDraft | null>(null);
   useEffect(() => {
     const selectedPaperId = shellState.selectedPaperId;
     if (!selectedPaperId) return;
     const refs = paperReferences[selectedPaperId];
-    const draft = paperDetails[selectedPaperId] ?? null;
-    if (refs === prevReferencesRef.current && draft === prevDraftRef.current) return;
+    if (refs === prevReferencesRef.current) return;
     prevReferencesRef.current = refs;
-    prevDraftRef.current = draft;
-    if (!draft) return;
     const refsToUse = refs ?? [];
     setPaperDetails((current) => {
       const currentDraft = current[selectedPaperId];
@@ -453,7 +449,7 @@ export const App = () => {
         [selectedPaperId]: rebuildGhostPagesWithReferences(currentDraft, refsToUse),
       };
     });
-  }, [paperReferences, paperDetails, shellState.selectedPaperId]);
+  }, [paperReferences, shellState.selectedPaperId]);
 
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
