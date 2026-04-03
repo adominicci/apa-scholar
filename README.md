@@ -1,6 +1,6 @@
 # APA Scholar
 
-APA Scholar is a local-first Electron desktop app for drafting APA-compliant academic papers. This repository currently contains the secure project foundation for the macOS-first workspace skeleton: Electron Forge, Vite, React, TypeScript, Tailwind CSS v4, typed preload boundaries, and the first placeholder shell.
+APA Scholar is a local-first Electron desktop app for drafting APA-compliant academic papers. The macOS-first workspace includes the full workspace skeleton (course and paper navigation, template engine, ghost-page rendering), the writing core (body editor, paste engine, APA rules engine with issues panel), and initial references management. Built with Electron Forge, Vite, React, TypeScript, and Tailwind CSS v4.
 
 ## Foundation Principles
 

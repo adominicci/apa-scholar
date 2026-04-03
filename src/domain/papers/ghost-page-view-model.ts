@@ -6,12 +6,14 @@ import type {
   PaperContent,
   PaperMeta,
 } from '@domain/shared/persistence-models';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
+import { formatReferenceApaPlainText } from '@domain/references/apa-formatter';
 
 export interface GhostPageBlockViewModel {
   align?: 'center' | 'left';
   document?: BodyEditorDocument;
   id: string;
-  kind: 'body-editor' | 'empty-state' | 'line' | 'section-heading' | 'textarea' | 'title';
+  kind: 'body-editor' | 'empty-state' | 'line' | 'reference-line' | 'section-heading' | 'textarea' | 'title';
   text: string;
 }
 
@@ -44,10 +46,42 @@ const getPageHeader = (
   right: `${pageNumber}`,
 });
 
+const buildReferencesPageBlocks = (
+  references: ReferenceEntry[],
+): GhostPageBlockViewModel[] => {
+  const heading: GhostPageBlockViewModel = {
+    id: 'references-heading',
+    kind: 'section-heading',
+    text: 'References',
+  };
+
+  if (references.length === 0) {
+    return [
+      heading,
+      {
+        id: 'references-empty-state',
+        kind: 'empty-state',
+        text: 'No references yet. Add references in the inspector to build this page automatically.',
+      },
+    ];
+  }
+
+  // References are already sorted by sortKey from the repository
+  return [
+    heading,
+    ...references.map((ref) => ({
+      id: `reference-${ref.id}`,
+      kind: 'reference-line' as const,
+      text: formatReferenceApaPlainText(ref),
+    })),
+  ];
+};
+
 export const buildGhostPageViewModels = (input: {
   paper: Paper;
   paperContent: PaperContent;
   paperMeta: PaperMeta;
+  references?: ReferenceEntry[];
 }): GhostPageViewModel[] => {
   const titlePageBlocks =
     input.paper.paperType === 'professional'
@@ -179,18 +213,7 @@ export const buildGhostPageViewModels = (input: {
       title: 'Body Draft',
     },
     {
-      blocks: [
-        {
-          id: 'references-heading',
-          kind: 'section-heading',
-          text: 'References',
-        },
-        {
-          id: 'references-empty-state',
-          kind: 'empty-state',
-          text: 'References will appear here in alphabetical order once the citation and references milestone is connected.',
-        },
-      ],
+      blocks: buildReferencesPageBlocks(input.references ?? []),
       header: getPageHeader(input.paper, input.paperMeta, pages.length + 2),
       id: `${input.paper.id}-references-page`,
       kind: 'references-page',

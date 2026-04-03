@@ -1,8 +1,8 @@
 # Task 02 - Implement APA student paper template
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: add the first APA template for standard student papers.
 - Why: this is the primary path for the main target user.

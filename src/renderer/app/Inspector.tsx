@@ -26,6 +26,7 @@ interface InspectorProps {
   onCollapseToggle: () => void;
   onDeleteReference: (referenceId: string) => void;
   onEditReference: (referenceId: string) => void;
+  onInsertCitation?: (referenceId: string) => void;
   onInspectorTabChange: (tab: InspectorTab) => void;
   onPaperIssueAutofix: (issue: PaperIssue) => void;
   onPaperMetadataChange: (input: UpdatePaperMetadataInput) => void;
@@ -53,6 +54,7 @@ export const Inspector = ({
   onCollapseToggle,
   onDeleteReference,
   onEditReference,
+  onInsertCitation,
   onInspectorTabChange,
   onPaperIssueAutofix,
   onPaperMetadataChange,
@@ -171,6 +173,7 @@ export const Inspector = ({
               onAddReference={onAddReference}
               onEditReference={onEditReference}
               onDeleteReference={onDeleteReference}
+              onInsertCitation={onInsertCitation}
             />
           ) : inspectorTab === 'issues' ? (
             <>

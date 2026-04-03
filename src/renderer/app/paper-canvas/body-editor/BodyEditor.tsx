@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { BodyEditorPasteResult } from '@application/services/paste-engine';
 import {
   detectBodyEditorClipboardWarnings,
@@ -12,6 +12,10 @@ import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serial
 import { createBodyEditorExtensions } from '@renderer/app/paper-canvas/body-editor/create-body-editor-extensions';
 import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteReviewModal';
 
+export interface BodyEditorHandle {
+  insertCitation: (referenceId: string, citationText: string) => void;
+}
+
 interface BodyEditorProps {
   document: BodyEditorDocument;
   onChange: (document: BodyEditorDocument) => void;
@@ -19,12 +23,12 @@ interface BodyEditorProps {
   placeholder: string;
 }
 
-export const BodyEditor = ({
+export const BodyEditor = forwardRef<BodyEditorHandle, BodyEditorProps>(({
   document,
   onChange,
   onPasteWarningsChange,
   placeholder,
-}: BodyEditorProps) => {
+}, ref) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
   const [pendingPaste, setPendingPaste] = useState<BodyEditorPasteResult | null>(null);
@@ -100,6 +104,21 @@ export const BodyEditor = ({
     },
   });
 
+  useImperativeHandle(ref, () => ({
+    insertCitation(referenceId: string, citationText: string) {
+      if (!editor) return;
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'text',
+          text: citationText,
+          marks: [{ type: 'citation', attrs: { referenceId } }],
+        })
+        .run();
+    },
+  }), [editor]);
+
   useEffect(() => {
     if (!editor) {
       return;
@@ -133,4 +152,6 @@ export const BodyEditor = ({
       />
     </div>
   );
-};
+});
+
+BodyEditor.displayName = 'BodyEditor';

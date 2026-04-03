@@ -1,8 +1,8 @@
 # Task 04 - Generate initial paper records from template
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: create paper records and initial structure from template selection.
 - Why: paper creation should produce a usable guided skeleton immediately.

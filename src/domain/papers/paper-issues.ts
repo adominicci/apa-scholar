@@ -2,9 +2,11 @@ import { z } from 'zod';
 import type {
   BodyEditorBlockNode,
   BodyEditorInlineNode,
+  BodyEditorMark,
   BodyEditorParagraphNode,
 } from '@domain/papers/body-editor-schema';
 import type { PaperDraft } from '@domain/papers/paper-draft';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
 import {
   type Paper,
   type UpdatePaperMetadataInput,
@@ -158,7 +160,51 @@ export const buildPasteWarningIssues = (warnings: string[]): PaperIssue[] =>
     }),
   );
 
-export const evaluatePaperIssues = (draft: PaperDraft): PaperIssue[] => {
+const collectCitationReferenceIds = (marks: BodyEditorMark[] | undefined): string[] => {
+  if (!marks) return [];
+  return marks
+    .filter((m): m is { type: 'citation'; attrs: { referenceId: string } } =>
+      m.type === 'citation' && 'attrs' in m && typeof (m as { attrs?: { referenceId?: unknown } }).attrs?.referenceId === 'string',
+    )
+    .map((m) => m.attrs.referenceId);
+};
+
+const collectAllCitationIds = (draft: PaperDraft): Set<string> => {
+  const ids = new Set<string>();
+
+  const processInline = (node: BodyEditorInlineNode) => {
+    if (node.type === 'text') {
+      for (const refId of collectCitationReferenceIds(node.marks)) {
+        ids.add(refId);
+      }
+    }
+  };
+
+  const processParagraph = (paragraph: BodyEditorParagraphNode) => {
+    for (const inline of paragraph.content ?? []) {
+      processInline(inline);
+    }
+  };
+
+  for (const block of draft.paperContent.bodyDoc.content) {
+    if (block.type === 'blockquote') {
+      for (const paragraph of block.content) {
+        processParagraph(paragraph);
+      }
+    } else {
+      for (const inline of block.content ?? []) {
+        processInline(inline);
+      }
+    }
+  }
+
+  return ids;
+};
+
+export const evaluatePaperIssues = (
+  draft: PaperDraft,
+  references: ReferenceEntry[] = [],
+): PaperIssue[] => {
   const issues: PaperIssue[] = [];
 
   if (!hasText(draft.paperMeta.title)) {
@@ -340,6 +386,49 @@ export const evaluatePaperIssues = (draft: PaperDraft): PaperIssue[] => {
         title: 'Heading levels skip in the body draft.',
       }),
     );
+  }
+
+  // Orphan detection: citations without references and references without citations
+  if (references.length > 0 || hasMeaningfulBodyContent(draft)) {
+    const citedIds = collectAllCitationIds(draft);
+    const referenceIds = new Set(references.map((r) => r.id));
+
+    // Citations pointing to non-existent references
+    for (const citedId of citedIds) {
+      if (!referenceIds.has(citedId)) {
+        issues.push(
+          createIssue({
+            autofix: null,
+            category: 'structure',
+            code: `orphan-citation-${citedId}`,
+            description: 'A citation in the body points to a reference that no longer exists in the reference list.',
+            scope: 'references',
+            severity: 'medium',
+            suggestedFix: 'Remove the orphan citation or re-add the matching reference.',
+            title: 'Citation without a matching reference.',
+          }),
+        );
+      }
+    }
+
+    // References with no corresponding citations
+    for (const ref of references) {
+      if (!citedIds.has(ref.id)) {
+        const refTitle = typeof ref.fields.title === 'string' ? ref.fields.title : 'Untitled';
+        issues.push(
+          createIssue({
+            autofix: null,
+            category: 'advisory',
+            code: `uncited-reference-${ref.id}`,
+            description: `The reference "${refTitle}" is in your list but has no matching citation in the body.`,
+            scope: 'references',
+            severity: 'low',
+            suggestedFix: 'Insert a citation for this reference in the body or remove the unused reference.',
+            title: 'Reference without a citation.',
+          }),
+        );
+      }
+    }
   }
 
   return issues;

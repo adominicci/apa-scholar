@@ -10,6 +10,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import type { Extensions } from '@tiptap/react';
 import { supportedBodyEditorHeadingLevels } from '@domain/papers/body-editor-schema';
+import { CitationMark } from '@renderer/app/paper-canvas/body-editor/citation-mark';
 
 export const createBodyEditorExtensions = (placeholder: string): Extensions => [
   Placeholder.configure({ placeholder }),
@@ -27,6 +28,7 @@ export const createBodyEditorExtensions = (placeholder: string): Extensions => [
   }),
   Bold,
   Italic,
+  CitationMark,
   Heading.configure({
     levels: [...supportedBodyEditorHeadingLevels],
   }).extend({

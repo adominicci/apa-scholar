@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import {
@@ -6,7 +6,9 @@ import {
   type PaperIssue,
 } from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
+import { formatInTextCitation } from '@domain/references/apa-formatter';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
+import type { BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 import type {
   Course,
   CreateCourseInput,
@@ -38,6 +40,7 @@ import {
   applyOptimisticPaperBodyUpdate,
   applyOptimisticPaperMetadataUpdate,
   getPaperInspectorIssues,
+  rebuildGhostPagesWithReferences,
   upsertPaperInCourseCollections,
 } from '@renderer/app/paper-draft-state';
 import { Sidebar } from '@renderer/app/Sidebar';
@@ -109,6 +112,7 @@ export const App = () => {
   const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
   const [referenceFormError, setReferenceFormError] = useState<string | null>(null);
   const [isSavingReference, setIsSavingReference] = useState(false);
+  const bodyEditorRef = useRef<BodyEditorHandle>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
@@ -132,9 +136,12 @@ export const App = () => {
   const activePaperDetail = shellState.selectedPaperId
     ? paperDetails[shellState.selectedPaperId] ?? null
     : null;
+  const activePaperReferences = shellState.selectedPaperId
+    ? paperReferences[shellState.selectedPaperId] ?? []
+    : [];
   const activePaperIssues = useMemo(
-    () => getPaperInspectorIssues(activePaperDetail, activePasteIssues),
-    [activePaperDetail, activePasteIssues],
+    () => getPaperInspectorIssues(activePaperDetail, activePasteIssues, activePaperReferences),
+    [activePaperDetail, activePasteIssues, activePaperReferences],
   );
 
   useEffect(() => {
@@ -425,9 +432,23 @@ export const App = () => {
     };
   }, [api, shellState.selectedPaperId]);
 
-  const activePaperReferences = shellState.selectedPaperId
-    ? paperReferences[shellState.selectedPaperId] ?? []
-    : [];
+  // Rebuild ghost pages when references change so the references page stays current.
+  const prevReferencesRef = useRef<ReferenceEntry[] | null>(null);
+  useEffect(() => {
+    const selectedPaperId = shellState.selectedPaperId;
+    if (!selectedPaperId) return;
+    const refs = paperReferences[selectedPaperId] ?? [];
+    if (refs === prevReferencesRef.current) return;
+    prevReferencesRef.current = refs;
+    setPaperDetails((current) => {
+      const draft = current[selectedPaperId];
+      if (!draft) return current;
+      return {
+        ...current,
+        [selectedPaperId]: rebuildGhostPagesWithReferences(draft, refs),
+      };
+    });
+  }, [paperReferences, shellState.selectedPaperId]);
 
   const openCourse = (courseId: string) => {
     dispatch({ type: 'navigateCourse', courseId });
@@ -898,6 +919,16 @@ export const App = () => {
     }
   };
 
+  const handleInsertCitation = useCallback(
+    (referenceId: string) => {
+      const ref = activePaperReferences.find((r) => r.id === referenceId);
+      if (!ref) return;
+      const citationText = formatInTextCitation(ref);
+      bodyEditorRef.current?.insertCitation(referenceId, citationText);
+    },
+    [activePaperReferences],
+  );
+
   const renderHomeView = () => (
     <section className="flex h-full flex-col justify-center px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <p className="label-caps text-[var(--color-accent-strong)]">
@@ -1070,6 +1101,7 @@ export const App = () => {
       {paperDetail ? (
         <PaperCanvas
           bodyDocument={paperDetail.paperContent.bodyDoc}
+          bodyEditorRef={bodyEditorRef}
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
@@ -1245,6 +1277,7 @@ export const App = () => {
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
           onDeleteReference={handleDeleteReference}
           onEditReference={openEditReferenceModal}
+          onInsertCitation={handleInsertCitation}
           onInspectorTabChange={(tab) => dispatch({ type: 'set-inspector-tab', tab })}
           onPaperIssueAutofix={handlePaperIssueAutofix}
           onPaperMetadataChange={handlePaperMetadataChange}
