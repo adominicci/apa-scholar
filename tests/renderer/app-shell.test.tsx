@@ -222,6 +222,29 @@ const createTestApi = (seed?: {
         return updatedDraft;
       }),
     },
+    references: {
+      listByPaper: vi.fn(async () => []),
+      create: vi.fn(async () => ({
+        id: 'ref-1',
+        paperId: 'paper-1',
+        referenceType: 'book' as const,
+        fields: { authors: [{ family: 'Test', given: 'Author' }], year: '2020', title: 'Test', publisher: 'Test' },
+        sortKey: 'test|2020|test',
+        createdAt: '2026-03-07T14:00:00.000Z',
+        updatedAt: '2026-03-07T14:00:00.000Z',
+      })),
+      getById: vi.fn(async () => null),
+      update: vi.fn(async () => ({
+        id: 'ref-1',
+        paperId: 'paper-1',
+        referenceType: 'book' as const,
+        fields: { authors: [{ family: 'Test', given: 'Author' }], year: '2020', title: 'Test', publisher: 'Test' },
+        sortKey: 'test|2020|test',
+        createdAt: '2026-03-07T14:00:00.000Z',
+        updatedAt: '2026-03-07T14:00:00.000Z',
+      })),
+      delete: vi.fn(async () => undefined),
+    },
     search: {
       query: vi.fn(async () => ({
         courses: [],
@@ -430,9 +453,7 @@ describe('App', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
-    expect(screen.getByText('Title page scaffold')).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Paper body draft' })).toBeVisible();
-    expect(screen.getByText('References scaffold')).toBeVisible();
 
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
     expect(within(inspector).getAllByText('Paper details')[0]).toBeVisible();
@@ -467,9 +488,7 @@ describe('App', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Abstract Draft' }),
     ).toBeVisible();
-    expect(screen.getByText('Abstract scaffold')).toBeVisible();
     expect(screen.getAllByText('Abstract')[0]).toBeVisible();
-    expect(screen.getByText('Body draft')).toBeVisible();
   });
 
   it('reopens an existing paper by loading its persisted paper draft detail', async () => {
@@ -498,8 +517,9 @@ describe('App', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Literature Review' }),
     ).toBeVisible();
-    expect(screen.getByText('Title page scaffold')).toBeVisible();
-    expect(screen.getByText('References scaffold')).toBeVisible();
+    expect(
+      await screen.findByRole('textbox', { name: 'Paper body draft' }),
+    ).toBeVisible();
 
     await waitFor(() => {
       expect(api.papers.getById).toHaveBeenCalledWith('paper-1');
@@ -895,7 +915,7 @@ describe('App', () => {
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
 
     const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
-    expect(within(inspector).getByText('Issues')).toBeVisible();
+    expect(within(inspector).getByRole('button', { name: 'Issues' })).toBeVisible();
     expect(within(inspector).getByText('High priority')).toBeVisible();
     expect(within(inspector).getByText('Author name is required.')).toBeVisible();
 
@@ -1111,7 +1131,7 @@ describe('App', () => {
     expect(screen.queryByLabelText('Course name')).not.toBeInTheDocument();
     expect(screen.getByText('Running head is required.')).toBeVisible();
     expect(screen.queryByText('Course name is required.')).not.toBeInTheDocument();
-    expect(screen.getByText('Abstract scaffold')).toBeVisible();
+    expect(screen.getAllByText('Abstract')[0]).toBeVisible();
     expect(screen.getAllByText('Running head: Short title')[0]).toBeVisible();
   });
 

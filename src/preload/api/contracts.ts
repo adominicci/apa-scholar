@@ -1,6 +1,11 @@
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type {
+  CreateReferenceInput,
+  ReferenceEntry,
+  UpdateReferenceInput,
+} from '@domain/references/reference-entry';
+import type {
   Course,
   CreateCourseInput,
   CreatePaperInput,
@@ -36,6 +41,13 @@ export interface ApaScholarApi {
       paperId: string,
       input: UpdatePaperMetadataInput,
     ) => Promise<PaperDraft>;
+  };
+  references: {
+    listByPaper: (paperId: string) => Promise<ReferenceEntry[]>;
+    create: (input: CreateReferenceInput) => Promise<ReferenceEntry>;
+    getById: (referenceId: string) => Promise<ReferenceEntry | null>;
+    update: (referenceId: string, input: UpdateReferenceInput) => Promise<ReferenceEntry>;
+    delete: (referenceId: string) => Promise<void>;
   };
   search: {
     query: (query: string) => Promise<WorkspaceSearchPlaceholderResult>;

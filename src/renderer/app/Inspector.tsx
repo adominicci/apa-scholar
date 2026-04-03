@@ -1,13 +1,17 @@
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { PaperIssue } from '@domain/papers/paper-issues';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import {
   AlertTriangleIcon,
+  BookmarkIcon,
   ChevronLeftIcon,
   InfoIcon,
   SearchIcon,
 } from '@renderer/app/icons';
 import { PaperInspectorPanel } from '@renderer/app/inspector/PaperInspectorPanel';
+import { ReferencesPanel } from '@renderer/app/inspector/ReferencesPanel';
+import type { InspectorTab } from '@renderer/app/workspace-shell-state';
 import type { UpdatePaperMetadataInput } from '@domain/shared/persistence-models';
 
 interface InspectorProps {
@@ -15,8 +19,14 @@ interface InspectorProps {
   activeCourse: Course | null;
   activePaper: Paper | null;
   activePaperDetail: PaperDraft | null;
+  inspectorTab: InspectorTab;
   paperIssues: PaperIssue[];
+  paperReferences: ReferenceEntry[];
+  onAddReference: () => void;
   onCollapseToggle: () => void;
+  onDeleteReference: (referenceId: string) => void;
+  onEditReference: (referenceId: string) => void;
+  onInspectorTabChange: (tab: InspectorTab) => void;
   onPaperIssueAutofix: (issue: PaperIssue) => void;
   onPaperMetadataChange: (input: UpdatePaperMetadataInput) => void;
 }
@@ -24,13 +34,26 @@ interface InspectorProps {
 const railButtonClass =
   'flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] text-[var(--color-muted)] transition hover:text-[var(--color-accent)]';
 
+const tabButtonClass = (isActive: boolean) =>
+  `px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] transition ${
+    isActive
+      ? 'text-[var(--color-accent-strong)] border-b-2 border-[var(--color-accent)]'
+      : 'text-[var(--color-muted)] hover:text-[var(--color-ink-strong)]'
+  }`;
+
 export const Inspector = ({
   collapsed,
   activeCourse,
   activePaper,
   activePaperDetail,
+  inspectorTab,
   paperIssues,
+  paperReferences,
+  onAddReference,
   onCollapseToggle,
+  onDeleteReference,
+  onEditReference,
+  onInspectorTabChange,
   onPaperIssueAutofix,
   onPaperMetadataChange,
 }: InspectorProps) => (
@@ -49,7 +72,7 @@ export const Inspector = ({
       <button
         aria-label="Details"
         className={railButtonClass}
-        onClick={onCollapseToggle}
+        onClick={() => onInspectorTabChange('details')}
         type="button"
       >
         <InfoIcon />
@@ -57,9 +80,18 @@ export const Inspector = ({
       <button
         aria-label="Issues"
         className={railButtonClass}
+        onClick={() => onInspectorTabChange('issues')}
         type="button"
       >
         <AlertTriangleIcon />
+      </button>
+      <button
+        aria-label="References"
+        className={railButtonClass}
+        onClick={() => onInspectorTabChange('references')}
+        type="button"
+      >
+        <BookmarkIcon />
       </button>
       <button
         aria-label="Search"
@@ -91,9 +123,35 @@ export const Inspector = ({
           <p className="label-caps">
             Inspector
           </p>
-          <h2 className="mt-1 text-sm font-bold text-[var(--color-ink-strong)]">
-            {activePaper ? 'Paper details' : activeCourse ? 'Course details' : 'Workspace guide'}
-          </h2>
+          {activePaper ? (
+            <div className="mt-2 flex gap-1">
+              <button
+                className={tabButtonClass(inspectorTab === 'details')}
+                onClick={() => onInspectorTabChange('details')}
+                type="button"
+              >
+                Details
+              </button>
+              <button
+                className={tabButtonClass(inspectorTab === 'issues')}
+                onClick={() => onInspectorTabChange('issues')}
+                type="button"
+              >
+                Issues
+              </button>
+              <button
+                className={tabButtonClass(inspectorTab === 'references')}
+                onClick={() => onInspectorTabChange('references')}
+                type="button"
+              >
+                References
+              </button>
+            </div>
+          ) : (
+            <h2 className="mt-1 text-sm font-bold text-[var(--color-ink-strong)]">
+              {activeCourse ? 'Course details' : 'Workspace guide'}
+            </h2>
+          )}
         </div>
         <button
           aria-label="Collapse inspector"
@@ -107,12 +165,50 @@ export const Inspector = ({
 
       <div className="border-b border-[var(--color-line)] p-4">
         {activePaper && activePaperDetail ? (
-          <PaperInspectorPanel
-            issues={paperIssues}
-            paperDraft={activePaperDetail}
-            onIssueAutofix={onPaperIssueAutofix}
-            onMetadataChange={onPaperMetadataChange}
-          />
+          inspectorTab === 'references' ? (
+            <ReferencesPanel
+              references={paperReferences}
+              onAddReference={onAddReference}
+              onEditReference={onEditReference}
+              onDeleteReference={onDeleteReference}
+            />
+          ) : inspectorTab === 'issues' ? (
+            <>
+              <p className="label-caps">Issues</p>
+              {paperIssues.length > 0 ? (
+                <div className="mt-4 space-y-2">
+                  {paperIssues.map((issue) => (
+                    <div
+                      className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] p-3"
+                      key={issue.code}
+                    >
+                      <p className="text-sm text-[var(--color-ink-strong)]">{issue.title}</p>
+                      {issue.autofix && (
+                        <button
+                          className="mt-1 text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
+                          onClick={() => onPaperIssueAutofix(issue)}
+                          type="button"
+                        >
+                          Fix
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+                  No issues found. Your paper looks good!
+                </p>
+              )}
+            </>
+          ) : (
+            <PaperInspectorPanel
+              issues={paperIssues}
+              paperDraft={activePaperDetail}
+              onIssueAutofix={onPaperIssueAutofix}
+              onMetadataChange={onPaperMetadataChange}
+            />
+          )
         ) : activeCourse ? (
           <>
             <p className="label-caps">

@@ -2,9 +2,19 @@ import { buildPaperDraft } from '@application/services/build-paper-draft';
 import type {
   CourseRepository,
   PaperRepository,
+  ReferenceRepository,
   SettingsRepository,
 } from '@application/contracts/persistence-repositories';
 import { serializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
+import {
+  createReferenceInputSchema,
+  updateReferenceInputSchema,
+} from '@domain/references/reference-entry';
+import type {
+  CreateReferenceInput,
+  ReferenceEntry,
+  UpdateReferenceInput,
+} from '@domain/references/reference-entry';
 import {
   createPaperInputSchema,
   updatePaperMetadataInputSchema,
@@ -31,11 +41,19 @@ export interface PersistenceServices {
       input: unknown,
     ) => ReturnType<typeof buildPaperDraft>;
   };
+  references: {
+    listByPaper: (paperId: string) => ReferenceEntry[];
+    create: (input: unknown) => ReferenceEntry;
+    getById: (referenceId: string) => ReferenceEntry | null;
+    update: (referenceId: string, input: unknown) => ReferenceEntry;
+    delete: (referenceId: string) => void;
+  };
 }
 
 export const createPersistenceServices = (repositories: {
   courseRepository: CourseRepository;
   paperRepository: PaperRepository;
+  referenceRepository: ReferenceRepository;
   settingsRepository: SettingsRepository;
 }): PersistenceServices => ({
   courses: {
@@ -106,5 +124,18 @@ export const createPersistenceServices = (repositories: {
 
       return buildPaperDraft(updatedAggregate);
     },
+  },
+  references: {
+    listByPaper: (paperId) => repositories.referenceRepository.listByPaper(paperId),
+    create: (input) => {
+      const parsedInput = createReferenceInputSchema.parse(input);
+      return repositories.referenceRepository.create(parsedInput);
+    },
+    getById: (referenceId) => repositories.referenceRepository.getById(referenceId),
+    update: (referenceId, input) => {
+      const parsedInput = updateReferenceInputSchema.parse(input);
+      return repositories.referenceRepository.update(referenceId, parsedInput);
+    },
+    delete: (referenceId) => repositories.referenceRepository.delete(referenceId),
   },
 });

@@ -35,6 +35,12 @@ describe('createPersistenceIpcHandlers', () => {
       status: 'placeholder',
     });
 
+    const listReferences = vi.fn().mockResolvedValue([]);
+    const createReference = vi.fn().mockResolvedValue({ id: 'ref-1' });
+    const getReferenceById = vi.fn().mockResolvedValue(null);
+    const updateReference = vi.fn().mockResolvedValue({ id: 'ref-1' });
+    const deleteReference = vi.fn().mockResolvedValue(undefined);
+
     const handlers = createPersistenceIpcHandlers({
       courses: {
         create: createCourse,
@@ -46,6 +52,13 @@ describe('createPersistenceIpcHandlers', () => {
         listByCourse: listPapersByCourse,
         updateBodyContent: updatePaperBodyContent,
         updateMetadata: updatePaperMetadata,
+      },
+      references: {
+        listByPaper: listReferences,
+        create: createReference,
+        getById: getReferenceById,
+        update: updateReference,
+        delete: deleteReference,
       },
       search: {
         query: querySearch,

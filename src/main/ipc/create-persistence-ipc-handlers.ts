@@ -1,10 +1,14 @@
 import {
+  deleteReferencePayloadSchema,
   getPaperByIdPayloadSchema,
+  getReferenceByIdPayloadSchema,
   listPapersByCoursePayloadSchema,
+  listReferencesByPaperPayloadSchema,
   persistenceIpcChannels,
   searchQueryPayloadSchema,
   updatePaperBodyContentPayloadSchema,
   updatePaperMetadataPayloadSchema,
+  updateReferencePayloadSchema,
 } from '@application/contracts/persistence-ipc';
 
 export interface PersistenceIpcServices {
@@ -18,6 +22,13 @@ export interface PersistenceIpcServices {
     create: (input: unknown) => unknown;
     updateBodyContent: (paperId: string, bodyDoc: unknown) => unknown;
     updateMetadata: (paperId: string, input: unknown) => unknown;
+  };
+  references: {
+    listByPaper: (paperId: string) => unknown;
+    create: (input: unknown) => unknown;
+    getById: (referenceId: string) => unknown;
+    update: (referenceId: string, input: unknown) => unknown;
+    delete: (referenceId: string) => unknown;
   };
   search: {
     query: (query: string) => unknown;
@@ -48,6 +59,24 @@ export const createPersistenceIpcHandlers = (
 
     return services.papers.updateMetadata(payload.paperId, payload.input);
   },
+  [persistenceIpcChannels.referencesListByPaper]: (input: unknown) =>
+    services.references.listByPaper(
+      listReferencesByPaperPayloadSchema.parse(input).paperId,
+    ),
+  [persistenceIpcChannels.referencesCreate]: (input: unknown) =>
+    services.references.create(input),
+  [persistenceIpcChannels.referencesGetById]: (input: unknown) =>
+    services.references.getById(
+      getReferenceByIdPayloadSchema.parse(input).referenceId,
+    ),
+  [persistenceIpcChannels.referencesUpdate]: (input: unknown) => {
+    const payload = updateReferencePayloadSchema.parse(input);
+    return services.references.update(payload.referenceId, payload.input);
+  },
+  [persistenceIpcChannels.referencesDelete]: (input: unknown) =>
+    services.references.delete(
+      deleteReferencePayloadSchema.parse(input).referenceId,
+    ),
   [persistenceIpcChannels.searchQuery]: (input: unknown) =>
     services.search.query(searchQueryPayloadSchema.parse(input).query),
 });
