@@ -1,8 +1,8 @@
 # Task 02 - Verify local packaging
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: verify that local packaging succeeds outside the dev loop.
 - Why: build-time issues should be caught before release prep moves further.
