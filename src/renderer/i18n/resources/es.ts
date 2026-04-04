@@ -247,6 +247,7 @@ const es: TranslationResource = {
     unableToLoadPapers: 'No se pudieron cargar los trabajos de este curso en este momento.',
     unableToLoadPaper: 'No se pudo cargar este borrador de trabajo en este momento.',
     unableToCreateCourse: 'No se pudo crear el curso en este momento. Intenta de nuevo.',
+    unableToRenameCourse: 'No se pudo renombrar el curso en este momento. Intenta de nuevo.',
     unableToCreatePaper: 'No se pudo crear el trabajo en este momento. Intenta de nuevo.',
     courseNameRequired: 'El nombre del curso es obligatorio.',
     chooseCourse: 'Selecciona un curso antes de crear el trabajo.',

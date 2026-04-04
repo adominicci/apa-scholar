@@ -69,7 +69,6 @@ export const createExportPdfHandler = (deps: {
     // the React effect registers its listener.
     await new Promise<void>((resolve, reject) => {
       const readyHandler = () => {
-        clearTimeout(timeout);
         printWindow!.webContents.send('export:data', { aggregate, references });
       };
 

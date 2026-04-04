@@ -503,7 +503,7 @@ export const App = () => {
         sortCourses(current.map((c) => (c.id === updated.id ? updated : c))),
       );
     } catch {
-      setWorkspaceError(t('errors.unableToCreateCourse'));
+      setWorkspaceError(t('errors.unableToRenameCourse'));
     }
   };
 

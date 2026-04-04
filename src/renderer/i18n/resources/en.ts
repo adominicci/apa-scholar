@@ -244,6 +244,7 @@ const en = {
     unableToLoadPapers: 'Unable to load papers for this course right now.',
     unableToLoadPaper: 'Unable to load this paper draft right now.',
     unableToCreateCourse: 'Unable to create the course right now. Try again.',
+    unableToRenameCourse: 'Unable to rename the course right now. Try again.',
     unableToCreatePaper: 'Unable to create the paper right now. Try again.',
     courseNameRequired: 'Course name is required.',
     chooseCourse: 'Choose a course before creating the paper.',
