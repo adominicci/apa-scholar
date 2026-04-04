@@ -1,10 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import type { ReferenceAuthor, ReferenceType } from '@domain/references/reference-entry';
 import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
 import {
   emptyAuthor,
   getFieldsForType,
   supportedReferenceTypes,
-  typeLabels,
+  typeLabelKeys,
 } from '@renderer/app/inspector/reference-form-helpers';
 
 interface ReferenceFormModalProps {
@@ -32,7 +33,10 @@ const AuthorRows = ({
   authors: ReferenceAuthor[];
   label: string;
   onChange: (authors: ReferenceAuthor[]) => void;
-}) => (
+}) => {
+  const { t } = useTranslation();
+
+  return (
   <div>
     <div className="flex items-center justify-between">
       <span className="text-sm text-[var(--color-ink-strong)]">{label}</span>
@@ -41,7 +45,7 @@ const AuthorRows = ({
         onClick={() => onChange([...authors, emptyAuthor()])}
         type="button"
       >
-        + Add
+        {t('common.add')}
       </button>
     </div>
     <div className="mt-1 space-y-2">
@@ -55,7 +59,7 @@ const AuthorRows = ({
               next[index] = { ...author, family: event.target.value };
               onChange(next);
             }}
-            placeholder="Family name"
+            placeholder={t('referenceForm.familyName')}
             value={author.family}
           />
           <input
@@ -66,7 +70,7 @@ const AuthorRows = ({
               next[index] = { ...author, given: event.target.value };
               onChange(next);
             }}
-            placeholder="Given name"
+            placeholder={t('referenceForm.givenName')}
             value={author.given}
           />
           {authors.length > 1 && (
@@ -76,14 +80,15 @@ const AuthorRows = ({
               onClick={() => onChange(authors.filter((_, i) => i !== index))}
               type="button"
             >
-              Remove
+              {t('common.remove')}
             </button>
           )}
         </div>
       ))}
     </div>
   </div>
-);
+  );
+};
 
 export const ReferenceFormModal = ({
   isOpen,
@@ -95,6 +100,8 @@ export const ReferenceFormModal = ({
   onSubmit,
   onClose,
 }: ReferenceFormModalProps) => {
+  const { t } = useTranslation();
+
   if (!isOpen) {
     return null;
   }
@@ -118,13 +125,13 @@ export const ReferenceFormModal = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="label-caps">
-                {isEditing ? 'Edit reference' : 'New reference'}
+                {isEditing ? t('referenceForm.editReference') : t('referenceForm.newReference')}
               </p>
               <h2
                 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]"
                 id="reference-form-title"
               >
-                {isEditing ? 'Update reference details' : 'Add a reference to your list'}
+                {isEditing ? t('referenceForm.editHeading') : t('referenceForm.addHeading')}
               </h2>
             </div>
             <button
@@ -132,7 +139,7 @@ export const ReferenceFormModal = ({
               onClick={onClose}
               type="button"
             >
-              Close
+              {t('common.close')}
             </button>
           </div>
         </div>
@@ -141,7 +148,7 @@ export const ReferenceFormModal = ({
           <div className="space-y-4">
             {/* Reference type selector */}
             <label className="block text-sm text-[var(--color-ink-strong)]">
-              Reference type
+              {t('referenceForm.referenceType')}
               <select
                 className={inputClass}
                 onChange={(event) =>
@@ -151,7 +158,7 @@ export const ReferenceFormModal = ({
               >
                 {supportedReferenceTypes.map((type) => (
                   <option key={type} value={type}>
-                    {typeLabels[type]}
+                    {t(typeLabelKeys[type])}
                   </option>
                 ))}
               </select>
@@ -160,19 +167,19 @@ export const ReferenceFormModal = ({
             {/* Authors */}
             <AuthorRows
               authors={form.authors}
-              label="Authors"
+              label={t('referenceForm.authors')}
               onChange={(authors) => onFormChange((current) => ({ ...current, authors }))}
             />
 
             {/* Year with unknown checkbox */}
             <div>
               <label className="block text-sm text-[var(--color-ink-strong)]">
-                Year
+                {t('referenceForm.year')}
                 <input
                   className={inputClass}
                   disabled={form.yearUnknown}
                   onChange={(event) => updateField('year', event.target.value)}
-                  placeholder="e.g. 2024"
+                  placeholder={t('referenceForm.yearPlaceholder')}
                   value={form.yearUnknown ? '' : form.year}
                 />
               </label>
@@ -182,7 +189,7 @@ export const ReferenceFormModal = ({
                   onChange={(event) => updateField('yearUnknown', event.target.checked)}
                   type="checkbox"
                 />
-                No date (n.d.)
+                {t('referenceForm.noDateLabel')}
               </label>
             </div>
 
@@ -192,7 +199,7 @@ export const ReferenceFormModal = ({
                 className="block text-sm text-[var(--color-ink-strong)]"
                 key={field.key}
               >
-                {field.label}
+                {t(field.label)}
                 {field.required && (
                   <span className="ml-1 text-[var(--color-accent-strong)]">*</span>
                 )}
@@ -208,7 +215,7 @@ export const ReferenceFormModal = ({
             {form.referenceType === 'edited-book-chapter' && (
               <AuthorRows
                 authors={form.editors}
-                label="Editors"
+                label={t('referenceForm.editors')}
                 onChange={(editors) =>
                   onFormChange((current) => ({ ...current, editors }))
                 }
@@ -230,7 +237,7 @@ export const ReferenceFormModal = ({
               onClick={onClose}
               type="button"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               className={`${shellButtonClass} border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
@@ -240,11 +247,11 @@ export const ReferenceFormModal = ({
             >
               {isSubmitting
                 ? isEditing
-                  ? 'Saving...'
-                  : 'Adding...'
+                  ? t('referenceForm.saving')
+                  : t('referenceForm.adding')
                 : isEditing
-                  ? 'Save changes'
-                  : 'Add reference'}
+                  ? t('referenceForm.saveChanges')
+                  : t('referenceForm.addReference')}
             </button>
           </div>
         </div>

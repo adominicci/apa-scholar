@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { PaperIssue } from '@domain/papers/paper-issues';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
@@ -58,9 +59,12 @@ export const Inspector = ({
   onInspectorTabChange,
   onPaperIssueAutofix,
   onPaperMetadataChange,
-}: InspectorProps) => (
+}: InspectorProps) => {
+  const { t } = useTranslation();
+
+  return (
   <aside
-    aria-label="Inspector panel"
+    aria-label={t('inspector.inspectorPanel')}
     className="relative flex flex-col overflow-hidden border-l border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
     role="complementary"
     style={{ width: collapsed ? 48 : 340 }}
@@ -72,7 +76,7 @@ export const Inspector = ({
       data-visible={collapsed ? 'true' : 'false'}
     >
       <button
-        aria-label="Details"
+        aria-label={t('inspector.details')}
         className={railButtonClass}
         onClick={() => onInspectorTabChange('details')}
         type="button"
@@ -80,7 +84,7 @@ export const Inspector = ({
         <InfoIcon />
       </button>
       <button
-        aria-label="Issues"
+        aria-label={t('inspector.issues')}
         className={railButtonClass}
         onClick={() => onInspectorTabChange('issues')}
         type="button"
@@ -88,7 +92,7 @@ export const Inspector = ({
         <AlertTriangleIcon />
       </button>
       <button
-        aria-label="References"
+        aria-label={t('inspector.references')}
         className={railButtonClass}
         onClick={() => onInspectorTabChange('references')}
         type="button"
@@ -96,7 +100,7 @@ export const Inspector = ({
         <BookmarkIcon />
       </button>
       <button
-        aria-label="Search"
+        aria-label={t('inspector.search')}
         className={railButtonClass}
         type="button"
       >
@@ -104,7 +108,7 @@ export const Inspector = ({
       </button>
       <div className="mt-auto">
         <button
-          aria-label="Expand inspector"
+          aria-label={t('inspector.expandInspector')}
           className={railButtonClass}
           onClick={onCollapseToggle}
           type="button"
@@ -123,7 +127,7 @@ export const Inspector = ({
       <div className="flex items-center justify-between border-b border-[var(--color-line)] p-4">
         <div>
           <p className="label-caps">
-            Inspector
+            {t('inspector.inspector')}
           </p>
           {activePaper ? (
             <div className="mt-2 flex gap-1">
@@ -132,31 +136,31 @@ export const Inspector = ({
                 onClick={() => onInspectorTabChange('details')}
                 type="button"
               >
-                Details
+                {t('inspector.details')}
               </button>
               <button
                 className={tabButtonClass(inspectorTab === 'issues')}
                 onClick={() => onInspectorTabChange('issues')}
                 type="button"
               >
-                Issues
+                {t('inspector.issues')}
               </button>
               <button
                 className={tabButtonClass(inspectorTab === 'references')}
                 onClick={() => onInspectorTabChange('references')}
                 type="button"
               >
-                References
+                {t('inspector.references')}
               </button>
             </div>
           ) : (
             <h2 className="mt-1 text-sm font-bold text-[var(--color-ink-strong)]">
-              {activeCourse ? 'Course details' : 'Workspace guide'}
+              {activeCourse ? t('inspector.courseDetails') : t('inspector.workspaceGuide')}
             </h2>
           )}
         </div>
         <button
-          aria-label="Collapse inspector"
+          aria-label={t('inspector.collapseInspector')}
           className={railButtonClass}
           onClick={onCollapseToggle}
           type="button"
@@ -177,7 +181,7 @@ export const Inspector = ({
             />
           ) : inspectorTab === 'issues' ? (
             <>
-              <p className="label-caps">Issues</p>
+              <p className="label-caps">{t('inspector.issues')}</p>
               {paperIssues.length > 0 ? (
                 <div className="mt-4 space-y-2">
                   {paperIssues.map((issue) => (
@@ -192,7 +196,7 @@ export const Inspector = ({
                           onClick={() => onPaperIssueAutofix(issue)}
                           type="button"
                         >
-                          Fix
+                          {t('common.fix')}
                         </button>
                       )}
                     </div>
@@ -200,7 +204,7 @@ export const Inspector = ({
                 </div>
               ) : (
                 <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-                  No issues found. Your paper looks good!
+                  {t('inspector.noIssues')}
                 </p>
               )}
             </>
@@ -215,31 +219,31 @@ export const Inspector = ({
         ) : activeCourse ? (
           <>
             <p className="label-caps">
-              Course details
+              {t('inspector.courseDetails')}
             </p>
             <div className="mt-4 space-y-4 text-sm">
               <div>
                 <p className="label-caps">
-                  Professor
+                  {t('inspector.professor')}
                 </p>
                 <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.professorName ?? 'Not set yet'}
+                  {activeCourse.professorName ?? t('common.notSetYet')}
                 </p>
               </div>
               <div>
                 <p className="label-caps">
-                  Semester
+                  {t('inspector.semester')}
                 </p>
                 <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.semester ?? 'Not set yet'}
+                  {activeCourse.semester ?? t('common.notSetYet')}
                 </p>
               </div>
               <div>
                 <p className="label-caps">
-                  Institution
+                  {t('inspector.institution')}
                 </p>
                 <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.institution ?? 'Not set yet'}
+                  {activeCourse.institution ?? t('common.notSetYet')}
                 </p>
               </div>
             </div>
@@ -247,11 +251,10 @@ export const Inspector = ({
         ) : (
           <>
             <p className="label-caps">
-              Workspace guide
+              {t('inspector.workspaceGuide')}
             </p>
             <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-              Choose a course to see reusable defaults, or open a paper to keep APA
-              structure and metadata visible while you draft.
+              {t('inspector.workspaceGuideText')}
             </p>
           </>
         )}
@@ -260,24 +263,23 @@ export const Inspector = ({
       {!activePaper && (
         <div className="border-b border-[var(--color-line)] p-4">
           <p className="label-caps">
-            Issues
+            {t('inspector.issues')}
           </p>
           <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-            APA warnings and rule-based prompts will graduate into the dedicated issues
-            workflow in a later milestone.
+            {t('inspector.issuesPlaceholder')}
           </p>
         </div>
       )}
 
       <div className="p-4">
         <p className="label-caps">
-          Search
+          {t('inspector.search')}
         </p>
         <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-          Search is wired at the contract boundary now and will become real once course
-          and paper indexing lands.
+          {t('inspector.searchPlaceholder')}
         </p>
       </div>
     </div>
   </aside>
-);
+  );
+};

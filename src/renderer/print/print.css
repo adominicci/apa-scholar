@@ -1,0 +1,95 @@
+@page {
+  size: letter;
+  margin: 0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-size: 12pt;
+  line-height: 2;
+  color: #000;
+  background: #fff;
+}
+
+.print-page {
+  width: 8.5in;
+  min-height: 11in;
+  padding: 1in;
+  page-break-after: always;
+  position: relative;
+}
+
+.print-page:last-child {
+  page-break-after: auto;
+}
+
+.print-header {
+  position: absolute;
+  top: 0.5in;
+  left: 1in;
+  right: 1in;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12pt;
+  line-height: 1;
+}
+
+.print-header-left {
+  text-transform: uppercase;
+}
+
+.print-blocks {
+  padding-top: 0.5in;
+}
+
+.print-blocks--title-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 9in;
+  text-align: center;
+}
+
+.print-block--title {
+  font-weight: bold;
+  text-align: center;
+}
+
+.print-block--line {
+  text-align: center;
+}
+
+.print-block--section-heading {
+  font-weight: bold;
+  text-align: center;
+}
+
+.print-block--body-html p {
+  text-indent: 0.5in;
+}
+
+.print-block--body-html p:first-child {
+  text-indent: 0;
+}
+
+.print-block--body-html h1 { text-align: center; font-weight: bold; }
+.print-block--body-html h2 { text-align: left; font-weight: bold; }
+.print-block--body-html h3 { text-align: left; font-weight: bold; font-style: italic; }
+.print-block--body-html h4 { text-indent: 0.5in; font-weight: bold; }
+.print-block--body-html h5 { text-indent: 0.5in; font-weight: bold; font-style: italic; }
+
+.print-block--body-html blockquote {
+  margin-left: 0.5in;
+}
+
+.print-block--body-html blockquote p {
+  text-indent: 0;
+}
+
+.print-block--reference-entry {
+  padding-left: 0.5in;
+  text-indent: -0.5in;
+}

@@ -45,5 +45,6 @@ export default defineConfig({
     alias,
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     environment: 'node',
+    setupFiles: ['tests/renderer/setup-i18n.ts'],
   },
 });

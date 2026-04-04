@@ -33,11 +33,20 @@ const config: ForgeConfig = {
           config: 'vite.preload.config.ts',
           target: 'preload',
         },
+        {
+          entry: 'src/preload/print-preload.ts',
+          config: 'vite.print-preload.config.ts',
+          target: 'preload',
+        },
       ],
       renderer: [
         {
           name: 'main_window',
           config: 'vite.renderer.config.ts',
+        },
+        {
+          name: 'print_window',
+          config: 'vite.print-renderer.config.ts',
         },
       ],
     }),

@@ -1,4 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { Language } from '@domain/shared/contracts';
+import { supportedLanguages } from '@domain/shared/contracts';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import {
@@ -43,6 +46,7 @@ import {
   rebuildGhostPagesWithReferences,
   upsertPaperInCourseCollections,
 } from '@renderer/app/paper-draft-state';
+import { InlineRenameInput } from '@renderer/app/InlineRenameInput';
 import { Sidebar } from '@renderer/app/Sidebar';
 import { BookOpenIcon, NotificationsIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
 
@@ -80,8 +84,10 @@ const shellButtonClass =
   'inline-flex items-center justify-center rounded-[var(--radius-button)] border px-3 py-2 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]';
 
 export const App = () => {
+  const { t, i18n } = useTranslation();
   const api = window.apaScholar;
   const [theme, setTheme] = useState<ThemeMode>(resolvePreferredTheme);
+  const [appLanguage, setAppLanguage] = useState<Language>('en');
   const [shellState, dispatch] = useReducer(
     workspaceShellReducer,
     undefined,
@@ -90,6 +96,7 @@ export const App = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursePapers, setCoursePapers] = useState<Record<string, Paper[]>>({});
   const [paperDetails, setPaperDetails] = useState<Record<string, PaperDraft | null>>({});
+  const [recentPapers, setRecentPapers] = useState<Paper[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingCourseIds, setLoadingCourseIds] = useState<string[]>([]);
   const [loadingPaperIds, setLoadingPaperIds] = useState<string[]>([]);
@@ -112,6 +119,8 @@ export const App = () => {
   const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
   const [referenceFormError, setReferenceFormError] = useState<string | null>(null);
   const [isSavingReference, setIsSavingReference] = useState(false);
+  const [isRenamingPaperTitle, setIsRenamingPaperTitle] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
@@ -165,7 +174,7 @@ export const App = () => {
         }
       } catch {
         if (!cancelled) {
-          setWorkspaceError('Unable to load your courses right now.');
+          setWorkspaceError(t('errors.unableToLoadCourses'));
         }
       } finally {
         if (!cancelled) {
@@ -179,6 +188,32 @@ export const App = () => {
     return () => {
       cancelled = true;
     };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    void api.settings.get().then((settings) => {
+      if (settings?.language && settings.language !== i18n.language) {
+        void i18n.changeLanguage(settings.language);
+        setAppLanguage(settings.language);
+      }
+    }).catch(() => {
+      // Settings load is non-critical; default language is fine.
+    });
+  }, [api, i18n]);
+
+  useEffect(() => {
+    if (!api) return;
+    let cancelled = false;
+
+    void api.papers.listRecent(10).then((papers) => {
+      if (!cancelled) setRecentPapers(papers);
+    }).catch(() => {
+      // Recent papers are non-critical.
+    });
+
+    return () => { cancelled = true; };
   }, [api]);
 
   useEffect(() => {
@@ -277,7 +312,7 @@ export const App = () => {
         }
       } catch {
         if (!cancelled) {
-          setWorkspaceError('Unable to load papers for this course right now.');
+          setWorkspaceError(t('errors.unableToLoadPapers'));
         }
       } finally {
         setLoadingCourseIds((current) =>
@@ -375,7 +410,7 @@ export const App = () => {
       .then((paperDetail) => {
         if (!cancelled) {
           if (!paperDetail) {
-            setWorkspaceError('Unable to load this paper draft right now.');
+            setWorkspaceError(t('errors.unableToLoadPaper'));
             return;
           }
 
@@ -388,7 +423,7 @@ export const App = () => {
       })
       .catch(() => {
         if (!cancelled) {
-          setWorkspaceError('Unable to load this paper draft right now.');
+          setWorkspaceError(t('errors.unableToLoadPaper'));
         }
       })
       .finally(() => {
@@ -463,6 +498,19 @@ export const App = () => {
     dispatch({ type: 'toggleCourseExpansion', courseId });
   };
 
+  const handleCourseRename = async (courseId: string, name: string) => {
+    if (!api) return;
+
+    try {
+      const updated = await api.courses.update(courseId, { name });
+      setCourses((current) =>
+        sortCourses(current.map((c) => (c.id === updated.id ? updated : c))),
+      );
+    } catch {
+      setWorkspaceError(t('errors.unableToCreateCourse'));
+    }
+  };
+
   const openCourseModal = () => {
     setCourseForm(emptyCourseForm);
     setCourseFormError(null);
@@ -486,12 +534,12 @@ export const App = () => {
     const submittedCourseForm = readSubmittedCourseForm(form, courseForm);
 
     if (!api) {
-      setCourseFormError('The desktop bridge is unavailable right now. Restart the app.');
+      setCourseFormError(t('errors.bridgeRestart'));
       return;
     }
 
     if (!submittedCourseForm.name) {
-      setCourseFormError('Course name is required.');
+      setCourseFormError(t('errors.courseNameRequired'));
       return;
     }
 
@@ -512,7 +560,7 @@ export const App = () => {
       setIsCourseModalOpen(false);
       dispatch({ type: 'navigateCourse', courseId: createdCourse.id });
     } catch {
-      setCourseFormError('Unable to create the course right now. Try again.');
+      setCourseFormError(t('errors.unableToCreateCourse'));
     } finally {
       setIsCreatingCourse(false);
     }
@@ -522,17 +570,17 @@ export const App = () => {
     const submittedPaperForm = readSubmittedPaperForm(form, paperForm);
 
     if (!api) {
-      setPaperFormError('The desktop bridge is unavailable right now. Restart the app.');
+      setPaperFormError(t('errors.bridgeRestart'));
       return;
     }
 
     if (!submittedPaperForm.courseId) {
-      setPaperFormError('Choose a course before creating the paper.');
+      setPaperFormError(t('errors.chooseCourse'));
       return;
     }
 
     if (!submittedPaperForm.title) {
-      setPaperFormError('Paper title is required.');
+      setPaperFormError(t('errors.paperTitleRequired'));
       return;
     }
 
@@ -573,7 +621,7 @@ export const App = () => {
         paperId: createdPaper.id,
       });
     } catch {
-      setPaperFormError('Unable to create the paper right now. Try again.');
+      setPaperFormError(t('errors.unableToCreatePaper'));
     } finally {
       setIsCreatingPaper(false);
     }
@@ -618,7 +666,7 @@ export const App = () => {
           ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
         };
         setWorkspaceError(
-          'Unable to save paper metadata right now. Changes remain local until save succeeds.',
+          t('errors.unableToSaveMetadata'),
         );
         const isValidationError =
           error instanceof Error &&
@@ -692,7 +740,7 @@ export const App = () => {
         pendingBodyUpdatesRef.current[paperId] =
           pendingBodyUpdatesRef.current[paperId] ?? pendingBodyDocument;
         setWorkspaceError(
-          'Unable to save paper body right now. Changes remain local until save succeeds.',
+          t('errors.unableToSaveBody'),
         );
 
         const isValidationError =
@@ -864,11 +912,11 @@ export const App = () => {
     const selectedPaperId = shellState.selectedPaperId;
 
     if (!api || !selectedPaperId) {
-      setReferenceFormError('The desktop bridge is unavailable right now.');
+      setReferenceFormError(t('errors.bridgeUnavailable'));
       return;
     }
 
-    const validationError = validateFormState(referenceForm);
+    const validationError = validateFormState(referenceForm, t);
 
     if (validationError) {
       setReferenceFormError(validationError);
@@ -902,7 +950,7 @@ export const App = () => {
       }));
       setIsReferenceModalOpen(false);
     } catch {
-      setReferenceFormError('Unable to save the reference right now. Try again.');
+      setReferenceFormError(t('errors.unableToSaveReference'));
     } finally {
       setIsSavingReference(false);
     }
@@ -924,7 +972,7 @@ export const App = () => {
         [selectedPaperId]: updatedRefs,
       }));
     } catch {
-      setWorkspaceError('Unable to delete the reference right now.');
+      setWorkspaceError(t('errors.unableToDeleteReference'));
     }
   };
 
@@ -939,16 +987,15 @@ export const App = () => {
   );
 
   const renderHomeView = () => (
-    <section className="flex h-full flex-col justify-center px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+    <section className="flex h-full flex-col px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <p className="label-caps text-[var(--color-accent-strong)]">
-        Workspace shell
+        {t('home.workspaceShell')}
       </p>
       <h2 className="mt-5 max-w-2xl font-[var(--font-display)] text-4xl leading-tight text-[var(--color-ink-strong)] md:text-5xl">
-        Your academic workspace starts here
+        {t('home.heading')}
       </h2>
       <p className="mt-5 max-w-xl text-sm leading-7 text-[var(--color-muted)] md:text-base">
-        Build courses on the left, shape papers in the center, and keep APA context
-        visible on the right so the app feels guided before the real editor lands.
+        {t('home.description')}
       </p>
 
       <div className="mt-8 flex flex-wrap gap-3">
@@ -957,16 +1004,55 @@ export const App = () => {
           onClick={openCourseModal}
           type="button"
         >
-          Create your first course
+          {t('home.createFirstCourse')}
         </button>
         <button
           className={`${shellButtonClass} border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]`}
           onClick={openPaperModal}
           type="button"
         >
-          Draft a paper shell
+          {t('home.draftPaperShell')}
         </button>
       </div>
+
+      {recentPapers.length > 0 ? (
+        <div className="mt-10">
+          <h3 className="label-caps text-[var(--color-muted-strong)]">
+            {t('home.recentPapers')}
+          </h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {recentPapers.map((paper) => (
+              <button
+                className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-4 text-left transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
+                key={paper.id}
+                onClick={() => paper.courseId && openPaper(paper.courseId, paper.id)}
+                type="button"
+              >
+                <span>
+                  <span className="block text-sm font-medium text-[var(--color-ink-strong)]">
+                    {paper.title}
+                  </span>
+                  <span className="mt-1 block text-xs text-[var(--color-muted)]">
+                    {t('courseView.paperType', { type: paper.paperType })}
+                  </span>
+                </span>
+                <span className="text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)]">
+                  {t('common.open')}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : courses.length > 0 ? (
+        <div className="mt-10">
+          <h3 className="label-caps text-[var(--color-muted-strong)]">
+            {t('home.recentPapers')}
+          </h3>
+          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+            {t('home.noRecentPapers')}
+          </p>
+        </div>
+      ) : null}
     </section>
   );
 
@@ -978,14 +1064,13 @@ export const App = () => {
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-line)] pb-6">
           <div>
             <p className="label-caps text-[var(--color-accent-strong)]">
-              Course overview
+              {t('courseView.courseOverview')}
             </p>
             <h2 className="mt-3 font-[var(--font-display)] text-4xl text-[var(--color-ink-strong)]">
               {course.name}
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
-              Keep each class as its own writing orbit so defaults, papers, and future
-              references stay grouped the way students actually work.
+              {t('courseView.description')}
             </p>
           </div>
 
@@ -994,43 +1079,43 @@ export const App = () => {
             onClick={openPaperModal}
             type="button"
           >
-            New paper
+            {t('courseView.newPaper')}
           </button>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)]">
           <article className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] p-6">
             <h3 className="label-caps text-[var(--color-muted-strong)]">
-              Course defaults
+              {t('courseView.courseDefaults')}
             </h3>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
                 <p className="label-caps">
-                  Professor
+                  {t('courseView.professor')}
                 </p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
-                  {course.professorName ?? 'Not set yet'}
+                  {course.professorName ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
                 <p className="label-caps">
-                  Semester
+                  {t('courseView.semester')}
                 </p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
-                  {course.semester ?? 'Not set yet'}
+                  {course.semester ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
                 <p className="label-caps">
-                  Institution
+                  {t('courseView.institution')}
                 </p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
-                  {course.institution ?? 'Not set yet'}
+                  {course.institution ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
                 <p className="label-caps">
-                  Default template
+                  {t('courseView.defaultTemplate')}
                 </p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
                   {course.defaultPaperTemplate}
@@ -1041,7 +1126,7 @@ export const App = () => {
 
           <article className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] p-6">
             <h3 className="label-caps text-[var(--color-muted-strong)]">
-              Papers in this course
+              {t('courseView.papersInCourse')}
             </h3>
             <div className="mt-5 space-y-3">
               {papers.length > 0 ? (
@@ -1057,18 +1142,17 @@ export const App = () => {
                         {paper.title}
                       </span>
                       <span className="mt-1 block text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)]">
-                        {paper.paperType} paper
+                        {t('courseView.paperType', { type: paper.paperType })}
                       </span>
                     </span>
                     <span className="text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)]">
-                      Open
+                      {t('common.open')}
                     </span>
                   </button>
                 ))
               ) : (
                 <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--color-line)] bg-[var(--color-panel)] p-5 text-sm leading-6 text-[var(--color-muted)]">
-                  This course is ready for its first paper. Use the action above to
-                  create an APA shell and jump straight into the draft view.
+                  {t('courseView.emptyPapers')}
                 </div>
               )}
             </div>
@@ -1086,23 +1170,56 @@ export const App = () => {
             {course.name}
           </p>
           <span className="text-[var(--color-line)]">/</span>
-          <h2 className="font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
-            {paper.title}
-          </h2>
+          {isRenamingPaperTitle ? (
+            <InlineRenameInput
+              className="font-[var(--font-display)] text-2xl"
+              value={paper.title}
+              onRename={(title) => {
+                setIsRenamingPaperTitle(false);
+                handlePaperMetadataChange({ title });
+              }}
+              onCancel={() => setIsRenamingPaperTitle(false)}
+            />
+          ) : (
+            <h2
+              className="cursor-text font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]"
+              onDoubleClick={() => setIsRenamingPaperTitle(true)}
+            >
+              {paper.title}
+            </h2>
+          )}
         </div>
 
         <div className="flex gap-3">
           <button
             className={`${shellButtonClass} border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]`}
+            disabled={isExporting}
+            onClick={() => {
+              if (!api || isExporting) return;
+              setIsExporting(true);
+              setWorkspaceError(null);
+              void api.export.pdf(paper.id)
+                .then((result) => {
+                  if (result.status === 'error') {
+                    setWorkspaceError(result.message);
+                  }
+                })
+                .catch(() => {
+                  setWorkspaceError(t('errors.exportFailed'));
+                })
+                .finally(() => {
+                  setIsExporting(false);
+                });
+            }}
             type="button"
           >
-            Export PDF
+            {isExporting ? t('paperView.exporting') : t('paperView.exportPdf')}
           </button>
           <button
             className={`${shellButtonClass} border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]`}
             type="button"
           >
-            Print preview
+            {t('paperView.printPreview')}
           </button>
         </div>
       </div>
@@ -1114,33 +1231,63 @@ export const App = () => {
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
+          onOpenCitation={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
+          onOpenReferences={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
           onPasteWarningsChange={handlePaperPasteWarningsChange}
+          onToggleBlockquote={() => bodyEditorRef.current?.toggleBlockquote()}
           paperDraft={paperDetail}
         />
       ) : (
         <div className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
           <p className="label-caps">
-            Loading paper scaffold
+            {t('paperView.loadingPaperScaffold')}
           </p>
           <p className="mt-6 text-sm leading-7 text-[var(--color-page-muted)]">
-            Pulling the latest paper skeleton from local storage.
+            {t('paperView.loadingPaperDescription')}
           </p>
         </div>
       )}
     </section>
   );
 
+  const handleLanguageChange = async (language: Language) => {
+    setAppLanguage(language);
+    void i18n.changeLanguage(language);
+
+    if (api) {
+      try {
+        await api.settings.save({ language });
+      } catch {
+        setWorkspaceError(t('errors.bridgeUnavailable'));
+      }
+    }
+  };
+
   const renderSettingsView = () => (
-    <section className="flex h-full flex-col justify-center px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+    <section className="flex h-full flex-col px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
       <p className="label-caps text-[var(--color-accent-strong)]">
-        Settings
+        {t('settings.settings')}
       </p>
       <h2 className="mt-4 font-[var(--font-display)] text-4xl text-[var(--color-ink-strong)]">
-        Workspace settings placeholder
+        {t('settings.heading')}
       </h2>
-      <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--color-muted)]">
-        Language, theme, and writing preferences will land here in a later milestone.
-      </p>
+
+      <div className="mt-8 max-w-md">
+        <label className="block text-sm text-[var(--color-ink-strong)]">
+          {t('settings.language')}
+          <select
+            className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm text-[var(--color-ink-strong)] outline-none transition focus:border-[var(--color-accent-soft)]"
+            onChange={(event) => void handleLanguageChange(event.target.value as Language)}
+            value={appLanguage}
+          >
+            {supportedLanguages.map((lang) => (
+              <option key={lang} value={lang}>
+                {t(`settings.lang_${lang}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
     </section>
   );
 
@@ -1183,13 +1330,13 @@ export const App = () => {
               <SearchIcon />
             </div>
             <label className="sr-only" htmlFor="workspace-search">
-              Search workspace
+              {t('header.searchLabel')}
             </label>
             <input
               className="w-full rounded-lg border-none bg-[var(--color-input)] py-1.5 pl-10 text-sm text-[var(--color-ink-strong)] outline-none placeholder:text-[var(--color-muted)] focus:ring-1 focus:ring-[var(--color-accent-soft)]"
               id="workspace-search"
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search courses and papers..."
+              placeholder={t('header.searchPlaceholder')}
               type="search"
               value={searchQuery}
             />
@@ -1202,18 +1349,18 @@ export const App = () => {
             type="button"
           >
             <PlusIcon />
-            Draft paper
+            {t('header.draftPaper')}
           </button>
           <div className="flex gap-1">
             <button
-              aria-label="Notifications"
+              aria-label={t('header.notifications')}
               className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"
               type="button"
             >
               <NotificationsIcon />
             </button>
             <button
-              aria-label="Settings"
+              aria-label={t('header.settings')}
               className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"
               onClick={() => dispatch({ type: 'navigateSettings' })}
               type="button"
@@ -1236,7 +1383,7 @@ export const App = () => {
       {searchStatus === 'placeholder' && searchQuery.trim().length > 0 && (
         <div className="border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2">
           <p className="text-xs leading-5 text-[var(--color-muted)]">
-            Search will span courses and papers in a later milestone.
+            {t('errors.searchPlaceholder')}
           </p>
         </div>
       )}
@@ -1249,7 +1396,7 @@ export const App = () => {
           coursePapers={coursePapers}
           emptyCoursesMessage={
             workspaceError && courses.length === 0
-              ? 'Unable to load your courses right now.'
+              ? t('errors.unableToLoadCourses')
               : null
           }
           expandedCourseIds={shellState.expandedCourseIds}
@@ -1261,6 +1408,7 @@ export const App = () => {
           selectedPaperId={shellState.selectedPaperId}
           onCollapseToggle={() => dispatch({ type: 'toggleLeftPanel' })}
           onCourseOpen={openCourse}
+          onCourseRename={(courseId, name) => void handleCourseRename(courseId, name)}
           onCourseToggle={toggleCourse}
           onCourseModalOpen={openCourseModal}
           onHomeNavigate={() => dispatch({ type: 'navigateHome' })}

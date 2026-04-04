@@ -1,3 +1,4 @@
+import type { ExportResult } from '@application/contracts/export-ipc';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type {
@@ -6,12 +7,15 @@ import type {
   UpdateReferenceInput,
 } from '@domain/references/reference-entry';
 import type {
+  AppSettings,
   Course,
   CreateCourseInput,
   CreatePaperInput,
   Paper,
+  UpdateCourseInput,
   UpdatePaperMetadataInput,
 } from '@domain/shared/persistence-models';
+import type { Language } from '@domain/shared/contracts';
 
 export interface WorkspaceSearchPlaceholderResult {
   status: 'placeholder';
@@ -28,9 +32,11 @@ export interface ApaScholarApi {
   courses: {
     list: () => Promise<Course[]>;
     create: (input: CreateCourseInput) => Promise<Course>;
+    update: (courseId: string, input: UpdateCourseInput) => Promise<Course>;
   };
   papers: {
     listByCourse: (courseId: string) => Promise<Paper[]>;
+    listRecent: (limit?: number) => Promise<Paper[]>;
     getById: (paperId: string) => Promise<PaperDraft | null>;
     create: (input: CreatePaperInput) => Promise<Paper>;
     updateBodyContent: (
@@ -51,5 +57,12 @@ export interface ApaScholarApi {
   };
   search: {
     query: (query: string) => Promise<WorkspaceSearchPlaceholderResult>;
+  };
+  settings: {
+    get: () => Promise<AppSettings | null>;
+    save: (input: { language: Language; debug?: boolean }) => Promise<AppSettings>;
+  };
+  export: {
+    pdf: (paperId: string) => Promise<ExportResult>;
   };
 }

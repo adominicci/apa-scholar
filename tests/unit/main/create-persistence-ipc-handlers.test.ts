@@ -45,11 +45,13 @@ describe('createPersistenceIpcHandlers', () => {
       courses: {
         create: createCourse,
         list: listCourses,
+        update: vi.fn().mockReturnValue({ id: 'course-1' }),
       },
       papers: {
         create: createPaper,
         getById: getPaperById,
         listByCourse: listPapersByCourse,
+        listRecent: vi.fn().mockReturnValue([]),
         updateBodyContent: updatePaperBodyContent,
         updateMetadata: updatePaperMetadata,
       },

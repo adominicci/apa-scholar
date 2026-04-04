@@ -1,8 +1,8 @@
 # Task 01 - Externalize all strings
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: move all user-facing copy into the localization system.
 - Why: bilingual support requires complete string externalization.

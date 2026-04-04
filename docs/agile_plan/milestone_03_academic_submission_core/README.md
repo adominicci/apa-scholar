@@ -7,5 +7,5 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 Includes:
 
 - [x] Epic 01: References and Citations
-- [ ] Epic 02: PDF Export and Print Renderer
-- [ ] Epic 03: Bilingual UI Completion and Polish
+- [x] Epic 02: PDF Export and Print Renderer
+- [x] Epic 03: Bilingual UI Completion and Polish

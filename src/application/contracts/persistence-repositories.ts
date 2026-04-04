@@ -27,6 +27,7 @@ export interface CourseRepository {
 export interface PaperRepository {
   create(input: CreateStoredPaperInput, seed: TemplateSeedResult): Paper;
   listByCourse(courseId: string): Paper[];
+  listRecent(limit: number): Paper[];
   getAggregateById(id: string): StoredPaperAggregate | null;
   getById(id: string): Paper | null;
   update(id: string, input: UpdatePaperInput): Paper;

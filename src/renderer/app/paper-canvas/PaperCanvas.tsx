@@ -12,7 +12,10 @@ interface PaperCanvasProps {
   bodyEditorRef?: Ref<BodyEditorHandle>;
   paperDraft: PaperDraft;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
+  onOpenCitation?: () => void;
+  onOpenReferences?: () => void;
   onPasteWarningsChange: (warnings: string[]) => void;
+  onToggleBlockquote?: () => void;
 }
 
 const getBlocksWrapperClass = (kind: GhostPageViewModel['kind']): string => {
@@ -27,10 +30,17 @@ export const PaperCanvas = ({
   bodyEditorRef,
   paperDraft,
   onBodyDocumentChange,
+  onOpenCitation,
+  onOpenReferences,
   onPasteWarningsChange,
+  onToggleBlockquote,
 }: PaperCanvasProps) => (
   <div className="flex items-start justify-center gap-4 py-8">
-    <PaperCanvasToolbar />
+    <PaperCanvasToolbar
+      onOpenCitation={onOpenCitation}
+      onOpenReferences={onOpenReferences}
+      onToggleBlockquote={onToggleBlockquote}
+    />
     <div className="flex flex-col items-center gap-[var(--page-gap)]">
       {paperDraft.ghostPages.map((page) => (
         <PaperCanvasPage key={page.id} page={page}>

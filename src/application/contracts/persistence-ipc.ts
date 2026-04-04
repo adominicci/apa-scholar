@@ -7,13 +7,16 @@ import {
 import {
   createCourseInputSchema,
   createPaperInputSchema,
+  updateCourseInputSchema,
   updatePaperMetadataInputSchema,
 } from '@domain/shared/persistence-models';
 
 export const persistenceIpcChannels = {
   coursesList: 'courses:list',
   coursesCreate: 'courses:create',
+  coursesUpdate: 'courses:update',
   papersListByCourse: 'papers:listByCourse',
+  papersListRecent: 'papers:listRecent',
   papersGetById: 'papers:getById',
   papersCreate: 'papers:create',
   papersUpdateBodyContent: 'papers:updateBodyContent',
@@ -29,8 +32,17 @@ export const persistenceIpcChannels = {
 export type PersistenceIpcChannel =
   (typeof persistenceIpcChannels)[keyof typeof persistenceIpcChannels];
 
+export const updateCoursePayloadSchema = z.object({
+  courseId: z.string().trim().min(1, 'Course id is required.'),
+  input: updateCourseInputSchema,
+});
+
 export const listPapersByCoursePayloadSchema = z.object({
   courseId: z.string().trim().min(1, 'Course id is required.'),
+});
+
+export const listRecentPapersPayloadSchema = z.object({
+  limit: z.number().int().min(1).max(50).optional().default(10),
 });
 
 export const getPaperByIdPayloadSchema = z.object({
@@ -71,6 +83,7 @@ export const searchQueryPayloadSchema = z.object({
 export type ListPapersByCoursePayload = z.infer<
   typeof listPapersByCoursePayloadSchema
 >;
+export type ListRecentPapersPayload = z.infer<typeof listRecentPapersPayloadSchema>;
 
 export type GetPaperByIdPayload = z.infer<typeof getPaperByIdPayloadSchema>;
 export type UpdatePaperMetadataPayload = z.infer<
@@ -90,5 +103,6 @@ export {
   createCourseInputSchema,
   createPaperInputSchema,
   createReferenceInputSchema,
+  updateCourseInputSchema,
   updatePaperMetadataInputSchema,
 };

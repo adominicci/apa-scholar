@@ -146,9 +146,14 @@ const createTestApi = (seed?: {
         courses.unshift(nextCourse);
         return nextCourse;
       }),
+      update: vi.fn(async (courseId: string, input: Record<string, unknown>) => {
+        const existing = courses.find((c) => c.id === courseId) ?? createCourse();
+        return { ...existing, ...input };
+      }),
     },
     papers: {
       listByCourse: vi.fn(async (courseId) => papersByCourse.get(courseId) ?? []),
+      listRecent: vi.fn(async () => []),
       getById: vi.fn(async (paperId) => paperDraftsById.get(paperId) ?? null),
       create: vi.fn(async (input) => {
         const nextPaper = createPaper({
@@ -251,6 +256,17 @@ const createTestApi = (seed?: {
         papers: [],
         status: 'placeholder' as const,
       })),
+    },
+    settings: {
+      get: vi.fn(async () => null),
+      save: vi.fn(async (input: { language: 'en' | 'es'; debug?: boolean }) => ({
+        language: input.language,
+        debug: input.debug ?? false,
+        updatedAt: '2026-04-03T00:00:00.000Z',
+      })),
+    },
+    export: {
+      pdf: vi.fn(async () => ({ status: 'cancelled' as const })),
     },
   };
 
@@ -1196,7 +1212,7 @@ describe('App', () => {
       expect(api.search.query).toHaveBeenCalledWith('draft');
     });
     expect(
-      screen.getByText('Search will span courses and papers in a later milestone.'),
+      screen.getByText('Full-text search across courses and papers is coming soon.'),
     ).toBeVisible();
   });
 
@@ -1253,14 +1269,14 @@ describe('App', () => {
     fireEvent.change(search, { target: { value: 'draft' } });
 
     expect(
-      await screen.findByText('Search will span courses and papers in a later milestone.'),
+      await screen.findByText('Full-text search across courses and papers is coming soon.'),
     ).toBeVisible();
 
     fireEvent.change(search, { target: { value: 'outline' } });
 
     await waitFor(() => {
       expect(
-        screen.queryByText('Search will span courses and papers in a later milestone.'),
+        screen.queryByText('Full-text search across courses and papers is coming soon.'),
       ).not.toBeInTheDocument();
     });
   });

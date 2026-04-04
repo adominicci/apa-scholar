@@ -27,10 +27,12 @@ export interface PersistenceServices {
   courses: {
     list: () => ReturnType<CourseRepository['listActive']>;
     create: (input: unknown) => ReturnType<CourseRepository['create']>;
+    update: (id: string, input: unknown) => ReturnType<CourseRepository['update']>;
   };
   papers: {
     getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
     listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
+    listRecent: (limit: number) => ReturnType<PaperRepository['listRecent']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
     updateBodyContent: (
       paperId: string,
@@ -62,6 +64,11 @@ export const createPersistenceServices = (repositories: {
       repositories.courseRepository.create(
         input as Parameters<CourseRepository['create']>[0],
       ),
+    update: (id, input) =>
+      repositories.courseRepository.update(
+        id,
+        input as Parameters<CourseRepository['update']>[1],
+      ),
   },
   papers: {
     getById: (paperId) => {
@@ -70,6 +77,7 @@ export const createPersistenceServices = (repositories: {
       return aggregate ? buildPaperDraft(aggregate) : null;
     },
     listByCourse: (courseId) => repositories.paperRepository.listByCourse(courseId),
+    listRecent: (limit: number) => repositories.paperRepository.listRecent(limit),
     create: (input) => {
       const parsedInput = createPaperInputSchema.parse(input);
       const course = repositories.courseRepository.getById(parsedInput.courseId);
