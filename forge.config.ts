@@ -18,14 +18,16 @@ const config: ForgeConfig = {
   packagerConfig: {
     name: 'APA Scholar',
     asar: true,
-    appBundleId: 'com.apascholr.app',
+    appBundleId: 'com.apascholar.app',
     appCategoryType: 'public.app-category.education',
     icon: 'assets/icon',
     ...(isSigningConfigured
       ? {
           osxSign: {
-            optionsForFile: () => ({
-              entitlements: 'entitlements/entitlements.plist',
+            optionsForFile: (filePath: string) => ({
+              entitlements: filePath.endsWith('.app')
+                ? 'entitlements/entitlements.plist'
+                : 'entitlements/entitlements.inherit.plist',
             }),
           },
           osxNotarize: {
