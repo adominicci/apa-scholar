@@ -10,6 +10,9 @@ export default defineConfig({
   build: {
     outDir: '.vite/renderer/print_window',
     emptyOutDir: false,
+    rollupOptions: {
+      input: path.resolve(rootDir, 'print.html'),
+    },
   },
   plugins: [react()],
   resolve: {

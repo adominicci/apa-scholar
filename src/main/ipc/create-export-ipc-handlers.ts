@@ -17,6 +17,9 @@ const getPrintWindowDevServerUrl = (): string | undefined =>
     ? PRINT_WINDOW_VITE_DEV_SERVER_URL
     : undefined;
 
+const getPrintWindowEntryUrl = (devServerUrl: string): string =>
+  new URL('print.html', `${devServerUrl.replace(/\/$/, '')}/`).toString();
+
 export const createExportPdfHandler = (deps: {
   getAggregate: (paperId: string) => StoredPaperAggregate | null;
   getReferences: (paperId: string) => ReferenceEntry[];
@@ -57,10 +60,10 @@ export const createExportPdfHandler = (deps: {
 
     const devServerUrl = getPrintWindowDevServerUrl();
     if (devServerUrl) {
-      await printWindow.loadURL(devServerUrl);
+      await printWindow.loadURL(getPrintWindowEntryUrl(devServerUrl));
     } else {
       await printWindow.loadFile(
-        path.join(__dirname, `../renderer/${getPrintWindowName()}/index.html`),
+        path.join(__dirname, `../renderer/${getPrintWindowName()}/print.html`),
       );
     }
 
@@ -68,23 +71,36 @@ export const createExportPdfHandler = (deps: {
     // then send the export data. This avoids a race where the payload arrives before
     // the React effect registers its listener.
     await new Promise<void>((resolve, reject) => {
-      const readyHandler = () => {
+      const cleanup = () => {
+        clearTimeout(timeout);
+        ipcMain.removeListener('export:ready', readyHandler);
+        ipcMain.removeListener('export:rendered', dataReceivedHandler);
+      };
+
+      const readyHandler = (event: { sender: Electron.WebContents }) => {
+        if (event.sender !== printWindow!.webContents) {
+          return;
+        }
+
         printWindow!.webContents.send('export:data', { aggregate, references });
       };
 
-      const dataReceivedHandler = () => {
-        clearTimeout(timeout);
+      const dataReceivedHandler = (event: { sender: Electron.WebContents }) => {
+        if (event.sender !== printWindow!.webContents) {
+          return;
+        }
+
+        cleanup();
         resolve();
       };
 
       const timeout = setTimeout(() => {
-        ipcMain.removeListener('export:ready', readyHandler);
-        ipcMain.removeListener('export:rendered', dataReceivedHandler);
+        cleanup();
         reject(new Error('Print renderer timed out.'));
       }, PRINT_WINDOW_TIMEOUT_MS);
 
-      ipcMain.once('export:ready', readyHandler);
-      ipcMain.once('export:rendered', dataReceivedHandler);
+      ipcMain.on('export:ready', readyHandler);
+      ipcMain.on('export:rendered', dataReceivedHandler);
     });
 
     const pdfBuffer = await printWindow.webContents.printToPDF({
