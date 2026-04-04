@@ -64,17 +64,28 @@ export const createExportPdfHandler = (deps: {
       );
     }
 
+    // Wait for the print renderer to signal it has mounted and subscribed to IPC,
+    // then send the export data. This avoids a race where the payload arrives before
+    // the React effect registers its listener.
     await new Promise<void>((resolve, reject) => {
+      const readyHandler = () => {
+        clearTimeout(timeout);
+        printWindow!.webContents.send('export:data', { aggregate, references });
+      };
+
+      const dataReceivedHandler = () => {
+        clearTimeout(timeout);
+        resolve();
+      };
+
       const timeout = setTimeout(() => {
+        ipcMain.removeListener('export:ready', readyHandler);
+        ipcMain.removeListener('export:rendered', dataReceivedHandler);
         reject(new Error('Print renderer timed out.'));
       }, PRINT_WINDOW_TIMEOUT_MS);
 
-      ipcMain.once('export:ready', () => {
-        clearTimeout(timeout);
-        resolve();
-      });
-
-      printWindow!.webContents.send('export:data', { aggregate, references });
+      ipcMain.once('export:ready', readyHandler);
+      ipcMain.once('export:rendered', dataReceivedHandler);
     });
 
     const pdfBuffer = await printWindow.webContents.printToPDF({

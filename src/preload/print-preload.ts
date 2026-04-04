@@ -10,4 +10,7 @@ contextBridge.exposeInMainWorld('electronPrintBridge', {
   signalReady: () => {
     ipcRenderer.send('export:ready');
   },
+  signalRendered: () => {
+    ipcRenderer.send('export:rendered');
+  },
 });

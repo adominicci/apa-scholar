@@ -28,6 +28,9 @@ export const PrintRenderer = () => {
 
     window.electronPrintBridge?.onExportData(handler);
 
+    // Signal that the renderer has mounted and is listening for export data.
+    window.electronPrintBridge?.signalReady();
+
     return () => {
       window.electronPrintBridge?.removeExportDataListener(handler);
     };
@@ -35,7 +38,8 @@ export const PrintRenderer = () => {
 
   useEffect(() => {
     if (pages) {
-      window.electronPrintBridge?.signalReady();
+      // Signal that rendering is complete and printToPDF can proceed.
+      window.electronPrintBridge?.signalRendered();
     }
   }, [pages]);
 

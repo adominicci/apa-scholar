@@ -203,18 +203,14 @@ export const App = () => {
     });
   }, [api, i18n]);
 
-  useEffect(() => {
+  const refreshRecentPapers = useCallback(() => {
     if (!api) return;
-    let cancelled = false;
-
-    void api.papers.listRecent(10).then((papers) => {
-      if (!cancelled) setRecentPapers(papers);
-    }).catch(() => {
-      // Recent papers are non-critical.
-    });
-
-    return () => { cancelled = true; };
+    void api.papers.listRecent(10).then(setRecentPapers).catch(() => {});
   }, [api]);
+
+  useEffect(() => {
+    refreshRecentPapers();
+  }, [refreshRecentPapers]);
 
   useEffect(() => {
     loadingCourseIdsRef.current = loadingCourseIds;
@@ -615,6 +611,7 @@ export const App = () => {
       }
 
       setIsPaperModalOpen(false);
+      refreshRecentPapers();
       dispatch({
         type: 'navigatePaper',
         courseId: submittedPaperForm.courseId,
@@ -659,6 +656,7 @@ export const App = () => {
         setCoursePapers((current) =>
           upsertPaperInCourseCollections(current, updatedDraft.paper),
         );
+        refreshRecentPapers();
       })
       .catch((error: unknown) => {
         pendingMetadataUpdatesRef.current[paperId] = {

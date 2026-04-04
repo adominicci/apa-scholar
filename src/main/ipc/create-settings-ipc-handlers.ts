@@ -13,6 +13,10 @@ export const createSettingsIpcHandlers = (
   [settingsIpcChannels.settingsGet]: () => settingsRepository.get(),
   [settingsIpcChannels.settingsSave]: (payload) => {
     const parsed = saveSettingsPayloadSchema.parse(payload);
-    return settingsRepository.save(parsed);
+    const current = settingsRepository.get();
+    return settingsRepository.save({
+      language: parsed.language,
+      debug: parsed.debug ?? current?.debug ?? false,
+    });
   },
 });

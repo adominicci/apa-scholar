@@ -41,6 +41,8 @@ const renderBlockNode = (node: BodyEditorBlockNode): string => {
       return `<h${node.attrs.level}>${renderInlineContent(node.content)}</h${node.attrs.level}>`;
     case 'blockquote':
       return `<blockquote>${node.content.map(renderBlockNode).join('')}</blockquote>`;
+    default:
+      return '';
   }
 };
 
