@@ -1,0 +1,356 @@
+{
+  "standard": "APA 7th Edition",
+  "format_type": "Student / Basic",
+  "source": "Sample APA-7 Paper: Student Format for Undergraduate Students (Liberty University)",
+  "applies_to": "Undergraduate student papers",
+
+  "title_page": {
+    "elements": [
+      "Title of paper (bold, centered, title case)",
+      "Author name",
+      "Department and institution",
+      "Course number and name",
+      "Instructor name",
+      "Due date"
+    ],
+    "no_running_head": true,
+    "page_number": "Page 1, top right"
+  },
+
+  "general_formatting": {
+    "font": {
+      "recommended": ["12pt Times New Roman", "11pt Calibri"],
+      "allowed": ["11pt Arial", "11pt Georgia", "10pt Lucinda Sans Unicode"],
+      "forbidden": ["Script", "Calligraphy", "Poster", "Decorative"]
+    },
+    "margins": "1 inch on all sides",
+    "line_spacing": {
+      "body": "Double-spaced throughout",
+      "extra_spacing": "No extra lines or spacing between paragraphs",
+      "tables_and_figures": "Single, 1.5, or double spacing allowed",
+      "equations": "Triple or quadruple spacing allowed",
+      "footnotes": "Single-spaced when at bottom of page"
+    },
+    "paragraph_indent": "0.5 inch (first line)",
+    "alignment": "Left-aligned (ragged right edge)",
+    "page_numbers": "Top right corner, every page",
+    "spaces_after_punctuation": "One space after closing punctuation (periods, etc.)",
+    "word_count_definition": "Number of words in the body only; excludes title page, abstract, reference list, appendices, and supplemental resources"
+  },
+
+  "paper_structure": {
+    "order": [
+      "Title page",
+      "Body (title repeated on first line, bold, centered)",
+      "References (new page)",
+      "Appendices (after references, if any)"
+    ],
+    "title_on_body_page": {
+      "format": "Centered, bold, title case",
+      "must_match": "Title on the title page exactly"
+    },
+    "conclusion": {
+      "purpose": "Concise summary of main points",
+      "rules": [
+        "Do not introduce new content",
+        "Do not copy-paste sentences from the body"
+      ]
+    }
+  },
+
+  "scholarly_writing_rules": {
+    "person": {
+      "avoid": ["First person (I, me, we, us, our)", "Second person (you, your)"],
+      "exceptions": "Allowed when assignment instructions permit (e.g., personal reflections, life histories)",
+      "when_in_doubt": "Clarify with your professor"
+    },
+    "purpose_of_research_paper": "Compile, assimilate, and summarize others' scholarly research — not simply write a long essay of your own thoughts or string together direct quotes",
+    "acronyms": {
+      "rule": "Write out the full name the first time mentioned, followed by the acronym in brackets",
+      "usage_threshold": "Only abbreviate if the term appears 4+ times in the body",
+      "under_threshold": "Spell it out fully every time (no acronym)"
+    }
+  },
+
+  "citations": {
+    "purpose": [
+      "Give proper credit to the originators of ideas",
+      "Allow readers to find and access your sources"
+    ],
+    "both_paraphrases_and_quotes_must_be_cited": true,
+    "citation_types": {
+      "narrative": {
+        "description": "Author named in the sentence text",
+        "connector": "Use the word 'and' between authors",
+        "format": "Author (Year)",
+        "example": "Perigogn and Brazel (2012) contemplated that..."
+      },
+      "parenthetical": {
+        "description": "Author and year in parentheses at end",
+        "connector": "Use ampersand (&) between authors",
+        "format": "(Author & Author, Year)",
+        "example": "(Perigogn & Brazel, 2012)"
+      }
+    },
+    "page_and_paragraph_numbers": {
+      "required_for": "Direct quotes (always)",
+      "optional_for": "Paraphrases (encouraged to help readers find content)",
+      "abbreviations": {
+        "one_page": "p.",
+        "multiple_pages": "pp.",
+        "one_paragraph": "para.",
+        "multiple_paragraphs": "paras."
+      },
+      "not_italicized_in_paper": true,
+      "page_numbers_for": "Printed material (books, articles)",
+      "paragraph_numbers_for": "Online articles, webpages (when no page numbers exist)"
+    },
+    "frequency_per_paragraph": {
+      "rule": "Cite the source at least once per paragraph (first instance)",
+      "condition": "Reader must be able to discern which subsequent sentences derive from that source",
+      "technique": "Use pronouns (she, her, he, they) referring back to the cited author"
+    },
+    "omitting_year_in_narrative": {
+      "rule": "Year may be omitted in subsequent narrative citations within the same paragraph after the first mention",
+      "must_always_appear_in": "Parenthetical citations"
+    },
+    "multiple_sources_in_one_citation": {
+      "separator": "Semicolons between different sources",
+      "order": "Alphabetical by first author's last name (matching reference list order)",
+      "prioritizing_sources": "Place most prominent first, then add 'see also' before the rest",
+      "example": "(Cable, 2013; see also Avramova, 2019; De Vries et al., 2013)"
+    },
+    "same_author_same_year": {
+      "rule": "Add lowercase letters after the year, starting with 'a'",
+      "example": "Double (2008a) and Double (2008b)",
+      "no_date": "Use n.d.-a and n.d.-b"
+    },
+    "same_last_name_different_authors": {
+      "rule": "Include first initials in citations",
+      "example": "Brown, J. (2009) and Brown, M. (2009)"
+    },
+    "three_or_more_authors": {
+      "in_text_rule": "First author's last name followed by 'et al.' (every time)",
+      "et_al_format": "Not italicized; 'al.' has a period, 'et' does not",
+      "verb_agreement": "Use plural verbs (et al. = 'and others')",
+      "example_narrative": "Alone et al. (2011)",
+      "example_parenthetical": "(Alone et al., 2011)"
+    }
+  },
+
+  "paraphrasing": {
+    "definition": "Rephrasing another's idea in your own words, substantially different wording but same meaning",
+    "not_acceptable": "Changing only one word or rearranging the original order",
+    "preferred_over_quotes": true,
+    "demonstrates": "That you read, understood, and assimilated the research"
+  },
+
+  "quotes": {
+    "short_quotes": {
+      "threshold": "39 words or fewer",
+      "format": "Incorporated into the sentence in standard paragraph format",
+      "punctuation": "Double quotation marks around the quote",
+      "period_placement": "After the closing parenthesis of the citation",
+      "mid_sentence_quote": "Add parenthetical citation immediately after the closing quote mark"
+    },
+    "block_quotes": {
+      "threshold": "40 or more words",
+      "format": "Indented 0.5 inch from left margin, no quotation marks",
+      "spacing": "Double-spaced",
+      "period_placement": "Before the parenthetical page citation (opposite of short quotes)",
+      "introduction": "Preferred to introduce with source and year, then lead into the quote"
+    },
+    "quotes_within_quotes": {
+      "in_regular_text": "Use single quotation marks",
+      "in_block_quotes": "Use double quotation marks (since no outer quotes exist)"
+    },
+    "recommended_limits": {
+      "short_quotes": "3-5 per paper (up to 12 pages body)",
+      "block_quotes": "1-2 per paper (up to 12 pages body)"
+    },
+    "when_to_use": "Only when the original text cannot be said as well in your own words, or changing the wording would alter the author's meaning"
+  },
+
+  "heading_levels": {
+    "all_headings": "Bold and title case",
+    "do_not_capitalize": "Articles (a, an, the) unless they begin a title or follow a colon",
+    "level_1": {
+      "format": "Centered, bold, title case",
+      "content_position": "New paragraph on the next line"
+    },
+    "level_2": {
+      "format": "Left-aligned, bold, title case",
+      "content_position": "New paragraph on the next line"
+    },
+    "level_3": {
+      "format": "Left-aligned, bold, italic, title case",
+      "content_position": "New paragraph on the next line"
+    },
+    "level_4": {
+      "format": "Indented 0.5 inch, bold, title case, period at end",
+      "content_position": "Begins on the same line after the period"
+    },
+    "level_5": {
+      "format": "Indented 0.5 inch, bold, italic, title case, period at end",
+      "content_position": "Begins on the same line after the period"
+    },
+    "usage_rules": [
+      "Must use two or more of each subheading level used",
+      "Not every paper needs every level",
+      "Start with Level 1 and work down",
+      "Most student papers use only Levels 1 and 2"
+    ]
+  },
+
+  "numbers": {
+    "one_through_nine": "Written out in word format",
+    "ten_and_above": "Written in numerical format",
+    "exceptions": "Ages are always numerical (see APA section 6.32)",
+    "beginning_a_sentence": "Always write out the number in word format"
+  },
+
+  "titles_of_works_in_text": {
+    "long_works": {
+      "types": ["Journals", "Books", "Plays", "Other long works"],
+      "format": "Italicized, title case"
+    },
+    "short_works": {
+      "types": ["Articles", "Lectures", "Poems", "Chapters", "Website articles", "Songs"],
+      "format": "Title case, in quotation marks"
+    },
+    "general_guidance": "Naming source titles in the body is strongly discouraged; citing author and year is sufficient"
+  },
+
+  "primary_vs_secondary_sources": {
+    "primary_source": "The one that first published the content",
+    "secondary_source": "The one that quotes another previously published source",
+    "preferred_approach": "Find, read, and cite the original (primary) source whenever possible",
+    "when_citing_secondary": {
+      "in_text_format": "Use 'as cited in' to indicate the secondary source",
+      "example": "James Morgan hinted that 'goat milk makes the best ice cream' (as cited in Alone, 2008, p. 117)",
+      "reference_list": "Only list the secondary source (the one you actually read)"
+    }
+  },
+
+  "personal_communications": {
+    "types": ["Interview", "Email", "Telephone call", "Postcard", "Text message", "Letter"],
+    "in_text_only": true,
+    "not_in_reference_list": true,
+    "required_elements": ["First initial", "Last name", "Phrase 'personal communication'", "Full date"],
+    "example_narrative": "L. Applebaum advised him to dip pretzel rolls in cheese fondue (personal communication, July 13, 2015)",
+    "example_parenthetical": "(L. Applebaum, personal communication, July 13, 2015)"
+  },
+
+  "bible_and_classical_works": {
+    "format": "Cited in book format",
+    "in_reference_list": true,
+    "bible_citations": {
+      "author_position": "Bible version name (e.g., King James Bible)",
+      "year": "Original and republished years (e.g., 1769/2017)",
+      "locator": "Book chapter:verse spelled out (e.g., Genesis 3:8)",
+      "omit_word_version": true,
+      "italicize_bible_title": true
+    },
+    "plays": {
+      "format": "Act.Scene.Lines (e.g., 1.3.36-37 = Act 1, Scene 3, Lines 36-37)"
+    }
+  },
+
+  "class_lectures_and_powerpoints": {
+    "powerpoint_citation": "Include slide number instead of page number",
+    "liberty_university_lectures": {
+      "format": "Video lecture reference with URL if available",
+      "author": "Presenter name(s); if unknown, use 'Liberty University'",
+      "include": ["Course number", "Lecture title", "Enough detail to identify within the course"],
+      "publisher": "Liberty University"
+    }
+  },
+
+  "dictionary_entries": {
+    "format": "Same as chapters in an edited book",
+    "author": "Individual, group, or corporate author of the dictionary",
+    "online_dictionaries": "Include retrieval date and URL"
+  },
+
+  "reference_list": {
+    "heading": "Centered, bold ('References' or 'Reference' for one source)",
+    "placement": "New page after the body/conclusion",
+    "formatting": {
+      "hanging_indent": "Second and subsequent lines indented 0.5 inch",
+      "order": "Alphabetical by first author's last name",
+      "spacing": "Double-spaced, no extra spacing between entries"
+    },
+    "number_of_authors": {
+      "up_to_20": "List all authors with last names and initials",
+      "21_or_more": "List first 19 authors, then ellipsis (...), then last author"
+    },
+    "entry_structure": "Author(s), Year of publication, Title of resource, Location details (journal/volume/issue/pages, publisher, or URL)",
+    "every_body_citation_must_have_a_reference_entry": true,
+    "every_reference_entry_must_be_cited_in_body": true,
+    "exceptions": ["Personal communications (in-text only)", "Primary sources cited via secondary sources (only list the secondary)"]
+  },
+
+  "electronic_sources": {
+    "doi": {
+      "required": "Whenever available",
+      "format": "URL format (e.g., https://doi.org/10.1177/...)"
+    },
+    "urls": {
+      "hyperlinks": "Must be active/clickable",
+      "consistency": "Use same style throughout (blue-underlined or plain black text)",
+      "no_period_after_url": true,
+      "break_long_urls": "Soft returns (Shift+Enter) at forward slashes, periods, or underscores"
+    },
+    "retrieved_from": {
+      "use_when": "Content may have changed (dictionary entries, social media, no known publication date)",
+      "do_not_use_when": "Content is stable (journal articles, books)"
+    },
+    "publication_dates_online": "Full date in year, month day format (e.g., 2020, October 8)"
+  },
+
+  "miscellaneous_reference_rules": {
+    "webpages_italicized": true,
+    "book_titles_italicized": true,
+    "publisher_location": "Omitted (no city/state), except for conference presentations",
+    "issue_numbers": "Required for all journal articles that have them",
+    "multiple_publishers": "List all, separated by semicolons, in order listed",
+    "publisher_same_as_author": "Omit publisher field entirely"
+  },
+
+  "tables_and_figures": {
+    "note": "APA-7 dedicates an entire 55-page chapter to tables and figures; rules are complex",
+    "contact_for_help": "onlinewriting@liberty.edu"
+  },
+
+  "appendices": {
+    "placement": "After the reference list",
+    "label": "'Appendix' (singular) at top of page, centered, bold",
+    "multiple_appendices": "Label as 'Appendix A', 'Appendix B', etc.",
+    "descriptive_title": "Centered, bold, title case, beneath the label",
+    "must_be_referenced": "Callout in the body text (e.g., 'see Appendix')"
+  },
+
+  "annotated_bibliographies": {
+    "apa_section": "9.51 (see p. 308 of APA-7)",
+    "purpose": "Critique resources and rationalize relevance to the paper's focus"
+  },
+
+  "self_plagiarism": {
+    "apa_allows": "Limited duplication of own prior work without quotation marks when material is limited in scope",
+    "apa_prohibits": "Quotation marks or block quote formatting around own duplicated material",
+    "liberty_university_rule": "Expressly forbids reusing significant portions of a prior paper in a subsequent course",
+    "if_incorporating_brief_excerpts": "Disclose with 'I have previously discussed', cite the prior paper, and include a reference entry"
+  },
+
+  "adding_color": {
+    "liberty_university_policy": "Discouraged in academic papers",
+    "no_coloring_bolding_or_underlining": "In class papers"
+  },
+
+  "final_formatting_checklist": [
+    "Select all text (Ctrl+A) and verify correct font/size",
+    "Set paragraph spacing 'before' and 'after' to 0 pt",
+    "Set line spacing to double",
+    "Title page spacing is handled by the template"
+  ]
+}

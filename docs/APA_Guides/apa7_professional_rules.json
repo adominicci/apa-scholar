@@ -1,0 +1,158 @@
+{
+  "standard": "APA 7th Edition",
+  "format_type": "Professional",
+  "applies_to": "Graduate/doctoral students, researchers, and manuscripts submitted for publication",
+  "note": "This file documents the key differences between APA-7 Professional format and Student/Basic format. All rules from the Student/Basic file apply unless overridden here.",
+
+  "title_page": {
+    "differs_from_student": true,
+    "elements": [
+      "Title of paper (bold, centered, title case — 3-4 lines down from top margin)",
+      "Author name(s)",
+      "Institutional affiliation(s) for each author",
+      "Author note (contains ORCID iDs, disclosures, contact info)",
+      "Running head (shortened title, uppercase, max 50 characters)"
+    ],
+    "running_head": {
+      "required": true,
+      "format": "Shortened version of the title in ALL CAPS",
+      "max_length": "50 characters including spaces",
+      "placement": "Top-left header of every page",
+      "label_on_title_page": "No label needed (APA-7 removed the 'Running head:' label from the title page)"
+    },
+    "author_note": {
+      "required": true,
+      "placement": "Bottom half of the title page",
+      "heading": "'Author Note' centered, bold",
+      "paragraphs": [
+        "First paragraph: Author names and ORCID iDs",
+        "Second paragraph: Affiliation changes since the work was done",
+        "Third paragraph: Disclosures and acknowledgments (conflicts of interest, funding sources)",
+        "Fourth paragraph: Contact information (name, department, institution, address, email)"
+      ]
+    },
+    "page_number": "Page 1, top right"
+  },
+
+  "abstract": {
+    "required": true,
+    "differs_from_student": true,
+    "student_format_note": "Not required for student papers unless instructor requests it",
+    "placement": "Page 2, immediately after the title page",
+    "heading": "'Abstract' centered, bold, not italicized",
+    "format": {
+      "single_paragraph": true,
+      "no_indent": "First line is NOT indented (flush left)",
+      "word_limit": "150-250 words",
+      "spacing": "Double-spaced"
+    },
+    "keywords": {
+      "placement": "Line below the abstract, indented 0.5 inch",
+      "label": "'Keywords:' in italics",
+      "format": "Lowercase, separated by commas, no period at end"
+    }
+  },
+
+  "general_formatting": {
+    "same_as_student_except": {
+      "running_head": "Required on every page (student papers do NOT have a running head)",
+      "font": {
+        "apa_allows": ["12pt Times New Roman", "11pt Calibri", "11pt Arial", "11pt Georgia", "10pt Lucinda Sans Unicode"],
+        "note": "Professional papers follow journal submission guidelines if applicable"
+      },
+      "margins": "1 inch on all sides",
+      "line_spacing": "Double-spaced throughout",
+      "paragraph_indent": "0.5 inch (first line)",
+      "page_numbers": "Top right corner, every page"
+    }
+  },
+
+  "paper_structure": {
+    "order": [
+      "Title page (with running head and author note)",
+      "Abstract (with keywords)",
+      "Body (title repeated on first line, bold, centered)",
+      "References (new page)",
+      "Footnotes (if collected on a separate page instead of at bottom of pages)",
+      "Tables (each on its own page, if not embedded)",
+      "Figures (each on its own page, if not embedded)",
+      "Appendices (if any)"
+    ]
+  },
+
+  "citations": {
+    "note": "All citation rules are identical between student and professional formats",
+    "see": "apa7_student_basic_rules.json for complete citation rules",
+    "summary_of_key_rules": {
+      "narrative": "Author (Year) — use 'and' between names",
+      "parenthetical": "(Author & Author, Year) — use '&' between names",
+      "three_or_more_authors": "First author et al. (Year) every time",
+      "page_numbers_required_for": "Direct quotes",
+      "cite_once_per_paragraph": "If reader can clearly tell subsequent sentences come from the same source"
+    }
+  },
+
+  "heading_levels": {
+    "note": "Identical to student format",
+    "level_1": "Centered, bold, title case — content on next line",
+    "level_2": "Left-aligned, bold, title case — content on next line",
+    "level_3": "Left-aligned, bold, italic, title case — content on next line",
+    "level_4": "Indented 0.5 inch, bold, title case, period — content continues on same line",
+    "level_5": "Indented 0.5 inch, bold, italic, title case, period — content continues on same line"
+  },
+
+  "reference_list": {
+    "note": "Identical formatting rules to student format",
+    "heading": "Centered, bold ('References')",
+    "placement": "New page",
+    "hanging_indent": "0.5 inch",
+    "alphabetical_order": true,
+    "double_spaced": true,
+    "authors_up_to_20": "List all",
+    "authors_21_plus": "First 19, ellipsis, then last author"
+  },
+
+  "key_differences_from_student_format": {
+    "title_page": {
+      "student": "No running head, no author note. Lists course number, instructor name, due date.",
+      "professional": "Has running head, has author note with ORCID/disclosures/contact. Lists institutional affiliation(s)."
+    },
+    "abstract": {
+      "student": "Not required unless instructor requests it",
+      "professional": "Required. Page 2, 150-250 words, with keywords line."
+    },
+    "running_head": {
+      "student": "Not used",
+      "professional": "Required on every page, ALL CAPS, max 50 characters"
+    },
+    "author_note": {
+      "student": "Not included",
+      "professional": "Required on title page. Contains ORCID iDs, disclosures, funding, and contact info."
+    },
+    "tables_and_figures_placement": {
+      "student": "Typically embedded in the text near first mention",
+      "professional": "May be embedded or collected at the end after references (per journal requirements)"
+    },
+    "person_usage": {
+      "student": "Avoid first and second person unless assignment permits it",
+      "professional": "APA encourages first person ('I' for single author, 'we' for multiple) for clarity and directness"
+    }
+  },
+
+  "shared_rules_reference": {
+    "note": "The following rules are identical across both formats. See apa7_student_basic_rules.json for full details.",
+    "categories": [
+      "All citation and in-text citation rules",
+      "Paraphrasing and quoting rules",
+      "Heading levels 1-5",
+      "Reference list formatting",
+      "Numbers formatting",
+      "Titles of works in text",
+      "Primary vs. secondary sources",
+      "Personal communications",
+      "Bible and classical works",
+      "Electronic sources and DOI/URL rules",
+      "Self-plagiarism guidelines"
+    ]
+  }
+}
