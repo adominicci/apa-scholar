@@ -14,6 +14,7 @@ import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteRe
 
 export interface BodyEditorHandle {
   insertCitation: (referenceId: string, citationText: string) => void;
+  toggleBlockquote: () => void;
 }
 
 interface BodyEditorProps {
@@ -116,6 +117,10 @@ export const BodyEditor = forwardRef<BodyEditorHandle, BodyEditorProps>(({
           marks: [{ type: 'citation', attrs: { referenceId } }],
         })
         .run();
+    },
+    toggleBlockquote() {
+      if (!editor) return;
+      editor.chain().focus().toggleBlockquote().run();
     },
   }), [editor]);
 

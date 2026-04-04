@@ -3,9 +3,11 @@ import {
   getPaperByIdPayloadSchema,
   getReferenceByIdPayloadSchema,
   listPapersByCoursePayloadSchema,
+  listRecentPapersPayloadSchema,
   listReferencesByPaperPayloadSchema,
   persistenceIpcChannels,
   searchQueryPayloadSchema,
+  updateCoursePayloadSchema,
   updatePaperBodyContentPayloadSchema,
   updatePaperMetadataPayloadSchema,
   updateReferencePayloadSchema,
@@ -15,10 +17,12 @@ export interface PersistenceIpcServices {
   courses: {
     list: () => unknown;
     create: (input: unknown) => unknown;
+    update: (courseId: string, input: unknown) => unknown;
   };
   papers: {
     getById: (paperId: string) => unknown;
     listByCourse: (courseId: string) => unknown;
+    listRecent: (limit: number) => unknown;
     create: (input: unknown) => unknown;
     updateBodyContent: (paperId: string, bodyDoc: unknown) => unknown;
     updateMetadata: (paperId: string, input: unknown) => unknown;
@@ -41,9 +45,17 @@ export const createPersistenceIpcHandlers = (
   [persistenceIpcChannels.coursesList]: () => services.courses.list(),
   [persistenceIpcChannels.coursesCreate]: (input: unknown) =>
     services.courses.create(input),
+  [persistenceIpcChannels.coursesUpdate]: (input: unknown) => {
+    const payload = updateCoursePayloadSchema.parse(input);
+    return services.courses.update(payload.courseId, payload.input);
+  },
   [persistenceIpcChannels.papersListByCourse]: (input: unknown) =>
     services.papers.listByCourse(
       listPapersByCoursePayloadSchema.parse(input).courseId,
+    ),
+  [persistenceIpcChannels.papersListRecent]: (input: unknown) =>
+    services.papers.listRecent(
+      listRecentPapersPayloadSchema.parse(input ?? {}).limit,
     ),
   [persistenceIpcChannels.papersGetById]: (input: unknown) =>
     services.papers.getById(getPaperByIdPayloadSchema.parse(input).paperId),

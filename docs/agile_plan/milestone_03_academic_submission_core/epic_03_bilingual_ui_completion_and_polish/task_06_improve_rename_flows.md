@@ -1,8 +1,8 @@
 # Task 06 - Improve rename flows
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: improve course and paper rename interactions.
 - Why: workspace organization should stay fluid as assignments evolve.

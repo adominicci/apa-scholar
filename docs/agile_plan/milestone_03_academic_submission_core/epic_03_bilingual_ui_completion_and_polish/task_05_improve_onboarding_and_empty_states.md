@@ -1,8 +1,8 @@
 # Task 05 - Improve onboarding and empty states
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: polish onboarding cues, tips, and empty states.
 - Why: the product should teach structure indirectly and reduce blank-page anxiety.

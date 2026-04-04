@@ -1,8 +1,8 @@
 # Task 04 - Render references page
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: ensure the references page prints correctly in export output.
 - Why: submission-ready output must include properly rendered reference pages.

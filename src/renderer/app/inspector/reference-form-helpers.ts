@@ -42,58 +42,58 @@ export interface FieldDefinition {
 }
 
 const baseFields: FieldDefinition[] = [
-  { key: 'title', label: 'Title', required: true },
-  { key: 'doi', label: 'DOI', required: false },
-  { key: 'url', label: 'URL', required: false },
+  { key: 'title', label: 'referenceForm.fieldTitle', required: true },
+  { key: 'doi', label: 'referenceForm.fieldDoi', required: false },
+  { key: 'url', label: 'referenceForm.fieldUrl', required: false },
 ];
 
 const fieldsByType: Record<ReferenceType, FieldDefinition[]> = {
   'journal-article': [
     ...baseFields,
-    { key: 'journalName', label: 'Journal name', required: true },
-    { key: 'volume', label: 'Volume', required: false },
-    { key: 'issue', label: 'Issue', required: false },
-    { key: 'pages', label: 'Pages', required: false },
+    { key: 'journalName', label: 'referenceForm.fieldJournalName', required: true },
+    { key: 'volume', label: 'referenceForm.fieldVolume', required: false },
+    { key: 'issue', label: 'referenceForm.fieldIssue', required: false },
+    { key: 'pages', label: 'referenceForm.fieldPages', required: false },
   ],
   'book': [
     ...baseFields,
-    { key: 'publisher', label: 'Publisher', required: true },
-    { key: 'edition', label: 'Edition', required: false },
+    { key: 'publisher', label: 'referenceForm.fieldPublisher', required: true },
+    { key: 'edition', label: 'referenceForm.fieldEdition', required: false },
   ],
   'edited-book-chapter': [
     ...baseFields,
-    { key: 'bookTitle', label: 'Book title', required: true },
-    { key: 'publisher', label: 'Publisher', required: true },
-    { key: 'pages', label: 'Pages', required: false },
-    { key: 'edition', label: 'Edition', required: false },
+    { key: 'bookTitle', label: 'referenceForm.fieldBookTitle', required: true },
+    { key: 'publisher', label: 'referenceForm.fieldPublisher', required: true },
+    { key: 'pages', label: 'referenceForm.fieldPages', required: false },
+    { key: 'edition', label: 'referenceForm.fieldEdition', required: false },
   ],
   'website': [
     ...baseFields,
-    { key: 'siteName', label: 'Site name', required: false },
-    { key: 'retrievalDate', label: 'Retrieval date', required: false },
+    { key: 'siteName', label: 'referenceForm.fieldSiteName', required: false },
+    { key: 'retrievalDate', label: 'referenceForm.fieldRetrievalDate', required: false },
   ],
   'conference-paper': [
     ...baseFields,
-    { key: 'conferenceName', label: 'Conference name', required: true },
-    { key: 'location', label: 'Location', required: false },
+    { key: 'conferenceName', label: 'referenceForm.fieldConferenceName', required: true },
+    { key: 'location', label: 'referenceForm.fieldLocation', required: false },
   ],
   'report': [
     ...baseFields,
-    { key: 'institution', label: 'Institution', required: true },
-    { key: 'reportNumber', label: 'Report number', required: false },
+    { key: 'institution', label: 'referenceForm.fieldInstitution', required: true },
+    { key: 'reportNumber', label: 'referenceForm.fieldReportNumber', required: false },
   ],
 };
 
 export const getFieldsForType = (referenceType: ReferenceType): FieldDefinition[] =>
   fieldsByType[referenceType];
 
-export const typeLabels: Record<ReferenceType, string> = {
-  'journal-article': 'Journal article',
-  'book': 'Book',
-  'edited-book-chapter': 'Edited book chapter',
-  'website': 'Website',
-  'conference-paper': 'Conference paper',
-  'report': 'Report',
+export const typeLabelKeys: Record<ReferenceType, string> = {
+  'journal-article': 'referenceForm.typeJournalArticle',
+  'book': 'referenceForm.typeBook',
+  'edited-book-chapter': 'referenceForm.typeEditedBookChapter',
+  'website': 'referenceForm.typeWebsite',
+  'conference-paper': 'referenceForm.typeConferencePaper',
+  'report': 'referenceForm.typeReport',
 };
 
 export const emptyAuthor = (): ReferenceAuthor => ({ family: '', given: '' });
@@ -222,13 +222,16 @@ export const formStateToFields = (
   }
 };
 
-export const validateFormState = (form: ReferenceFormState): string | null => {
+export const validateFormState = (
+  form: ReferenceFormState,
+  t: (key: string, options?: Record<string, string>) => string,
+): string | null => {
   const validAuthors = form.authors.filter(
     (a) => a.family.trim().length > 0,
   );
 
   if (validAuthors.length === 0) {
-    return 'At least one author with a family name is required.';
+    return t('validation.authorRequired');
   }
 
   const partialAuthors = form.authors.filter(
@@ -238,15 +241,15 @@ export const validateFormState = (form: ReferenceFormState): string | null => {
   );
 
   if (partialAuthors.length > 0) {
-    return 'Each author requires both a family name and a given name.';
+    return t('validation.authorIncomplete');
   }
 
   if (!form.title.trim()) {
-    return 'Title is required.';
+    return t('validation.titleRequired');
   }
 
   if (!form.yearUnknown && form.year.trim().length > 0 && !/^\d{4}$/.test(form.year.trim())) {
-    return 'Year must be a four-digit number or marked as unknown.';
+    return t('validation.yearInvalid');
   }
 
   const requiredFields = getFieldsForType(form.referenceType).filter((f) => f.required);
@@ -256,7 +259,7 @@ export const validateFormState = (form: ReferenceFormState): string | null => {
     const value = form[field.key];
 
     if (typeof value === 'string' && !value.trim()) {
-      return `${field.label} is required for this reference type.`;
+      return t('validation.fieldRequired', { label: t(field.label) });
     }
   }
 
@@ -264,7 +267,7 @@ export const validateFormState = (form: ReferenceFormState): string | null => {
     const validEditors = form.editors.filter((e) => e.family.trim().length > 0);
 
     if (validEditors.length === 0) {
-      return 'At least one editor with a family name is required.';
+      return t('validation.editorRequired');
     }
   }
 

@@ -1,0 +1,170 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`print page view model snapshots > matches professional paper with abstract snapshot 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "html": "Running head: SHORT",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Pro Paper",
+        "kind": "title",
+      },
+      {
+        "align": "center",
+        "html": "Author Name",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Institution",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Author note",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Add department or acknowledgment details",
+        "kind": "line",
+      },
+    ],
+    "header": {
+      "left": "SHORT",
+      "right": "1",
+    },
+    "kind": "title-page",
+  },
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "Abstract",
+        "kind": "section-heading",
+      },
+    ],
+    "header": {
+      "left": "SHORT",
+      "right": "2",
+    },
+    "kind": "abstract-page",
+  },
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "Pro Paper",
+        "kind": "section-heading",
+      },
+      {
+        "html": "<p></p>",
+        "kind": "body-html",
+      },
+    ],
+    "header": {
+      "left": "SHORT",
+      "right": "3",
+    },
+    "kind": "body-page",
+  },
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "References",
+        "kind": "section-heading",
+      },
+    ],
+    "header": {
+      "left": "SHORT",
+      "right": "4",
+    },
+    "kind": "references-page",
+  },
+]
+`;
+
+exports[`print page view model snapshots > matches student paper snapshot 1`] = `
+[
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "Test Paper",
+        "kind": "title",
+      },
+      {
+        "align": "center",
+        "html": "Jane Doe",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "MIT",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Course Name",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Professor name",
+        "kind": "line",
+      },
+      {
+        "align": "center",
+        "html": "Due date",
+        "kind": "line",
+      },
+    ],
+    "header": {
+      "left": undefined,
+      "right": "1",
+    },
+    "kind": "title-page",
+  },
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "Test Paper",
+        "kind": "section-heading",
+      },
+      {
+        "html": "<p>Introduction paragraph.</p>",
+        "kind": "body-html",
+      },
+    ],
+    "header": {
+      "left": undefined,
+      "right": "2",
+    },
+    "kind": "body-page",
+  },
+  {
+    "blocks": [
+      {
+        "align": "center",
+        "html": "References",
+        "kind": "section-heading",
+      },
+      {
+        "html": "Smith, J. (2020). Test Article. <em>Test Journal</em>.",
+        "kind": "reference-entry",
+      },
+    ],
+    "header": {
+      "left": undefined,
+      "right": "3",
+    },
+    "kind": "references-page",
+  },
+]
+`;

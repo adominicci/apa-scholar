@@ -1,8 +1,8 @@
 # Task 07 - Wire paper canvas toolbar actions
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: connect the floating paper canvas toolbar buttons to their respective features.
 - Why: the Essayist-style floating toolbar was added as part of the paper canvas redesign, but the buttons are currently placeholders with no actions.

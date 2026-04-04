@@ -163,6 +163,9 @@ export const createPaperRepository = (
   const listPapersByCourseStatement = database.prepare<[string], Paper>(
     `${selectPaperColumns} WHERE course_id = ? AND archived_at IS NULL ORDER BY updated_at DESC, title ASC`,
   );
+  const listRecentPapersStatement = database.prepare<[number], Paper>(
+    `${selectPaperColumns} WHERE archived_at IS NULL ORDER BY updated_at DESC LIMIT ?`,
+  );
   const updatePaperStatement = database.prepare<
     [string, string, string, string, string, string, string]
   >(
@@ -331,6 +334,8 @@ export const createPaperRepository = (
     getAggregateById,
     listByCourse: (courseId: string): Paper[] =>
       listPapersByCourseStatement.all(courseId).map(parsePaperRow),
+    listRecent: (limit: number): Paper[] =>
+      listRecentPapersStatement.all(limit).map(parsePaperRow),
     getById,
     update: (id: string, input: UpdatePaperInput): Paper => {
       const existingPaper = getById(id);

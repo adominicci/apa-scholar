@@ -3,6 +3,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import i18n from 'i18next';
 import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
 import {
   createEmptyFormState,
@@ -177,35 +178,35 @@ describe('validateFormState', () => {
   });
 
   it('returns null for a valid journal-article form', () => {
-    expect(validateFormState(validForm())).toBeNull();
+    expect(validateFormState(validForm(), i18n.t.bind(i18n))).toBeNull();
   });
 
   it('requires at least one author with a family name', () => {
     const form = validForm();
     form.authors = [{ family: '', given: '' }];
 
-    expect(validateFormState(form)).toMatch(/author/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/author/i);
   });
 
   it('requires title', () => {
     const form = validForm();
     form.title = '';
 
-    expect(validateFormState(form)).toMatch(/title/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/title/i);
   });
 
   it('validates year format', () => {
     const form = validForm();
     form.year = 'abc';
 
-    expect(validateFormState(form)).toMatch(/year/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/year/i);
   });
 
   it('allows empty year', () => {
     const form = validForm();
     form.year = '';
 
-    expect(validateFormState(form)).toBeNull();
+    expect(validateFormState(form, i18n.t.bind(i18n))).toBeNull();
   });
 
   it('allows yearUnknown with any year value', () => {
@@ -213,14 +214,14 @@ describe('validateFormState', () => {
     form.yearUnknown = true;
     form.year = 'abc';
 
-    expect(validateFormState(form)).toBeNull();
+    expect(validateFormState(form, i18n.t.bind(i18n))).toBeNull();
   });
 
   it('requires journal name for journal-article', () => {
     const form = validForm();
     form.journalName = '';
 
-    expect(validateFormState(form)).toMatch(/journal name/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/journal name/i);
   });
 
   it('requires publisher for book', () => {
@@ -228,7 +229,7 @@ describe('validateFormState', () => {
     form.referenceType = 'book';
     form.publisher = '';
 
-    expect(validateFormState(form)).toMatch(/publisher/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/publisher/i);
   });
 
   it('requires conference name for conference-paper', () => {
@@ -236,7 +237,7 @@ describe('validateFormState', () => {
     form.referenceType = 'conference-paper';
     form.conferenceName = '';
 
-    expect(validateFormState(form)).toMatch(/conference name/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/conference name/i);
   });
 
   it('requires institution for report', () => {
@@ -244,7 +245,7 @@ describe('validateFormState', () => {
     form.referenceType = 'report';
     form.institution = '';
 
-    expect(validateFormState(form)).toMatch(/institution/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/institution/i);
   });
 
   it('requires editors for edited-book-chapter', () => {
@@ -254,7 +255,7 @@ describe('validateFormState', () => {
     form.publisher = 'Press';
     form.editors = [{ family: '', given: '' }];
 
-    expect(validateFormState(form)).toMatch(/editor/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/editor/i);
   });
 });
 

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { CreateCourseInput } from '@domain/shared/persistence-models';
 
 interface CourseModalProps {
@@ -22,6 +23,8 @@ export const CourseModal = ({
   onSubmit,
   onClose,
 }: CourseModalProps) => {
+  const { t } = useTranslation();
+
   if (!isOpen) {
     return null;
   }
@@ -40,10 +43,10 @@ export const CourseModal = ({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="label-caps">
-              New course
+              {t('courseModal.newCourse')}
             </p>
             <h2 className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]">
-              Build the course container first
+              {t('courseModal.heading')}
             </h2>
           </div>
           <button
@@ -51,13 +54,13 @@ export const CourseModal = ({
             onClick={onClose}
             type="button"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Course name
+            {t('courseModal.courseName')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="name"
@@ -71,7 +74,7 @@ export const CourseModal = ({
             />
           </label>
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Professor
+            {t('courseModal.professor')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="professorName"
@@ -85,7 +88,7 @@ export const CourseModal = ({
             />
           </label>
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Course code
+            {t('courseModal.courseCode')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="code"
@@ -99,7 +102,7 @@ export const CourseModal = ({
             />
           </label>
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Semester
+            {t('courseModal.semester')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="semester"
@@ -126,7 +129,7 @@ export const CourseModal = ({
             onClick={onClose}
             type="button"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             className={`${shellButtonClass} border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
@@ -143,7 +146,7 @@ export const CourseModal = ({
             }}
             type="button"
           >
-            {isSubmitting ? 'Creating course' : 'Create course'}
+            {isSubmitting ? t('courseModal.creatingCourse') : t('courseModal.createCourse')}
           </button>
         </div>
       </form>
