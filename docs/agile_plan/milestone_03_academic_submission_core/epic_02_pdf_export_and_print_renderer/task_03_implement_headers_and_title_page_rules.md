@@ -1,8 +1,8 @@
 # Task 03 - Implement headers and title-page rules
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: render page headers and supported title-page rules in the print layout.
 - Why: APA export correctness depends on print-specific rule application.

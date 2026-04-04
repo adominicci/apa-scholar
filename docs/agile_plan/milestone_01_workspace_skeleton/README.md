@@ -9,4 +9,4 @@ Includes:
 - [x] Epic 01: Project Foundation
 - [x] Epic 02: Persistence and Core Data Model
 - [x] Epic 03: Workspace Shell and Navigation
-- [ ] Epic 04: Template Engine and Ghost-Page View Models
+- [x] Epic 04: Template Engine and Ghost-Page View Models

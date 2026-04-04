@@ -34,7 +34,7 @@ Completion rules:
 
 Status roll-up:
 
-- [ ] Milestone 01 - Workspace Skeleton
-- [ ] Milestone 02 - Writing Core
-- [ ] Milestone 03 - Academic Submission Core
+- [x] Milestone 01 - Workspace Skeleton
+- [x] Milestone 02 - Writing Core
+- [x] Milestone 03 - Academic Submission Core
 - [ ] Milestone 04 - Release Readiness

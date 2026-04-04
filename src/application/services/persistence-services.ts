@@ -2,9 +2,19 @@ import { buildPaperDraft } from '@application/services/build-paper-draft';
 import type {
   CourseRepository,
   PaperRepository,
+  ReferenceRepository,
   SettingsRepository,
 } from '@application/contracts/persistence-repositories';
 import { serializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
+import {
+  createReferenceInputSchema,
+  updateReferenceInputSchema,
+} from '@domain/references/reference-entry';
+import type {
+  CreateReferenceInput,
+  ReferenceEntry,
+  UpdateReferenceInput,
+} from '@domain/references/reference-entry';
 import {
   createPaperInputSchema,
   updatePaperMetadataInputSchema,
@@ -17,10 +27,12 @@ export interface PersistenceServices {
   courses: {
     list: () => ReturnType<CourseRepository['listActive']>;
     create: (input: unknown) => ReturnType<CourseRepository['create']>;
+    update: (id: string, input: unknown) => ReturnType<CourseRepository['update']>;
   };
   papers: {
     getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
     listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
+    listRecent: (limit: number) => ReturnType<PaperRepository['listRecent']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
     updateBodyContent: (
       paperId: string,
@@ -31,11 +43,19 @@ export interface PersistenceServices {
       input: unknown,
     ) => ReturnType<typeof buildPaperDraft>;
   };
+  references: {
+    listByPaper: (paperId: string) => ReferenceEntry[];
+    create: (input: unknown) => ReferenceEntry;
+    getById: (referenceId: string) => ReferenceEntry | null;
+    update: (referenceId: string, input: unknown) => ReferenceEntry;
+    delete: (referenceId: string) => void;
+  };
 }
 
 export const createPersistenceServices = (repositories: {
   courseRepository: CourseRepository;
   paperRepository: PaperRepository;
+  referenceRepository: ReferenceRepository;
   settingsRepository: SettingsRepository;
 }): PersistenceServices => ({
   courses: {
@@ -43,6 +63,11 @@ export const createPersistenceServices = (repositories: {
     create: (input) =>
       repositories.courseRepository.create(
         input as Parameters<CourseRepository['create']>[0],
+      ),
+    update: (id, input) =>
+      repositories.courseRepository.update(
+        id,
+        input as Parameters<CourseRepository['update']>[1],
       ),
   },
   papers: {
@@ -52,6 +77,7 @@ export const createPersistenceServices = (repositories: {
       return aggregate ? buildPaperDraft(aggregate) : null;
     },
     listByCourse: (courseId) => repositories.paperRepository.listByCourse(courseId),
+    listRecent: (limit: number) => repositories.paperRepository.listRecent(limit),
     create: (input) => {
       const parsedInput = createPaperInputSchema.parse(input);
       const course = repositories.courseRepository.getById(parsedInput.courseId);
@@ -106,5 +132,18 @@ export const createPersistenceServices = (repositories: {
 
       return buildPaperDraft(updatedAggregate);
     },
+  },
+  references: {
+    listByPaper: (paperId) => repositories.referenceRepository.listByPaper(paperId),
+    create: (input) => {
+      const parsedInput = createReferenceInputSchema.parse(input);
+      return repositories.referenceRepository.create(parsedInput);
+    },
+    getById: (referenceId) => repositories.referenceRepository.getById(referenceId),
+    update: (referenceId, input) => {
+      const parsedInput = updateReferenceInputSchema.parse(input);
+      return repositories.referenceRepository.update(referenceId, parsedInput);
+    },
+    delete: (referenceId) => repositories.referenceRepository.delete(referenceId),
   },
 });

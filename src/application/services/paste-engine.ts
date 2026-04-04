@@ -23,7 +23,7 @@ type ClipboardPayload = {
   text?: string | null;
 };
 
-type SupportedMarkType = BodyEditorMark['type'];
+type SupportedMarkType = 'bold' | 'italic';
 
 export interface BodyEditorPasteResult {
   document: BodyEditorDocument;
@@ -88,7 +88,7 @@ const markupReviewRules = [
 ] as const;
 
 const uniqueMarks = (marks: BodyEditorMark[]): BodyEditorMark[] => {
-  const seen = new Set<SupportedMarkType>();
+  const seen = new Set<string>();
 
   return marks.filter((mark) => {
     if (seen.has(mark.type)) {

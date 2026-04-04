@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   paperIssueSeverityOrder,
   type PaperIssue,
@@ -122,10 +123,10 @@ export const InspectorToggleField = ({
   </label>
 );
 
-const issueSeverityLabels: Record<PaperIssueSeverity, string> = {
-  high: 'High priority',
-  low: 'Low priority',
-  medium: 'Medium priority',
+const issueSeverityKeys: Record<PaperIssueSeverity, string> = {
+  high: 'issues.highPriority',
+  low: 'issues.lowPriority',
+  medium: 'issues.mediumPriority',
 };
 
 const issueSeverityClasses: Record<PaperIssueSeverity, string> = {
@@ -134,11 +135,11 @@ const issueSeverityClasses: Record<PaperIssueSeverity, string> = {
   medium: 'border-[rgba(190,132,82,0.38)] bg-[rgba(190,132,82,0.08)] text-[var(--color-ink-strong)]',
 };
 
-const issueScopeLabels: Record<PaperIssue['scope'], string> = {
-  abstract: 'Abstract',
-  body: 'Body',
-  references: 'References',
-  'title-page': 'Title page',
+const issueScopeKeys: Record<PaperIssue['scope'], string> = {
+  abstract: 'issues.abstract',
+  body: 'issues.body',
+  references: 'issues.references',
+  'title-page': 'issues.titlePage',
 };
 
 export const InspectorIssuesList = ({
@@ -148,11 +149,13 @@ export const InspectorIssuesList = ({
   issues: PaperIssue[];
   onAutofix: (issue: PaperIssue) => void;
 }) => {
+  const { t } = useTranslation();
+
   if (issues.length === 0) {
     return (
       <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3">
         <p className="text-sm leading-6 text-[var(--color-muted)]">
-          All tracked APA checks look good for this paper.
+          {t('issues.allGood')}
         </p>
       </div>
     );
@@ -171,7 +174,7 @@ export const InspectorIssuesList = ({
           <section className="space-y-3" key={severity}>
             <div className="flex items-center justify-between">
               <p className="text-[0.65rem] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
-                {issueSeverityLabels[severity]}
+                {t(issueSeverityKeys[severity])}
               </p>
               <span className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[0.7rem] font-semibold text-[var(--color-muted-strong)]">
                 {groupedIssues.length}
@@ -191,7 +194,7 @@ export const InspectorIssuesList = ({
                       </p>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.65rem] uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
                         <span className="rounded-full border border-[var(--color-line)] px-2 py-1">
-                          {issueScopeLabels[issue.scope]}
+                          {t(issueScopeKeys[issue.scope])}
                         </span>
                         <span>{issue.category}</span>
                       </div>
@@ -204,7 +207,7 @@ export const InspectorIssuesList = ({
 
                   {issue.suggestedFix ? (
                     <p className="mt-3 text-xs font-medium text-[var(--color-ink-strong)]">
-                      Next: {issue.suggestedFix}
+                      {t('issues.nextPrefix', { suggestedFix: issue.suggestedFix })}
                     </p>
                   ) : null}
 

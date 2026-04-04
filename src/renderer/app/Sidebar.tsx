@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Course, Paper } from '@domain/shared/persistence-models';
+import { InlineRenameInput } from '@renderer/app/InlineRenameInput';
 import {
   BookmarkIcon,
   ChevronLeftIcon,
@@ -26,6 +29,7 @@ interface SidebarProps {
   selectedPaperId: string | null;
   onCollapseToggle: () => void;
   onCourseOpen: (courseId: string) => void;
+  onCourseRename: (courseId: string, name: string) => void;
   onCourseToggle: (courseId: string) => void;
   onCourseModalOpen: () => void;
   onHomeNavigate: () => void;
@@ -57,6 +61,7 @@ export const Sidebar = ({
   selectedPaperId,
   onCollapseToggle,
   onCourseOpen,
+  onCourseRename,
   onCourseToggle,
   onCourseModalOpen,
   onHomeNavigate,
@@ -64,7 +69,11 @@ export const Sidebar = ({
   onPaperOpen,
   onSearchChange,
   onSettingsNavigate,
-}: SidebarProps) => (
+}: SidebarProps) => {
+  const { t } = useTranslation();
+  const [renamingCourseId, setRenamingCourseId] = useState<string | null>(null);
+
+  return (
   <aside
     className="relative flex flex-col overflow-hidden border-r border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
     style={{ width: collapsed ? 48 : 300 }}
@@ -80,7 +89,7 @@ export const Sidebar = ({
       </div>
       <div className="mt-4 flex flex-col items-center gap-1">
         <button
-          aria-label="Home"
+          aria-label={t('sidebar.home')}
           className={railButtonClass}
           onClick={onHomeNavigate}
           type="button"
@@ -88,7 +97,7 @@ export const Sidebar = ({
           <HomeIcon />
         </button>
         <button
-          aria-label="Search"
+          aria-label={t('sidebar.search')}
           className={railButtonClass}
           onClick={() => onCollapseToggle()}
           type="button"
@@ -96,7 +105,7 @@ export const Sidebar = ({
           <SearchIcon />
         </button>
         <button
-          aria-label="New course"
+          aria-label={t('sidebar.newCourse')}
           className={railButtonClass}
           onClick={onCourseModalOpen}
           type="button"
@@ -123,7 +132,7 @@ export const Sidebar = ({
       </div>
       <div className="mt-auto flex flex-col items-center gap-1">
         <button
-          aria-label="Settings"
+          aria-label={t('sidebar.settings')}
           className={railButtonClass}
           onClick={onSettingsNavigate}
           type="button"
@@ -131,7 +140,7 @@ export const Sidebar = ({
           <SettingsIcon />
         </button>
         <button
-          aria-label="Expand sidebar"
+          aria-label={t('sidebar.expandSidebar')}
           className={railButtonClass}
           onClick={onCollapseToggle}
           type="button"
@@ -150,7 +159,7 @@ export const Sidebar = ({
       <div className="p-4 space-y-6 overflow-y-auto no-scrollbar">
         <div>
           <p className="label-caps px-3 mb-2">
-            Workspace
+            {t('sidebar.workspace')}
           </p>
           <h1 className="sr-only">APA Scholar</h1>
           <nav className="space-y-1">
@@ -160,28 +169,28 @@ export const Sidebar = ({
               type="button"
             >
               <HomeIcon />
-              <span className="text-sm font-medium">Dashboard</span>
+              <span className="text-sm font-medium">{t('sidebar.dashboard')}</span>
             </button>
             <button
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
               type="button"
             >
               <DatabaseIcon />
-              <span className="text-sm font-medium">Research</span>
+              <span className="text-sm font-medium">{t('sidebar.research')}</span>
             </button>
             <button
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
               type="button"
             >
               <BookmarkIcon />
-              <span className="text-sm font-medium">Citations</span>
+              <span className="text-sm font-medium">{t('sidebar.citations')}</span>
             </button>
             <button
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
               type="button"
             >
               <FileTextIcon />
-              <span className="text-sm font-medium">Drafts</span>
+              <span className="text-sm font-medium">{t('sidebar.drafts')}</span>
             </button>
           </nav>
         </div>
@@ -193,24 +202,24 @@ export const Sidebar = ({
           onClick={onCourseModalOpen}
           type="button"
         >
-          New course
+          {t('sidebar.newCourse')}
         </button>
         <button
           className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-3 py-2 text-xs font-bold text-[var(--color-ink-strong)] transition hover:border-[var(--color-accent-soft)]"
           onClick={onPaperModalOpen}
           type="button"
         >
-          New paper
+          {t('sidebar.newPaper')}
         </button>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <p className="label-caps">
-            Courses
+            {t('sidebar.courses')}
           </p>
           <p className="text-xs text-[var(--color-muted)]">
-            {loadingCourses ? 'Loading...' : `${courses.length} total`}
+            {loadingCourses ? t('common.loading') : t('sidebar.total', { count: courses.length })}
           </p>
         </div>
 
@@ -228,8 +237,8 @@ export const Sidebar = ({
                     <button
                       aria-label={
                         isExpanded
-                          ? `Collapse course ${course.name}`
-                          : `Expand course ${course.name}`
+                          ? t('sidebar.collapseCourse', { name: course.name })
+                          : t('sidebar.expandCourse', { name: course.name })
                       }
                       className="mt-1 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded text-[var(--color-muted-strong)] transition hover:text-[var(--color-accent)]"
                       onClick={() => onCourseToggle(course.id)}
@@ -237,35 +246,50 @@ export const Sidebar = ({
                     >
                       {isExpanded ? '−' : '+'}
                     </button>
-                    <button
-                      aria-label={`Open course ${course.name}`}
-                      className={`flex-1 rounded-lg px-3 py-2 text-left transition ${
-                        isSelected
-                          ? 'bg-[var(--color-selection)] text-[var(--color-ink-strong)]'
-                          : 'hover:bg-[var(--color-input)]'
-                      }`}
-                      onClick={() => onCourseOpen(course.id)}
-                      type="button"
-                    >
-                      <span className="block text-sm font-medium">
-                        {course.name}
-                      </span>
-                      <span className="mt-0.5 block text-xs text-[var(--color-muted)]">
-                        {getCourseMetaLine(course).join(' · ') || 'Course metadata ready for setup'}
-                      </span>
-                    </button>
+                    {renamingCourseId === course.id ? (
+                      <div className="flex-1 px-1 py-2">
+                        <InlineRenameInput
+                          className="w-full"
+                          value={course.name}
+                          onRename={(name) => {
+                            setRenamingCourseId(null);
+                            onCourseRename(course.id, name);
+                          }}
+                          onCancel={() => setRenamingCourseId(null)}
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        aria-label={t('sidebar.openCourse', { name: course.name })}
+                        className={`flex-1 rounded-lg px-3 py-2 text-left transition ${
+                          isSelected
+                            ? 'bg-[var(--color-selection)] text-[var(--color-ink-strong)]'
+                            : 'hover:bg-[var(--color-input)]'
+                        }`}
+                        onClick={() => onCourseOpen(course.id)}
+                        onDoubleClick={() => setRenamingCourseId(course.id)}
+                        type="button"
+                      >
+                        <span className="block text-sm font-medium">
+                          {course.name}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-[var(--color-muted)]">
+                          {getCourseMetaLine(course).join(' · ') || t('sidebar.courseMetaFallback')}
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {isExpanded && (
                     <div className="ml-8 mt-1 space-y-0.5 border-l border-[var(--color-line)] pl-3">
                       {isLoadingPapers ? (
                         <p className="py-2 text-xs text-[var(--color-muted)]">
-                          Loading papers
+                          {t('sidebar.loadingPapers')}
                         </p>
                       ) : papers.length > 0 ? (
                         papers.map((paper) => (
                           <button
-                            aria-label={`Open paper ${paper.title}`}
+                            aria-label={t('sidebar.openPaper', { title: paper.title })}
                             className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition ${
                               selectedPaperId === paper.id
                                 ? 'bg-[var(--color-selection)] text-[var(--color-ink-strong)]'
@@ -283,7 +307,7 @@ export const Sidebar = ({
                         ))
                       ) : (
                         <p className="px-3 py-2 text-sm text-[var(--color-muted)]">
-                          No papers yet.
+                          {t('sidebar.noPapersYet')}
                         </p>
                       )}
                     </div>
@@ -294,9 +318,9 @@ export const Sidebar = ({
           ) : (
             <div className="px-4 py-4 text-sm leading-6 text-[var(--color-muted)]">
               {loadingCourses
-                ? 'Loading your workspace...'
+                ? t('sidebar.loadingWorkspace')
                 : emptyCoursesMessage ??
-                  'No courses yet. Create one to start organizing APA papers by class.'}
+                  t('sidebar.emptyCoursesDefault')}
             </div>
           )}
         </div>
@@ -304,15 +328,16 @@ export const Sidebar = ({
 
       <div className="mt-auto border-t border-[var(--color-line)] p-4">
         <button
-          aria-label="Add reference"
+          aria-label={t('sidebar.addReference')}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--color-accent-soft)] py-2 text-xs font-bold text-[var(--color-accent)] transition hover:bg-[var(--color-selection)]"
           disabled
           type="button"
         >
           <LibraryAddIcon />
-          Add reference
+          {t('sidebar.addReference')}
         </button>
       </div>
     </div>
   </aside>
-);
+  );
+};

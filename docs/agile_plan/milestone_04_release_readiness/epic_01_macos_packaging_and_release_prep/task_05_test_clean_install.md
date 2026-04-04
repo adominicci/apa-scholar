@@ -1,8 +1,8 @@
 # Task 05 - Test clean install
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: validate a clean install on a separate machine or clean environment.
 - Why: packaging success alone does not prove install-time behavior.

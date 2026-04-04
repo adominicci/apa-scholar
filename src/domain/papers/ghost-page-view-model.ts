@@ -1,17 +1,21 @@
 import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
+import { getGhostPageStrings } from '@domain/papers/ghost-page-strings';
 import { abstractEnabledTemplates } from '@domain/shared/contracts';
+import type { Language } from '@domain/shared/contracts';
 import type {
   Paper,
   PaperContent,
   PaperMeta,
 } from '@domain/shared/persistence-models';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
+import { formatReferenceApaPlainText } from '@domain/references/apa-formatter';
 
 export interface GhostPageBlockViewModel {
   align?: 'center' | 'left';
   document?: BodyEditorDocument;
   id: string;
-  kind: 'body-editor' | 'empty-state' | 'line' | 'section-heading' | 'textarea' | 'title';
+  kind: 'body-editor' | 'empty-state' | 'line' | 'reference-line' | 'section-heading' | 'textarea' | 'title';
   text: string;
 }
 
@@ -36,26 +40,66 @@ const getPageHeader = (
   paper: Paper,
   paperMeta: PaperMeta,
   pageNumber: number,
+  runningHeadFallback = 'Short title',
 ): GhostPageViewModel['header'] => ({
   left:
     paper.paperType === 'professional'
-      ? getDisplayValue(paperMeta.runningHead, 'Short title')
+      ? getDisplayValue(paperMeta.runningHead, runningHeadFallback)
       : undefined,
   right: `${pageNumber}`,
 });
 
+const buildReferencesPageBlocks = (
+  references: ReferenceEntry[],
+  language: Language = 'en',
+): GhostPageBlockViewModel[] => {
+  const s = getGhostPageStrings(language);
+  const heading: GhostPageBlockViewModel = {
+    id: 'references-heading',
+    kind: 'section-heading',
+    text: s.references,
+  };
+
+  if (references.length === 0) {
+    return [
+      heading,
+      {
+        id: 'references-empty-state',
+        kind: 'empty-state',
+        text: s.referencesEmptyState,
+      },
+    ];
+  }
+
+  // Sort alphabetically by sortKey regardless of caller order.
+  const sorted = [...references].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  return [
+    heading,
+    ...sorted.map((ref) => ({
+      id: `reference-${ref.id}`,
+      kind: 'reference-line' as const,
+      text: formatReferenceApaPlainText(ref),
+    })),
+  ];
+};
+
 export const buildGhostPageViewModels = (input: {
+  language?: Language;
   paper: Paper;
   paperContent: PaperContent;
   paperMeta: PaperMeta;
+  references?: ReferenceEntry[];
 }): GhostPageViewModel[] => {
+  const lang = input.language ?? 'en';
+  const s = getGhostPageStrings(lang);
+
   const titlePageBlocks =
     input.paper.paperType === 'professional'
       ? [
           {
             id: 'running-head',
             kind: 'line' as const,
-            text: `Running head: ${getDisplayValue(input.paperMeta.runningHead, 'Short title')}`,
+            text: `${s.runningHeadPrefix} ${getDisplayValue(input.paperMeta.runningHead, s.runningHead)}`,
           },
           {
             align: 'center' as const,
@@ -67,25 +111,25 @@ export const buildGhostPageViewModels = (input: {
             align: 'center' as const,
             id: 'author-name',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.authorName, 'Author Name'),
+            text: getDisplayValue(input.paperMeta.authorName, s.authorName),
           },
           {
             align: 'center' as const,
             id: 'institution',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.institution, 'Institution'),
+            text: getDisplayValue(input.paperMeta.institution, s.institution),
           },
           {
             align: 'center' as const,
             id: 'author-note-label',
             kind: 'line' as const,
-            text: 'Author note',
+            text: s.authorNote,
           },
           {
             align: 'center' as const,
             id: 'author-note',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.authorNote, 'Add department or acknowledgment details'),
+            text: getDisplayValue(input.paperMeta.authorNote, s.authorNotePlaceholder),
           },
         ]
       : [
@@ -99,41 +143,41 @@ export const buildGhostPageViewModels = (input: {
             align: 'center' as const,
             id: 'author-name',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.authorName, 'Student Name'),
+            text: getDisplayValue(input.paperMeta.authorName, s.studentName),
           },
           {
             align: 'center' as const,
             id: 'institution',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.institution, 'Institution'),
+            text: getDisplayValue(input.paperMeta.institution, s.institution),
           },
           {
             align: 'center' as const,
             id: 'course-name',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.courseName, 'Course Name'),
+            text: getDisplayValue(input.paperMeta.courseName, s.courseName),
           },
           {
             align: 'center' as const,
             id: 'professor-name',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.professorName, 'Professor name'),
+            text: getDisplayValue(input.paperMeta.professorName, s.professorName),
           },
           {
             align: 'center' as const,
             id: 'due-date',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.dueDate, 'Due date'),
+            text: getDisplayValue(input.paperMeta.dueDate, s.dueDate),
           },
         ];
 
   const pages: GhostPageViewModel[] = [
     {
       blocks: titlePageBlocks,
-      header: getPageHeader(input.paper, input.paperMeta, 1),
+      header: getPageHeader(input.paper, input.paperMeta, 1, s.runningHead),
       id: `${input.paper.id}-title-page`,
       kind: 'title-page',
-      title: 'Title Page',
+      title: s.titlePage,
     },
   ];
 
@@ -143,18 +187,18 @@ export const buildGhostPageViewModels = (input: {
         {
           id: 'abstract-heading',
           kind: 'section-heading',
-          text: 'Abstract',
+          text: s.abstract,
         },
         {
           id: 'abstract-textarea',
           kind: 'textarea',
-          text: 'Summarize the paper in one concise paragraph once the abstract workflow lands.',
+          text: s.abstractPlaceholder,
         },
       ],
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1),
+      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1, s.runningHead),
       id: `${input.paper.id}-abstract-page`,
       kind: 'abstract-page',
-      title: 'Abstract',
+      title: s.abstract,
     });
   }
 
@@ -170,31 +214,20 @@ export const buildGhostPageViewModels = (input: {
           document: deserializeBodyEditorDocument(input.paperContent.bodyDoc),
           id: 'body-editor',
           kind: 'body-editor',
-          text: 'Start your introduction here.',
+          text: s.bodyPlaceholder,
         },
       ],
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1),
+      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1, s.runningHead),
       id: `${input.paper.id}-body-page`,
       kind: 'body-page',
-      title: 'Body Draft',
+      title: s.bodyDraft,
     },
     {
-      blocks: [
-        {
-          id: 'references-heading',
-          kind: 'section-heading',
-          text: 'References',
-        },
-        {
-          id: 'references-empty-state',
-          kind: 'empty-state',
-          text: 'References will appear here in alphabetical order once the citation and references milestone is connected.',
-        },
-      ],
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 2),
+      blocks: buildReferencesPageBlocks(input.references ?? [], lang),
+      header: getPageHeader(input.paper, input.paperMeta, pages.length + 2, s.runningHead),
       id: `${input.paper.id}-references-page`,
       kind: 'references-page',
-      title: 'References',
+      title: s.references,
     },
   );
 

@@ -7,7 +7,7 @@ This file is for agents working in this repository. It should help you make good
 - Product: `APA Scholar`
 - Type: local-first Electron desktop app for APA-compliant academic writing
 - Core model: `Workspace -> Course -> Paper`
-- Current emphasis: workspace shell, navigation, persistence foundation, and design-system alignment
+- Current emphasis: references and citations (M3 E01), with Milestones 01 and 02 complete. Next: PDF export, bilingual polish, release prep.
 - Platform focus: macOS first
 
 The app is not a generic word processor. It is a guided academic writing workspace with a semantic paper model.

@@ -1,8 +1,8 @@
 # Task 03 - Add signing configuration
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: prepare environment-driven code signing and notarization configuration.
 - Why: macOS distribution readiness depends on a documented signing path.

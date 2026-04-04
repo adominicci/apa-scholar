@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { PaperDraft } from '@domain/papers/paper-draft';
 import type { PaperIssue } from '@domain/papers/paper-issues';
 import type { UpdatePaperMetadataInput } from '@domain/shared/persistence-models';
@@ -27,44 +28,45 @@ export const PaperInspectorPanel = ({
   onIssueAutofix,
   onMetadataChange,
 }: PaperInspectorPanelProps) => {
+  const { t } = useTranslation();
   const isProfessional = paperDraft.paper.paperType === 'professional';
 
   return (
     <>
-      <InspectorSection title="Paper details">
+      <InspectorSection title={t('paperInspector.paperDetails')}>
         <InspectorSelectField
-          label="Paper type"
+          label={t('paperInspector.paperType')}
           onChange={(paperType) =>
             onMetadataChange({
               paperType: paperType as PaperDraft['paper']['paperType'],
             })
           }
           options={[
-            { label: 'Student paper', value: 'student' },
-            { label: 'Professional paper', value: 'professional' },
+            { label: t('paperInspector.studentPaper'), value: 'student' },
+            { label: t('paperInspector.professionalPaper'), value: 'professional' },
           ]}
           value={paperDraft.paper.paperType}
         />
         <InspectorToggleField
           checked={paperDraft.paperMeta.abstractEnabled}
-          label="Include abstract"
+          label={t('paperInspector.includeAbstract')}
           onChange={(abstractEnabled) => onMetadataChange({ abstractEnabled })}
         />
         <InspectorTextField
-          label="Paper title"
+          label={t('paperInspector.paperTitle')}
           onChange={(title) => onMetadataChange({ title })}
           value={paperDraft.paperMeta.title}
         />
       </InspectorSection>
 
-      <InspectorSection title={isProfessional ? 'Professional metadata' : 'Student metadata'}>
+      <InspectorSection title={isProfessional ? t('paperInspector.professionalMetadata') : t('paperInspector.studentMetadata')}>
         <InspectorTextField
-          label="Author name"
+          label={t('paperInspector.authorName')}
           onChange={(authorName) => onMetadataChange({ authorName: toMetadataValue(authorName) })}
           value={toFieldValue(paperDraft.paperMeta.authorName)}
         />
         <InspectorTextField
-          label="Institution"
+          label={t('paperInspector.institution')}
           onChange={(institution) => onMetadataChange({ institution: toMetadataValue(institution) })}
           value={toFieldValue(paperDraft.paperMeta.institution)}
         />
@@ -72,32 +74,32 @@ export const PaperInspectorPanel = ({
         {isProfessional ? (
           <>
             <InspectorTextField
-              label="Running head"
+              label={t('paperInspector.runningHead')}
               onChange={(runningHead) => onMetadataChange({ runningHead: toMetadataValue(runningHead) })}
-              placeholder="Short title"
+              placeholder={t('paperInspector.runningHeadPlaceholder')}
               value={toFieldValue(paperDraft.paperMeta.runningHead)}
             />
             <InspectorTextAreaField
-              label="Author note"
+              label={t('paperInspector.authorNote')}
               onChange={(authorNote) => onMetadataChange({ authorNote: toMetadataValue(authorNote) })}
-              placeholder="Department, acknowledgements, or funding note"
+              placeholder={t('paperInspector.authorNotePlaceholder')}
               value={toFieldValue(paperDraft.paperMeta.authorNote)}
             />
           </>
         ) : (
           <>
             <InspectorTextField
-              label="Course name"
+              label={t('paperInspector.courseName')}
               onChange={(courseName) => onMetadataChange({ courseName: toMetadataValue(courseName) })}
               value={toFieldValue(paperDraft.paperMeta.courseName)}
             />
             <InspectorTextField
-              label="Professor name"
+              label={t('paperInspector.professorName')}
               onChange={(professorName) => onMetadataChange({ professorName: toMetadataValue(professorName) })}
               value={toFieldValue(paperDraft.paperMeta.professorName)}
             />
             <InspectorTextField
-              label="Due date"
+              label={t('paperInspector.dueDate')}
               onChange={(dueDate) => onMetadataChange({ dueDate: toMetadataValue(dueDate) })}
               value={toFieldValue(paperDraft.paperMeta.dueDate)}
             />
@@ -105,7 +107,7 @@ export const PaperInspectorPanel = ({
         )}
       </InspectorSection>
 
-      <InspectorSection title="Issues">
+      <InspectorSection title={t('paperInspector.issues')}>
         <InspectorIssuesList
           issues={issues}
           onAutofix={onIssueAutofix}

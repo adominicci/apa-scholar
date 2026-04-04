@@ -229,6 +229,97 @@ describe('paper issues', () => {
     ).toBe(true);
   });
 
+  it('flags orphan citations that point to non-existent references', () => {
+    const draft = createPaperDraft({
+      paperContent: {
+        bodyDoc: createBodyDocument([
+          {
+            content: [
+              {
+                marks: [{ type: 'citation', attrs: { referenceId: 'ref-missing' } }],
+                text: '(Smith, 2020)',
+                type: 'text',
+              },
+            ],
+            type: 'paragraph',
+          },
+        ]),
+      },
+    });
+
+    const issues = evaluatePaperIssues(draft, [
+      {
+        id: 'ref-1',
+        paperId: 'paper-1',
+        referenceType: 'book',
+        fields: { authors: [{ family: 'A', given: 'B' }], year: '2020', title: 'X', publisher: 'P' },
+        sortKey: 'a|2020|x',
+        createdAt: '2026-03-07T14:00:00.000Z',
+        updatedAt: '2026-03-07T14:00:00.000Z',
+      },
+    ]);
+
+    expect(issues.map((i) => i.code)).toContain('orphan-citation-ref-missing');
+    const orphanIssue = issues.find((i) => i.code === 'orphan-citation-ref-missing')!;
+    expect(orphanIssue.severity).toBe('medium');
+    expect(orphanIssue.scope).toBe('references');
+  });
+
+  it('flags uncited references that have no matching citation in the body', () => {
+    const draft = createPaperDraft();
+
+    const issues = evaluatePaperIssues(draft, [
+      {
+        id: 'ref-1',
+        paperId: 'paper-1',
+        referenceType: 'book',
+        fields: { authors: [{ family: 'Jones', given: 'D' }], year: '2021', title: 'Unused Work', publisher: 'P' },
+        sortKey: 'jones|2021|unused work',
+        createdAt: '2026-03-07T14:00:00.000Z',
+        updatedAt: '2026-03-07T14:00:00.000Z',
+      },
+    ]);
+
+    expect(issues.map((i) => i.code)).toContain('uncited-reference-ref-1');
+    const uncited = issues.find((i) => i.code === 'uncited-reference-ref-1')!;
+    expect(uncited.severity).toBe('low');
+    expect(uncited.description).toContain('Unused Work');
+  });
+
+  it('does not flag references that have matching citations', () => {
+    const draft = createPaperDraft({
+      paperContent: {
+        bodyDoc: createBodyDocument([
+          {
+            content: [
+              {
+                marks: [{ type: 'citation', attrs: { referenceId: 'ref-1' } }],
+                text: '(Jones, 2021)',
+                type: 'text',
+              },
+            ],
+            type: 'paragraph',
+          },
+        ]),
+      },
+    });
+
+    const issues = evaluatePaperIssues(draft, [
+      {
+        id: 'ref-1',
+        paperId: 'paper-1',
+        referenceType: 'book',
+        fields: { authors: [{ family: 'Jones', given: 'D' }], year: '2021', title: 'Cited Work', publisher: 'P' },
+        sortKey: 'jones|2021|cited work',
+        createdAt: '2026-03-07T14:00:00.000Z',
+        updatedAt: '2026-03-07T14:00:00.000Z',
+      },
+    ]);
+
+    expect(issues.map((i) => i.code)).not.toContain('orphan-citation-ref-1');
+    expect(issues.map((i) => i.code)).not.toContain('uncited-reference-ref-1');
+  });
+
   it('converts suspicious paste warnings into shared advisory issues', () => {
     expect(
       buildPasteWarningIssues([

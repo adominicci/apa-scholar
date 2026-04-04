@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { BodyEditorPasteResult } from '@application/services/paste-engine';
 import {
   detectBodyEditorClipboardWarnings,
@@ -12,6 +12,11 @@ import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serial
 import { createBodyEditorExtensions } from '@renderer/app/paper-canvas/body-editor/create-body-editor-extensions';
 import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteReviewModal';
 
+export interface BodyEditorHandle {
+  insertCitation: (referenceId: string, citationText: string) => void;
+  toggleBlockquote: () => void;
+}
+
 interface BodyEditorProps {
   document: BodyEditorDocument;
   onChange: (document: BodyEditorDocument) => void;
@@ -19,12 +24,12 @@ interface BodyEditorProps {
   placeholder: string;
 }
 
-export const BodyEditor = ({
+export const BodyEditor = forwardRef<BodyEditorHandle, BodyEditorProps>(({
   document,
   onChange,
   onPasteWarningsChange,
   placeholder,
-}: BodyEditorProps) => {
+}, ref) => {
   const editorRootRef = useRef<HTMLDivElement | null>(null);
   const onChangeRef = useRef(onChange);
   const [pendingPaste, setPendingPaste] = useState<BodyEditorPasteResult | null>(null);
@@ -61,7 +66,7 @@ export const BodyEditor = ({
         'aria-label': 'Paper body draft',
         'aria-multiline': 'true',
         class:
-          'min-h-[260px] rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4 text-base leading-8 text-[var(--color-page-ink)] outline-none transition focus:border-[var(--color-accent-soft)]',
+          'min-h-[200px] font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)] outline-none',
         'data-editor-surface': 'true',
         role: 'textbox',
         spellcheck: 'false',
@@ -93,12 +98,31 @@ export const BodyEditor = ({
       transformPastedHTML: transformBodyEditorPastedHtml,
       transformPastedText: transformBodyEditorPastedText,
     },
-    extensions: createBodyEditorExtensions(),
+    extensions: createBodyEditorExtensions(placeholder),
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
       onChangeRef.current(deserializeBodyEditorDocument(currentEditor.getJSON()));
     },
   });
+
+  useImperativeHandle(ref, () => ({
+    insertCitation(referenceId: string, citationText: string) {
+      if (!editor) return;
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'text',
+          text: citationText,
+          marks: [{ type: 'citation', attrs: { referenceId } }],
+        })
+        .run();
+    },
+    toggleBlockquote() {
+      if (!editor) return;
+      editor.chain().focus().toggleBlockquote().run();
+    },
+  }), [editor]);
 
   useEffect(() => {
     if (!editor) {
@@ -116,19 +140,8 @@ export const BodyEditor = ({
   }, [document, editor]);
 
   return (
-    <div className="mt-6">
-      <label
-        className="block text-sm font-medium text-[var(--color-page-ink)]"
-        onClick={focusEditorSurface}
-      >
-        Paper body draft
-      </label>
-      <div className="mt-3" ref={editorRootRef}>
-        <EditorContent editor={editor} />
-      </div>
-      <p className="mt-3 text-sm leading-7 text-[var(--color-page-muted)]">
-        {placeholder}
-      </p>
+    <div className="apa-body-editor" ref={editorRootRef}>
+      <EditorContent editor={editor} />
       <PasteReviewModal
         isOpen={pendingPaste !== null}
         onCancel={closePendingPaste}
@@ -144,4 +157,6 @@ export const BodyEditor = ({
       />
     </div>
   );
-};
+});
+
+BodyEditor.displayName = 'BodyEditor';

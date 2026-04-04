@@ -1,8 +1,8 @@
 # Task 01 - Configure Forge makers
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: configure Electron Forge makers for macOS outputs.
 - Why: release preparation starts with a reliable packaging target.

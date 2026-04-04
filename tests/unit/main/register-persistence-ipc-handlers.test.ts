@@ -11,11 +11,18 @@ describe('registerPersistenceIpcHandlers', () => {
       {
         [persistenceIpcChannels.coursesList]: () => [],
         [persistenceIpcChannels.coursesCreate]: () => ({ id: 'course-1' }),
+        [persistenceIpcChannels.coursesUpdate]: () => ({ id: 'course-1' }),
         [persistenceIpcChannels.papersListByCourse]: () => [],
+        [persistenceIpcChannels.papersListRecent]: () => [],
         [persistenceIpcChannels.papersGetById]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.papersCreate]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.papersUpdateBodyContent]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.papersUpdateMetadata]: () => ({ id: 'paper-1' }),
+        [persistenceIpcChannels.referencesListByPaper]: () => [],
+        [persistenceIpcChannels.referencesCreate]: () => ({ id: 'ref-1' }),
+        [persistenceIpcChannels.referencesGetById]: () => null,
+        [persistenceIpcChannels.referencesUpdate]: () => ({ id: 'ref-1' }),
+        [persistenceIpcChannels.referencesDelete]: () => undefined,
         [persistenceIpcChannels.searchQuery]: () => ({
           courses: [],
           papers: [],
@@ -24,7 +31,7 @@ describe('registerPersistenceIpcHandlers', () => {
       },
     );
 
-    expect(handle).toHaveBeenCalledTimes(8);
+    expect(handle).toHaveBeenCalledTimes(15);
     expect(handle).toHaveBeenCalledWith(
       persistenceIpcChannels.coursesList,
       expect.any(Function),

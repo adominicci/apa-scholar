@@ -4,6 +4,8 @@ export type WorkspaceRoute =
   | { view: 'paper'; courseId: string; paperId: string }
   | { view: 'settings' };
 
+export type InspectorTab = 'details' | 'issues' | 'references';
+
 export interface WorkspaceShellState {
   route: WorkspaceRoute;
   selectedCourseId: string | null;
@@ -11,6 +13,7 @@ export interface WorkspaceShellState {
   expandedCourseIds: string[];
   leftPanelCollapsed: boolean;
   rightPanelCollapsed: boolean;
+  inspectorTab: InspectorTab;
 }
 
 export type WorkspaceShellAction =
@@ -20,7 +23,8 @@ export type WorkspaceShellAction =
   | { type: 'navigatePaper'; courseId: string; paperId: string }
   | { type: 'toggleCourseExpansion'; courseId: string }
   | { type: 'toggleLeftPanel' }
-  | { type: 'toggleRightPanel' };
+  | { type: 'toggleRightPanel' }
+  | { type: 'set-inspector-tab'; tab: InspectorTab };
 
 const toggleInList = (items: string[], value: string): string[] =>
   items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
@@ -30,6 +34,7 @@ const ensureExpanded = (items: string[], value: string): string[] =>
 
 export const createInitialWorkspaceShellState = (): WorkspaceShellState => ({
   expandedCourseIds: [],
+  inspectorTab: 'details',
   leftPanelCollapsed: false,
   rightPanelCollapsed: false,
   route: { view: 'home' },
@@ -90,6 +95,12 @@ export const workspaceShellReducer = (
       return {
         ...state,
         rightPanelCollapsed: !state.rightPanelCollapsed,
+      };
+    case 'set-inspector-tab':
+      return {
+        ...state,
+        inspectorTab: action.tab,
+        rightPanelCollapsed: false,
       };
   }
 };

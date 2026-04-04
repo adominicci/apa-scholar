@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   listTemplateDefinitions,
   resolveTemplateDefinitionId,
@@ -29,6 +30,7 @@ export const PaperModal = ({
   onSubmit,
   onClose,
 }: PaperModalProps) => {
+  const { t } = useTranslation();
   const templateOptions = listTemplateDefinitions();
 
   if (!isOpen) {
@@ -49,10 +51,10 @@ export const PaperModal = ({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="label-caps">
-              New paper
+              {t('paperModal.newPaper')}
             </p>
             <h2 className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]">
-              Open a fresh APA shell
+              {t('paperModal.heading')}
             </h2>
           </div>
           <button
@@ -60,13 +62,13 @@ export const PaperModal = ({
             onClick={onClose}
             type="button"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
 
         <div className="mt-6 grid gap-4">
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Paper title
+            {t('paperModal.paperTitle')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="title"
@@ -81,7 +83,7 @@ export const PaperModal = ({
           </label>
 
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Course
+            {t('paperModal.course')}
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="courseId"
@@ -102,7 +104,7 @@ export const PaperModal = ({
               }
               value={paperForm.courseId}
             >
-              <option value="">Select a course</option>
+              <option value="">{t('paperModal.selectCourse')}</option>
               {courses.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.name}
@@ -112,7 +114,7 @@ export const PaperModal = ({
           </label>
 
           <label className="block text-sm text-[var(--color-ink-strong)]">
-            Template
+            {t('paperModal.template')}
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
               name="templateId"
@@ -147,7 +149,7 @@ export const PaperModal = ({
             onClick={onClose}
             type="button"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             className={`${shellButtonClass} border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
@@ -164,7 +166,7 @@ export const PaperModal = ({
             }}
             type="button"
           >
-            {isSubmitting ? 'Creating paper' : 'Create paper'}
+            {isSubmitting ? t('paperModal.creatingPaper') : t('paperModal.createPaper')}
           </button>
         </div>
       </form>

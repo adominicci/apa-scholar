@@ -13,7 +13,7 @@ import {
 describe('body-editor-schema', () => {
   it('exports the supported heading levels and inline marks from one place', () => {
     expect(supportedBodyEditorHeadingLevels).toEqual([1, 2, 3, 4, 5]);
-    expect(supportedBodyEditorMarks).toEqual(['bold', 'italic']);
+    expect(supportedBodyEditorMarks).toEqual(['bold', 'italic', 'citation']);
   });
 
   it('preserves supported heading and blockquote structures', () => {

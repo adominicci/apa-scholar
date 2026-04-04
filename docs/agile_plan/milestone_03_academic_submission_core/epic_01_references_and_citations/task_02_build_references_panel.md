@@ -1,8 +1,8 @@
 # Task 02 - Build references panel
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: add the main references management UI.
 - Why: users need a dedicated structured place to manage sources.

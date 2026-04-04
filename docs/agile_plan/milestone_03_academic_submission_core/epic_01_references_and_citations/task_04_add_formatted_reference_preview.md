@@ -1,8 +1,8 @@
 # Task 04 - Add formatted reference preview
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: preview the formatted APA output for each reference.
 - Why: users need confidence before inserting citations or exporting.

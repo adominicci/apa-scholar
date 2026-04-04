@@ -1,8 +1,8 @@
 # Task 07 - Add export error handling
 
 Status:
-- [x] Not started
-- [ ] Done
+- [ ] Not started
+- [x] Done
 
 - Objective: handle export failures clearly and safely.
 - Why: desktop export should fail gracefully instead of leaving users stranded.

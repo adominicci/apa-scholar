@@ -46,7 +46,7 @@ describe('createPersistenceContext', () => {
 
     expect(firstSettings?.language).toBe('es');
     expect(secondSettings?.debug).toBe(true);
-    expect(appliedMigrations).toHaveLength(1);
+    expect(appliedMigrations).toHaveLength(2);
   });
 
   it('supports course CRUD through the repository with archive-first listing', () => {

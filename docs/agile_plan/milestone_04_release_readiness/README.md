@@ -6,4 +6,4 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 
 Includes:
 
-- [ ] Epic 01: macOS Packaging and Release Prep
+- [x] Epic 01: macOS Packaging and Release Prep
