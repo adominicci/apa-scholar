@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createEmptyBodyEditorFixture,
+  createListBodyEditorFixture,
   createUnsupportedFormattingFixture,
 } from '@tests/helpers/body-editor-fixtures';
 import {
@@ -33,18 +34,16 @@ describe('body-editor-serialization', () => {
             ],
             type: 'paragraph',
           },
-          {
-            content: [
-              {
-                text: 'Bullet that should flatten',
-                type: 'text',
-              },
-            ],
-            type: 'paragraph',
-          },
         ],
         type: 'doc',
       },
     );
+  });
+
+  it('preserves supported list content during serialization', () => {
+    expect(serializeBodyEditorDocument({ content: [createListBodyEditorFixture()], type: 'doc' })).toEqual({
+      content: [createListBodyEditorFixture()],
+      type: 'doc',
+    });
   });
 });

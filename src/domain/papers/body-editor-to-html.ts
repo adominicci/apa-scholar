@@ -2,6 +2,7 @@ import type {
   BodyEditorBlockNode,
   BodyEditorDocument,
   BodyEditorInlineNode,
+  BodyEditorListItem,
   BodyEditorMark,
 } from '@domain/papers/body-editor-schema';
 
@@ -33,6 +34,14 @@ const renderInlineNode = (node: BodyEditorInlineNode): string => {
 const renderInlineContent = (content?: BodyEditorInlineNode[]): string =>
   (content ?? []).map(renderInlineNode).join('');
 
+const renderListItem = (item: BodyEditorListItem): string =>
+  `<li>${item.content.map((node) =>
+    node.type === 'paragraph'
+      ? `<p>${renderInlineContent(node.content)}</p>`
+      : node.type === 'bulletList'
+        ? `<ul>${node.content.map(renderListItem).join('')}</ul>`
+        : `<ol>${node.content.map(renderListItem).join('')}</ol>`).join('')}</li>`;
+
 const renderBlockNode = (node: BodyEditorBlockNode): string => {
   switch (node.type) {
     case 'paragraph':
@@ -41,6 +50,10 @@ const renderBlockNode = (node: BodyEditorBlockNode): string => {
       return `<h${node.attrs.level}>${renderInlineContent(node.content)}</h${node.attrs.level}>`;
     case 'blockquote':
       return `<blockquote>${node.content.map(renderBlockNode).join('')}</blockquote>`;
+    case 'bulletList':
+      return `<ul>${node.content.map(renderListItem).join('')}</ul>`;
+    case 'orderedList':
+      return `<ol>${node.content.map(renderListItem).join('')}</ol>`;
     default:
       return '';
   }

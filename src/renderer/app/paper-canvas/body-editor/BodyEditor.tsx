@@ -8,13 +8,18 @@ import {
 } from '@application/services/paste-engine';
 import { EditorContent, useEditor } from '@tiptap/react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
+import { supportedBodyEditorHeadingLevels } from '@domain/papers/body-editor-schema';
 import { deserializeBodyEditorDocument } from '@domain/papers/body-editor-serialization';
 import { createBodyEditorExtensions } from '@renderer/app/paper-canvas/body-editor/create-body-editor-extensions';
 import { PasteReviewModal } from '@renderer/app/paper-canvas/body-editor/PasteReviewModal';
 
 export interface BodyEditorHandle {
   insertCitation: (referenceId: string, citationText: string) => void;
+  setHeadingLevel: (level: (typeof supportedBodyEditorHeadingLevels)[number]) => void;
+  setParagraph: () => void;
+  toggleBulletList: () => void;
   toggleBlockquote: () => void;
+  toggleOrderedList: () => void;
 }
 
 interface BodyEditorProps {
@@ -118,9 +123,25 @@ export const BodyEditor = forwardRef<BodyEditorHandle, BodyEditorProps>(({
         })
         .run();
     },
+    setHeadingLevel(level) {
+      if (!editor) return;
+      editor.chain().focus().toggleHeading({ level }).run();
+    },
+    setParagraph() {
+      if (!editor) return;
+      editor.chain().focus().setParagraph().run();
+    },
+    toggleBulletList() {
+      if (!editor) return;
+      editor.chain().focus().toggleBulletList().run();
+    },
     toggleBlockquote() {
       if (!editor) return;
       editor.chain().focus().toggleBlockquote().run();
+    },
+    toggleOrderedList() {
+      if (!editor) return;
+      editor.chain().focus().toggleOrderedList().run();
     },
   }), [editor]);
 

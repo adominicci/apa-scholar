@@ -10,12 +10,19 @@ import { PaperCanvasToolbar } from '@renderer/app/paper-canvas/PaperCanvasToolba
 interface PaperCanvasProps {
   bodyDocument: BodyEditorDocument;
   bodyEditorRef?: Ref<BodyEditorHandle>;
+  onOpenDetails?: () => void;
   paperDraft: PaperDraft;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
   onOpenCitation?: () => void;
   onOpenReferences?: () => void;
   onPasteWarningsChange: (warnings: string[]) => void;
+  onSetHeadingLevel?: (level: 1 | 2 | 3 | 4 | 5) => void;
+  onSetPaperType?: (paperType: PaperDraft['paper']['paperType']) => void;
+  onSetParagraph?: () => void;
+  onToggleBulletList?: () => void;
   onToggleBlockquote?: () => void;
+  onToggleAbstract?: () => void;
+  onToggleOrderedList?: () => void;
 }
 
 const getBlocksWrapperClass = (kind: GhostPageViewModel['kind']): string => {
@@ -28,18 +35,34 @@ const getBlocksWrapperClass = (kind: GhostPageViewModel['kind']): string => {
 export const PaperCanvas = ({
   bodyDocument,
   bodyEditorRef,
+  onOpenDetails,
   paperDraft,
   onBodyDocumentChange,
   onOpenCitation,
   onOpenReferences,
   onPasteWarningsChange,
+  onSetHeadingLevel,
+  onSetPaperType,
+  onSetParagraph,
+  onToggleBulletList,
   onToggleBlockquote,
+  onToggleAbstract,
+  onToggleOrderedList,
 }: PaperCanvasProps) => (
   <div className="flex items-start justify-center gap-4 py-8">
     <PaperCanvasToolbar
+      abstractEnabled={paperDraft.paperMeta.abstractEnabled}
       onOpenCitation={onOpenCitation}
+      onOpenDetails={onOpenDetails}
       onOpenReferences={onOpenReferences}
+      onSetHeadingLevel={onSetHeadingLevel}
+      onSetPaperType={onSetPaperType}
+      onSetParagraph={onSetParagraph}
+      onToggleBulletList={onToggleBulletList}
       onToggleBlockquote={onToggleBlockquote}
+      onToggleAbstract={onToggleAbstract}
+      onToggleOrderedList={onToggleOrderedList}
+      paperType={paperDraft.paper.paperType}
     />
     <div className="flex flex-col items-center gap-[var(--page-gap)]">
       {paperDraft.ghostPages.map((page) => (

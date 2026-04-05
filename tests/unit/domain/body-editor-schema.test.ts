@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createBlockquoteBodyEditorFixture,
   createHeadingBodyEditorFixture,
+  createListBodyEditorFixture,
   createUnsupportedFormattingFixture,
 } from '@tests/helpers/body-editor-fixtures';
 import {
@@ -23,6 +24,13 @@ describe('body-editor-schema', () => {
     expect(normalizeBodyEditorDocument(createBlockquoteBodyEditorFixture())).toEqual(
       createBlockquoteBodyEditorFixture(),
     );
+    expect(normalizeBodyEditorDocument({
+      content: [createListBodyEditorFixture()],
+      type: 'doc',
+    })).toEqual({
+      content: [createListBodyEditorFixture()],
+      type: 'doc',
+    });
   });
 
   it('downgrades unsupported structure to supported body-editor content', () => {
@@ -37,15 +45,6 @@ describe('body-editor-schema', () => {
                 },
               ],
               text: 'Imported heading',
-              type: 'text',
-            },
-          ],
-          type: 'paragraph',
-        },
-        {
-          content: [
-            {
-              text: 'Bullet that should flatten',
               type: 'text',
             },
           ],

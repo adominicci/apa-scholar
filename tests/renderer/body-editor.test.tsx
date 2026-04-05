@@ -6,7 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import * as pasteEngine from '@application/services/paste-engine';
 import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
-import { BodyEditor } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
+import {
+  BodyEditor,
+  type BodyEditorHandle,
+} from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 import {
   createSuspiciousPasteHtmlFixture,
   createWordPasteHtmlFixture,
@@ -14,6 +17,7 @@ import {
 } from '@tests/helpers/paste-engine-fixtures';
 
 const editorInstance = {
+  chain: vi.fn(),
   commands: {
     insertContent: vi.fn(),
     setContent: vi.fn(),
@@ -21,7 +25,29 @@ const editorInstance = {
   getJSON: vi.fn(() => createEmptyBodyEditorDocument()),
 };
 
-let initialEditorConfig: Record<string, any> | null = null;
+const chainableEditor = {
+  focus: vi.fn(),
+  run: vi.fn(() => true),
+  setParagraph: vi.fn(),
+  toggleBulletList: vi.fn(),
+  toggleBlockquote: vi.fn(),
+  toggleHeading: vi.fn(),
+  toggleOrderedList: vi.fn(),
+};
+
+interface MockedEditorConfig {
+  editorProps?: {
+    attributes?: {
+      spellcheck?: string;
+    };
+    handlePaste?: (view: unknown, event: ClipboardEvent) => boolean | undefined;
+    transformPastedHTML?: (html: string) => string;
+    transformPastedText?: (text: string) => string;
+  };
+  onUpdate?: (payload: { editor: { getJSON: () => ReturnType<typeof createEmptyBodyEditorDocument> } }) => void;
+}
+
+let initialEditorConfig: MockedEditorConfig | null = null;
 let renderEditorSurfaceWithoutContentEditable = false;
 
 vi.mock('@tiptap/react', () => ({
@@ -33,7 +59,7 @@ vi.mock('@tiptap/react', () => ({
       role: 'textbox',
       tabIndex: 0,
     }),
-  useEditor: (config: Record<string, any>) => {
+  useEditor: (config: MockedEditorConfig) => {
     if (!initialEditorConfig) {
       initialEditorConfig = config;
     }
@@ -46,6 +72,15 @@ describe('BodyEditor', () => {
   beforeEach(() => {
     initialEditorConfig = null;
     renderEditorSurfaceWithoutContentEditable = false;
+    chainableEditor.focus.mockReturnValue(chainableEditor);
+    chainableEditor.setParagraph.mockReturnValue(chainableEditor);
+    chainableEditor.toggleBulletList.mockReturnValue(chainableEditor);
+    chainableEditor.toggleBlockquote.mockReturnValue(chainableEditor);
+    chainableEditor.toggleHeading.mockReturnValue(chainableEditor);
+    chainableEditor.toggleOrderedList.mockReturnValue(chainableEditor);
+    chainableEditor.run.mockReturnValue(true);
+    editorInstance.chain.mockReset();
+    editorInstance.chain.mockReturnValue(chainableEditor);
     editorInstance.commands.insertContent.mockReset();
     editorInstance.commands.setContent.mockReset();
     editorInstance.getJSON.mockReset();
@@ -101,6 +136,32 @@ describe('BodyEditor', () => {
     );
 
     expect(initialEditorConfig?.editorProps?.attributes?.spellcheck).toBe('false');
+  });
+
+  it('exposes paragraph, heading, and list commands through the imperative handle', () => {
+    const ref = React.createRef<BodyEditorHandle>();
+
+    render(
+      <BodyEditor
+        ref={ref}
+        document={createEmptyBodyEditorDocument()}
+        onChange={vi.fn()}
+        placeholder="Body placeholder"
+      />,
+    );
+
+    ref.current?.setParagraph();
+    ref.current?.setHeadingLevel(3);
+    ref.current?.toggleBulletList();
+    ref.current?.toggleOrderedList();
+
+    expect(editorInstance.chain).toHaveBeenCalledTimes(4);
+    expect(chainableEditor.focus).toHaveBeenCalledTimes(4);
+    expect(chainableEditor.setParagraph).toHaveBeenCalledTimes(1);
+    expect(chainableEditor.toggleHeading).toHaveBeenCalledWith({ level: 3 });
+    expect(chainableEditor.toggleBulletList).toHaveBeenCalledTimes(1);
+    expect(chainableEditor.toggleOrderedList).toHaveBeenCalledTimes(1);
+    expect(chainableEditor.run).toHaveBeenCalledTimes(4);
   });
 
   it('sanitizes both HTML and plain-text paste before insertion', () => {

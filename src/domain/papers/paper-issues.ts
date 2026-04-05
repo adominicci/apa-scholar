@@ -75,9 +75,23 @@ const getInlineTextContent = (node: BodyEditorInlineNode): string =>
 const getParagraphTextContent = (paragraph: BodyEditorParagraphNode): string =>
   (paragraph.content ?? []).map(getInlineTextContent).join('').trim();
 
+const getListTextContent = (node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>): string =>
+  node.content
+    .flatMap((item) =>
+      item.content.map((child) =>
+        child.type === 'paragraph'
+          ? getParagraphTextContent(child)
+          : getListTextContent(child)))
+    .join(' ')
+    .trim();
+
 const getBlockTextContent = (node: BodyEditorBlockNode): string => {
   if (node.type === 'blockquote') {
     return node.content.map(getParagraphTextContent).join(' ').trim();
+  }
+
+  if (node.type === 'bulletList' || node.type === 'orderedList') {
+    return getListTextContent(node);
   }
 
   return (node.content ?? []).map(getInlineTextContent).join('').trim();
@@ -186,11 +200,25 @@ const collectAllCitationIds = (draft: PaperDraft): Set<string> => {
     }
   };
 
+  const processList = (node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>) => {
+    for (const item of node.content) {
+      for (const child of item.content) {
+        if (child.type === 'paragraph') {
+          processParagraph(child);
+        } else {
+          processList(child);
+        }
+      }
+    }
+  };
+
   for (const block of draft.paperContent.bodyDoc.content) {
     if (block.type === 'blockquote') {
       for (const paragraph of block.content) {
         processParagraph(paragraph);
       }
+    } else if (block.type === 'bulletList' || block.type === 'orderedList') {
+      processList(block);
     } else {
       for (const inline of block.content ?? []) {
         processInline(inline);

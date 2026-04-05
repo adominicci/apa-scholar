@@ -6,6 +6,7 @@ import {
   normalizeBodyEditorDocument,
   type BodyEditorBlockNode,
   type BodyEditorInlineNode,
+  type BodyEditorListItem,
   type BodyEditorMark,
   type BodyEditorParagraphNode,
   type BodyEditorTextNode,
@@ -338,36 +339,91 @@ const renderInlineNodesAsHtml = (inlineNodes: BodyEditorInlineNode[] | undefined
     .map((node) => (node.type === 'hardBreak' ? '<br>' : renderTextNode(node)))
     .join('');
 
+const renderParagraphAsHtml = (paragraph: BodyEditorParagraphNode): string =>
+  `<p>${renderInlineNodesAsHtml(paragraph.content)}</p>`;
+
+const renderListItemAsHtml = (item: BodyEditorListItem): string =>
+  `<li>${item.content.map((node) =>
+    node.type === 'paragraph'
+      ? renderParagraphAsHtml(node)
+      : node.type === 'bulletList'
+        ? `<ul>${node.content.map(renderListItemAsHtml).join('')}</ul>`
+        : `<ol>${node.content.map(renderListItemAsHtml).join('')}</ol>`).join('')}</li>`;
+
+const renderBlockAsHtml = (block: BodyEditorBlockNode): string => {
+  if (block.type === 'blockquote') {
+    return `<blockquote>${block.content
+      .map(renderParagraphAsHtml)
+      .join('')}</blockquote>`;
+  }
+
+  if (block.type === 'paragraph') {
+    return renderParagraphAsHtml(block);
+  }
+
+  if (block.type === 'heading') {
+    return `<h${block.attrs.level}>${renderInlineNodesAsHtml(block.content)}</h${block.attrs.level}>`;
+  }
+
+  return block.type === 'bulletList'
+    ? `<ul>${block.content.map(renderListItemAsHtml).join('')}</ul>`
+    : `<ol>${block.content.map(renderListItemAsHtml).join('')}</ol>`;
+};
+
 const renderDocumentAsHtml = (document: BodyEditorDocument): string =>
   document.content
-    .map((block) => {
-      if (block.type === 'blockquote') {
-        return `<blockquote>${block.content
-          .map((paragraph) => `<p>${renderInlineNodesAsHtml(paragraph.content)}</p>`)
-          .join('')}</blockquote>`;
-      }
-
-      return `<p>${renderInlineNodesAsHtml(block.content)}</p>`;
-    })
+    .map(renderBlockAsHtml)
     .join('');
+
+const renderInlineNodesAsText = (inlineNodes: BodyEditorInlineNode[] | undefined): string =>
+  (inlineNodes ?? [])
+    .map((node) => (node.type === 'hardBreak' ? '\n' : node.text))
+    .join('');
+
+const renderParagraphAsText = (paragraph: BodyEditorParagraphNode): string =>
+  renderInlineNodesAsText(paragraph.content);
+
+const renderListItemAsText = (
+  item: BodyEditorListItem,
+  prefix: string,
+): string =>
+  item.content
+    .map((node) =>
+      node.type === 'paragraph'
+        ? `${prefix}${renderParagraphAsText(node)}`
+        : node.content
+          .map((childItem, index) =>
+            renderListItemAsText(
+              childItem,
+              node.type === 'orderedList' ? `${index + 1}. ` : '- ',
+            ),
+          )
+          .join('\n'))
+    .join('\n');
+
+const renderBlockAsText = (block: BodyEditorBlockNode): string => {
+  if (block.type === 'blockquote') {
+    return block.content
+      .map(renderParagraphAsText)
+      .join('\n\n');
+  }
+
+  if (block.type === 'paragraph' || block.type === 'heading') {
+    return renderInlineNodesAsText(block.content);
+  }
+
+  return block.content
+    .map((item, index) =>
+      renderListItemAsText(
+        item,
+        block.type === 'orderedList' ? `${index + 1}. ` : '- ',
+      ))
+    .join('\n');
+};
 
 export const renderBodyEditorDocumentAsText = (document: BodyEditorDocument): string =>
   document.content
-    .map((block) => {
-      if (block.type === 'blockquote') {
-        return block.content
-          .map((paragraph) =>
-            (paragraph.content ?? [])
-              .map((node) => (node.type === 'hardBreak' ? '\n' : node.text))
-              .join(''),
-          )
-          .join('\n\n');
-      }
-
-      return (block.content ?? [])
-        .map((node) => (node.type === 'hardBreak' ? '\n' : node.text))
-        .join('');
-    })
+    .map(renderBlockAsText)
     .join('\n\n');
 
 export const sanitizeBodyEditorClipboardPayload = (

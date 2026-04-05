@@ -54,6 +54,36 @@ describe('bodyEditorDocumentToHtml', () => {
     expect(bodyEditorDocumentToHtml(doc)).toBe('<blockquote><p>Quoted</p></blockquote>');
   });
 
+  it('renders bullet and ordered lists', () => {
+    const doc: BodyEditorDocument = {
+      type: 'doc',
+      content: [
+        {
+          type: 'bulletList',
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Bullet item' }] }],
+            },
+          ],
+        },
+        {
+          type: 'orderedList',
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Numbered item' }] }],
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(bodyEditorDocumentToHtml(doc)).toBe(
+      '<ul><li><p>Bullet item</p></li></ul><ol><li><p>Numbered item</p></li></ol>',
+    );
+  });
+
   it('renders hard breaks as <br>', () => {
     const doc: BodyEditorDocument = {
       type: 'doc',

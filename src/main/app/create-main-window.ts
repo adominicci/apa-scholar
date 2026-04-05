@@ -32,6 +32,7 @@ export const createMainWindow = async (): Promise<BrowserWindow> => {
   const mainWindow = new BrowserWindow(buildMainWindowOptions(preloadPath));
 
   mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize();
     mainWindow.show();
   });
 

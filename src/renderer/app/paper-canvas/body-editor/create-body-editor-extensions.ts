@@ -5,6 +5,7 @@ import HardBreak from '@tiptap/extension-hard-break';
 import Heading from '@tiptap/extension-heading';
 import History from '@tiptap/extension-history';
 import Italic from '@tiptap/extension-italic';
+import { BulletList, ListItem, OrderedList } from '@tiptap/extension-list';
 import Placeholder from '@tiptap/extension-placeholder';
 import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
@@ -29,6 +30,9 @@ export const createBodyEditorExtensions = (placeholder: string): Extensions => [
   Bold,
   Italic,
   CitationMark,
+  ListItem,
+  BulletList,
+  OrderedList,
   Heading.configure({
     levels: [...supportedBodyEditorHeadingLevels],
   }).extend({

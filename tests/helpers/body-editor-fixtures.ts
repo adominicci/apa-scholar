@@ -54,6 +54,40 @@ export const createBlockquoteBodyEditorFixture = () => ({
   type: 'doc',
 });
 
+export const createListBodyEditorFixture = () => ({
+  content: [
+    {
+      content: [
+        {
+          content: [
+            {
+              text: 'First bullet',
+              type: 'text',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      type: 'listItem',
+    },
+    {
+      content: [
+        {
+          content: [
+            {
+              text: 'Second bullet',
+              type: 'text',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      type: 'listItem',
+    },
+  ],
+  type: 'bulletList',
+});
+
 export const createUnsupportedFormattingFixture = () => ({
   content: [
     {
@@ -78,25 +112,6 @@ export const createUnsupportedFormattingFixture = () => ({
         },
       ],
       type: 'heading',
-    },
-    {
-      content: [
-        {
-          content: [
-            {
-              content: [
-                {
-                  text: 'Bullet that should flatten',
-                  type: 'text',
-                },
-              ],
-              type: 'paragraph',
-            },
-          ],
-          type: 'listItem',
-        },
-      ],
-      type: 'bulletList',
     },
   ],
   type: 'doc',

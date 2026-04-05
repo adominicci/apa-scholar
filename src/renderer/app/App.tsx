@@ -1230,9 +1230,20 @@ export const App = () => {
             handleBodyDocumentChange(paper.id, document)
           }
           onOpenCitation={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
+          onOpenDetails={() => dispatch({ type: 'set-inspector-tab', tab: 'details' })}
           onOpenReferences={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
           onPasteWarningsChange={handlePaperPasteWarningsChange}
+          onSetHeadingLevel={(level) => bodyEditorRef.current?.setHeadingLevel(level)}
+          onSetPaperType={(paperType) => handlePaperMetadataChange({ paperType })}
+          onSetParagraph={() => bodyEditorRef.current?.setParagraph()}
+          onToggleBulletList={() => bodyEditorRef.current?.toggleBulletList()}
           onToggleBlockquote={() => bodyEditorRef.current?.toggleBlockquote()}
+          onToggleAbstract={() =>
+            handlePaperMetadataChange({
+              abstractEnabled: !paperDetail.paperMeta.abstractEnabled,
+            })
+          }
+          onToggleOrderedList={() => bodyEditorRef.current?.toggleOrderedList()}
           paperDraft={paperDetail}
         />
       ) : (
@@ -1430,7 +1441,9 @@ export const App = () => {
           paperReferences={activePaperReferences}
           onAddReference={openAddReferenceModal}
           onCollapseToggle={() => dispatch({ type: 'toggleRightPanel' })}
-          onDeleteReference={handleDeleteReference}
+          onDeleteReference={(referenceId) => {
+            void handleDeleteReference(referenceId);
+          }}
           onEditReference={openEditReferenceModal}
           onInsertCitation={handleInsertCitation}
           onInspectorTabChange={(tab) => dispatch({ type: 'set-inspector-tab', tab })}
@@ -1445,7 +1458,9 @@ export const App = () => {
         errorMessage={courseFormError}
         isSubmitting={isCreatingCourse}
         onFormChange={setCourseForm}
-        onSubmit={handleCreateCourse}
+        onSubmit={(form) => {
+          void handleCreateCourse(form);
+        }}
         onClose={() => {
           setCourseFormError(null);
           setIsCourseModalOpen(false);
@@ -1459,7 +1474,9 @@ export const App = () => {
         errorMessage={paperFormError}
         isSubmitting={isCreatingPaper}
         onFormChange={setPaperForm}
-        onSubmit={handleCreatePaper}
+        onSubmit={(form) => {
+          void handleCreatePaper(form);
+        }}
         onClose={() => {
           setPaperFormError(null);
           setIsPaperModalOpen(false);
@@ -1473,7 +1490,9 @@ export const App = () => {
         errorMessage={referenceFormError}
         isSubmitting={isSavingReference}
         onFormChange={setReferenceForm}
-        onSubmit={handleReferenceFormSubmit}
+        onSubmit={() => {
+          void handleReferenceFormSubmit();
+        }}
         onClose={() => {
           setReferenceFormError(null);
           setIsReferenceModalOpen(false);
