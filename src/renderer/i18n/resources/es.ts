@@ -16,8 +16,6 @@ const es: TranslationResource = {
   header: {
     searchPlaceholder: 'Buscar cursos y trabajos...',
     searchLabel: 'Buscar en el espacio de trabajo',
-    draftPaper: 'Nuevo borrador',
-    notifications: 'Notificaciones',
     settings: 'Configuración',
   },
 
@@ -29,9 +27,6 @@ const es: TranslationResource = {
     expandSidebar: 'Expandir barra lateral',
     workspace: 'Espacio de trabajo',
     dashboard: 'Panel principal',
-    research: 'Investigación',
-    citations: 'Citas',
-    drafts: 'Borradores',
     newPaper: 'Nuevo trabajo',
     courses: 'Cursos',
     total: '{{count}} en total',
@@ -45,8 +40,6 @@ const es: TranslationResource = {
     loadingWorkspace: 'Cargando tu espacio de trabajo...',
     emptyCoursesDefault:
       'Aún no hay cursos. Crea uno para comenzar a organizar tus trabajos APA por clase.',
-
-    addReference: 'Agregar referencia',
   },
 
   inspector: {
@@ -55,7 +48,6 @@ const es: TranslationResource = {
     details: 'Detalles',
     issues: 'Problemas',
     references: 'Referencias',
-    search: 'Buscar',
     expandInspector: 'Expandir inspector',
     collapseInspector: 'Contraer inspector',
     courseDetails: 'Detalles del curso',
@@ -67,8 +59,6 @@ const es: TranslationResource = {
     institution: 'Institución',
     issuesPlaceholder:
       'Las verificaciones de formato APA aparecerán aquí cuando un trabajo esté abierto.',
-    searchPlaceholder:
-      'La búsqueda en tus cursos y trabajos estará disponible pronto.',
     noIssues: 'No se encontraron problemas. ¡Tu trabajo se ve bien!',
   },
 
@@ -164,6 +154,9 @@ const es: TranslationResource = {
     fieldLocation: 'Ubicación',
     fieldInstitution: 'Institución',
     fieldReportNumber: 'Número de informe',
+    pasteDoiUrl: 'Agregar rápido — pega un DOI',
+    lookup: 'Buscar',
+    lookupFailed: 'No se encontraron datos para este DOI. Intenta agregar la referencia manualmente.',
   },
 
   courseModal: {
@@ -181,6 +174,7 @@ const es: TranslationResource = {
     newPaper: 'Nuevo trabajo',
     heading: 'Abre una nueva plantilla APA',
     paperTitle: 'Título del trabajo',
+    titlePlaceholder: 'ej. El Impacto de las Redes Sociales en el Rendimiento Académico',
     course: 'Curso',
     template: 'Plantilla',
     selectCourse: 'Selecciona un curso',
@@ -241,7 +235,8 @@ const es: TranslationResource = {
   paperView: {
     exportPdf: 'Exportar PDF',
     exporting: 'Exportando...',
-    printPreview: 'Vista previa de impresión',
+    wordCount: '{{count}} palabras',
+    pageCount: '{{count}} páginas',
     loadingPaperScaffold: 'Cargando estructura del trabajo',
     loadingPaperDescription: 'Obteniendo la última estructura del trabajo desde el almacenamiento local.',
   },

@@ -71,7 +71,9 @@ export const PaperModal = ({
             {t('paperModal.paperTitle')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              autoFocus
               name="title"
+              placeholder={t('paperModal.titlePlaceholder')}
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,

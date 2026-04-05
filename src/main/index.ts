@@ -1,11 +1,15 @@
 import { app, dialog } from 'electron';
-import started from 'electron-squirrel-startup';
 import { bootstrapPersistence } from '@main/app/bootstrap-persistence';
 import { handleAppReady } from '@main/app/handle-app-ready';
 import { createMainWindow } from '@main/app/create-main-window';
 
-if (started) {
-  app.quit();
+if (process.platform === 'win32') {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    if (require('electron-squirrel-startup')) app.quit();
+  } catch {
+    // Module not available outside Windows packaging
+  }
 }
 
 void app.whenReady().then(async () => {

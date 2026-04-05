@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReferenceAuthor, ReferenceType } from '@domain/references/reference-entry';
 import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
@@ -7,6 +8,32 @@ import {
   supportedReferenceTypes,
   typeLabelKeys,
 } from '@renderer/app/inspector/reference-form-helpers';
+
+const fetchDOIMetadata = async (input: string): Promise<Partial<ReferenceFormState> | null> => {
+  const doiMatch = input.match(/10\.\d{4,}[^\s]*/);
+  if (!doiMatch) return null;
+  const doi = doiMatch[0];
+  const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const item = data.message;
+  return {
+    referenceType: 'journal-article' as ReferenceType,
+    title: item.title?.[0] ?? '',
+    authors: (item.author ?? []).map((a: { family?: string; given?: string }) => ({
+      family: a.family ?? '',
+      given: a.given ?? '',
+    })),
+    year: item.published?.['date-parts']?.[0]?.[0]?.toString() ?? '',
+    journalName: item['container-title']?.[0] ?? '',
+    volume: item.volume ?? '',
+    issue: item.issue ?? '',
+    pages: item.page ?? '',
+    doi: `https://doi.org/${doi}`,
+  };
+};
 
 interface ReferenceFormModalProps {
   isOpen: boolean;
@@ -101,6 +128,9 @@ export const ReferenceFormModal = ({
   onClose,
 }: ReferenceFormModalProps) => {
   const { t } = useTranslation();
+  const [doiInput, setDoiInput] = useState('');
+  const [doiLooking, setDoiLooking] = useState(false);
+  const [doiError, setDoiError] = useState<string | null>(null);
 
   if (!isOpen) {
     return null;
@@ -108,6 +138,25 @@ export const ReferenceFormModal = ({
 
   const isEditing = editingReferenceId !== null;
   const typeFields = getFieldsForType(form.referenceType);
+
+  const handleDoiLookup = async () => {
+    if (!doiInput.trim()) return;
+    setDoiLooking(true);
+    setDoiError(null);
+    try {
+      const metadata = await fetchDOIMetadata(doiInput.trim());
+      if (metadata) {
+        onFormChange((current) => ({ ...current, ...metadata }));
+        setDoiInput('');
+      } else {
+        setDoiError(t('referenceForm.lookupFailed'));
+      }
+    } catch {
+      setDoiError(t('referenceForm.lookupFailed'));
+    } finally {
+      setDoiLooking(false);
+    }
+  };
 
   const updateField = (key: keyof ReferenceFormState, value: string | boolean) => {
     onFormChange((current) => ({ ...current, [key]: value }));
@@ -146,6 +195,35 @@ export const ReferenceFormModal = ({
 
         <div className="flex-1 overflow-y-auto p-6 pt-4">
           <div className="space-y-4">
+            {/* DOI / URL lookup */}
+            {!isEditing && (
+              <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--color-accent-soft)] bg-[var(--color-glow)] p-4">
+                <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
+                  {t('referenceForm.pasteDoiUrl')}
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    className={inputClass}
+                    onChange={(event) => setDoiInput(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === 'Enter') void handleDoiLookup(); }}
+                    placeholder="https://doi.org/10.xxxx/..."
+                    value={doiInput}
+                  />
+                  <button
+                    className={`${shellButtonClass} shrink-0 border-[var(--color-accent-soft)] bg-[var(--color-accent)] text-[var(--color-accent-ink)]`}
+                    disabled={doiLooking || !doiInput.trim()}
+                    onClick={() => void handleDoiLookup()}
+                    type="button"
+                  >
+                    {doiLooking ? t('common.loading') : t('referenceForm.lookup')}
+                  </button>
+                </div>
+                {doiError && (
+                  <p className="mt-2 text-xs text-[var(--color-accent-strong)]">{doiError}</p>
+                )}
+              </div>
+            )}
+
             {/* Reference type selector */}
             <label className="block text-sm text-[var(--color-ink-strong)]">
               {t('referenceForm.referenceType')}

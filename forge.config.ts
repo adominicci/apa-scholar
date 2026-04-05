@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'fs-extra';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
@@ -9,6 +11,13 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
+/** Native/external modules that Vite does not bundle and must be copied into the packaged app. */
+const externalModules = [
+  'better-sqlite3',
+  'bindings',
+  'file-uri-to-path',
+];
+
 const isSigningConfigured =
   Boolean(process.env.APPLE_ID) &&
   Boolean(process.env.APPLE_PASSWORD) &&
@@ -17,7 +26,9 @@ const isSigningConfigured =
 const config: ForgeConfig = {
   packagerConfig: {
     name: 'APA Scholar',
-    asar: true,
+    asar: {
+      unpack: '**/{better-sqlite3,bindings,file-uri-to-path}/**/*.node',
+    },
     appBundleId: 'com.apascholar.app',
     appCategoryType: 'public.app-category.education',
     icon: 'assets/icon',
@@ -37,6 +48,20 @@ const config: ForgeConfig = {
           },
         }
       : {}),
+  },
+  hooks: {
+    packageAfterCopy: async (_config, buildPath) => {
+      const projectRoot = path.resolve(__dirname);
+      const destNodeModules = path.join(buildPath, 'node_modules');
+      await fs.ensureDir(destNodeModules);
+      for (const mod of externalModules) {
+        const src = path.join(projectRoot, 'node_modules', mod);
+        const dest = path.join(destNodeModules, mod);
+        if (await fs.pathExists(src)) {
+          await fs.copy(src, dest);
+        }
+      }
+    },
   },
   rebuildConfig: {},
   makers: [
@@ -85,8 +110,8 @@ const config: ForgeConfig = {
       [FuseV1Options.EnableCookieEncryption]: true,
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
+      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: false,
+      [FuseV1Options.OnlyLoadAppFromAsar]: false,
     }),
   ],
 };

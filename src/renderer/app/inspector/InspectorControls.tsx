@@ -57,7 +57,7 @@ export const InspectorTextField = ({
   placeholder,
   value,
 }: FieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <input
       className={fieldClassName}
@@ -74,7 +74,7 @@ export const InspectorTextAreaField = ({
   placeholder,
   value,
 }: FieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <textarea
       className={`${fieldClassName} min-h-[104px] resize-y`}
@@ -91,7 +91,7 @@ export const InspectorSelectField = ({
   options,
   value,
 }: SelectFieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <select
       className={fieldClassName}
@@ -112,7 +112,7 @@ export const InspectorToggleField = ({
   label,
   onChange,
 }: ToggleFieldProps) => (
-  <label className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3 text-sm text-[var(--color-ink-strong)]">
+  <label className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3 text-[13px] font-medium text-[var(--color-ink-strong)]">
     <span>{label}</span>
     <input
       checked={checked}
