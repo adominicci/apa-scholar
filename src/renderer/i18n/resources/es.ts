@@ -203,6 +203,8 @@ const es: TranslationResource = {
     numberedList: 'Lista numerada',
     apaWorkflow: 'Flujo APA',
     comingSoon: 'próximamente',
+    showPanel: 'Mostrar panel de formato',
+    hidePanel: 'Ocultar panel de formato',
   },
 
   home: {

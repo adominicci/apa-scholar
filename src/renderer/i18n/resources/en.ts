@@ -186,7 +186,7 @@ const en = {
     insert: 'Insert',
     font: 'Font',
     blockQuote: 'Block quote',
-    apaFormat: 'APA format',
+    apaFormat: 'APA Format',
     apaFormatDescription: 'Switch paper mode, manage APA setup, and apply document structure from one menu.',
     paperSetup: 'Paper setup',
     apaBasic: 'APA Basic',
@@ -201,6 +201,8 @@ const en = {
     numberedList: 'Numbered list',
     apaWorkflow: 'APA workflow',
     comingSoon: 'coming soon',
+    showPanel: 'Show format panel',
+    hidePanel: 'Hide format panel',
   },
 
   home: {

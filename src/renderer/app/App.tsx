@@ -122,6 +122,8 @@ export const App = () => {
   const [isSavingReference, setIsSavingReference] = useState(false);
   const [isRenamingPaperTitle, setIsRenamingPaperTitle] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [formatPanelCollapsed, setFormatPanelCollapsed] = useState(false);
+  const [selectedFont, setSelectedFont] = useState<import('@renderer/app/paper-canvas/PaperCanvasToolbar').ApaFontId>('times');
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
@@ -1167,8 +1169,8 @@ export const App = () => {
   };
 
   const renderPaperView = (course: Course, paper: Paper, paperDetail: PaperDraft | null) => (
-    <section className="flex h-full flex-col gap-6 px-6 py-8 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] pb-4">
+    <section className="flex h-full flex-col" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] px-6 py-4 md:px-10">
         <div className="flex items-center gap-3">
           <p className="label-caps text-[var(--color-accent-strong)]">
             {course.name}
@@ -1231,6 +1233,10 @@ export const App = () => {
         <PaperCanvas
           bodyDocument={paperDetail.paperContent.bodyDoc}
           bodyEditorRef={bodyEditorRef}
+          formatPanelCollapsed={formatPanelCollapsed}
+          selectedFont={selectedFont}
+          onFormatPanelCollapsedChange={setFormatPanelCollapsed}
+          onFontChange={setSelectedFont}
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
