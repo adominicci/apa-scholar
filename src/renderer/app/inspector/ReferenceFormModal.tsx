@@ -66,7 +66,7 @@ const AuthorRows = ({
   return (
   <div>
     <div className="flex items-center justify-between">
-      <span className="text-sm text-[var(--color-ink-strong)]">{label}</span>
+      <span className="text-[13px] font-medium text-[var(--color-ink-strong)]">{label}</span>
       <button
         className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
         onClick={() => onChange([...authors, emptyAuthor()])}
@@ -184,7 +184,7 @@ export const ReferenceFormModal = ({
               </h2>
             </div>
             <button
-              className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
+              className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
               onClick={onClose}
               type="button"
             >
@@ -225,7 +225,7 @@ export const ReferenceFormModal = ({
             )}
 
             {/* Reference type selector */}
-            <label className="block text-sm text-[var(--color-ink-strong)]">
+            <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
               {t('referenceForm.referenceType')}
               <select
                 className={inputClass}
@@ -251,7 +251,7 @@ export const ReferenceFormModal = ({
 
             {/* Year with unknown checkbox */}
             <div>
-              <label className="block text-sm text-[var(--color-ink-strong)]">
+              <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
                 {t('referenceForm.year')}
                 <input
                   className={inputClass}
@@ -274,7 +274,7 @@ export const ReferenceFormModal = ({
             {/* Type-specific fields */}
             {typeFields.map((field) => (
               <label
-                className="block text-sm text-[var(--color-ink-strong)]"
+                className="block text-[13px] font-medium text-[var(--color-ink-strong)]"
                 key={field.key}
               >
                 {t(field.label)}

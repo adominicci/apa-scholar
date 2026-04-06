@@ -99,14 +99,14 @@ export const PasteReviewModal = ({
               Paste review
             </p>
             <h2
-              className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]"
+              className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]"
               id="paste-review-title"
             >
               Review cleaned paste
             </h2>
           </div>
           <button
-            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
+            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
             onClick={onCancel}
             ref={closeButtonRef}
             type="button"

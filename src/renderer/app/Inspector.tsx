@@ -36,7 +36,7 @@ const railButtonClass =
   'flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] text-[var(--color-muted)] transition hover:text-[var(--color-accent)]';
 
 const tabButtonClass = (isActive: boolean) =>
-  `px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] transition ${
+  `px-3 py-1.5 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] transition ${
     isActive
       ? 'text-[var(--color-accent-strong)] border-b-2 border-[var(--color-accent)]'
       : 'text-[var(--color-muted)] hover:text-[var(--color-ink-strong)]'

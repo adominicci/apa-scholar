@@ -1287,7 +1287,7 @@ export const App = () => {
       </h2>
 
       <div className="mt-8 max-w-md">
-        <label className="block text-sm text-[var(--color-ink-strong)]">
+        <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
           {t('settings.language')}
           <select
             className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm text-[var(--color-ink-strong)] outline-none transition focus:border-[var(--color-accent-soft)]"

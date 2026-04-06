@@ -173,10 +173,10 @@ export const InspectorIssuesList = ({
         return (
           <section className="space-y-3" key={severity}>
             <div className="flex items-center justify-between">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
                 {t(issueSeverityKeys[severity])}
               </p>
-              <span className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[0.7rem] font-semibold text-[var(--color-muted-strong)]">
+              <span className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-muted-strong)]">
                 {groupedIssues.length}
               </span>
             </div>
@@ -192,7 +192,7 @@ export const InspectorIssuesList = ({
                       <p className="text-sm font-semibold text-[var(--color-ink-strong)]">
                         {issue.title}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.65rem] uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
                         <span className="rounded-full border border-[var(--color-line)] px-2 py-1">
                           {t(issueScopeKeys[issue.scope])}
                         </span>

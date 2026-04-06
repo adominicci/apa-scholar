@@ -45,12 +45,12 @@ export const CourseModal = ({
             <p className="label-caps">
               {t('courseModal.newCourse')}
             </p>
-            <h2 className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]">
+            <h2 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
               {t('courseModal.heading')}
             </h2>
           </div>
           <button
-            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
+            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
             onClick={onClose}
             type="button"
           >
@@ -59,7 +59,7 @@ export const CourseModal = ({
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('courseModal.courseName')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
@@ -73,7 +73,7 @@ export const CourseModal = ({
               value={courseForm.name}
             />
           </label>
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('courseModal.professor')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
@@ -87,7 +87,7 @@ export const CourseModal = ({
               value={courseForm.professorName ?? ''}
             />
           </label>
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('courseModal.courseCode')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
@@ -101,7 +101,7 @@ export const CourseModal = ({
               value={courseForm.code ?? ''}
             />
           </label>
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('courseModal.semester')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
