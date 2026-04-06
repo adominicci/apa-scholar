@@ -15,15 +15,12 @@ const apaFonts = [
 export type ApaFontId = (typeof apaFonts)[number]['id'];
 
 interface PaperCanvasToolbarProps {
-  abstractEnabled: boolean;
   collapsed: boolean;
   selectedFont: ApaFontId;
   onCollapsedChange: (collapsed: boolean) => void;
   onFontChange?: (fontId: ApaFontId) => void;
-  onOpenDetails?: () => void;
   onToggleBulletList?: () => void;
   onToggleBlockquote?: () => void;
-  onToggleAbstract?: () => void;
   onOpenReferences?: () => void;
   onOpenCitation?: () => void;
   onSetHeadingLevel?: (
@@ -39,15 +36,12 @@ const sectionButtonClass =
   'rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-3 py-2 text-[13px] text-[var(--color-ink-strong)] transition-colors hover:border-[var(--color-accent-soft)] hover:text-[var(--color-accent-strong)]';
 
 export const PaperCanvasToolbar = ({
-  abstractEnabled,
   collapsed,
   selectedFont,
   onCollapsedChange,
   onFontChange,
-  onOpenDetails,
   onToggleBulletList,
   onToggleBlockquote,
-  onToggleAbstract,
   onOpenReferences,
   onOpenCitation,
   onSetHeadingLevel,
@@ -143,20 +137,6 @@ export const PaperCanvasToolbar = ({
                   {t('toolbar.apaProfessional')}
                 </button>
               </div>
-              <button
-                className={`${sectionButtonClass} w-full text-left`}
-                onClick={onToggleAbstract}
-                type="button"
-              >
-                {abstractEnabled ? t('toolbar.removeAbstract') : t('toolbar.includeAbstract')}
-              </button>
-              <button
-                className={`${sectionButtonClass} w-full text-left`}
-                onClick={onOpenDetails}
-                type="button"
-              >
-                {t('toolbar.paperDetails')}
-              </button>
             </div>
           )}
         </div>

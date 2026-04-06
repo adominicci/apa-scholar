@@ -14,7 +14,6 @@ interface PaperCanvasProps {
   selectedFont: ApaFontId;
   onFormatPanelCollapsedChange: (collapsed: boolean) => void;
   onFontChange?: (fontId: ApaFontId) => void;
-  onOpenDetails?: () => void;
   paperDraft: PaperDraft;
   onBodyDocumentChange: (document: BodyEditorDocument) => void;
   onOpenCitation?: () => void;
@@ -25,7 +24,6 @@ interface PaperCanvasProps {
   onSetParagraph?: () => void;
   onToggleBulletList?: () => void;
   onToggleBlockquote?: () => void;
-  onToggleAbstract?: () => void;
   onToggleOrderedList?: () => void;
 }
 
@@ -46,7 +44,6 @@ export const PaperCanvas = ({
   selectedFont,
   onFormatPanelCollapsedChange,
   onFontChange,
-  onOpenDetails,
   paperDraft,
   onBodyDocumentChange,
   onOpenCitation,
@@ -57,25 +54,21 @@ export const PaperCanvas = ({
   onSetParagraph,
   onToggleBulletList,
   onToggleBlockquote,
-  onToggleAbstract,
   onToggleOrderedList,
 }: PaperCanvasProps) => (
   <div className="flex flex-1 overflow-hidden">
     <PaperCanvasToolbar
-      abstractEnabled={paperDraft.paperMeta.abstractEnabled}
       collapsed={formatPanelCollapsed}
       selectedFont={selectedFont}
       onCollapsedChange={onFormatPanelCollapsedChange}
       onFontChange={onFontChange}
       onOpenCitation={onOpenCitation}
-      onOpenDetails={onOpenDetails}
       onOpenReferences={onOpenReferences}
       onSetHeadingLevel={onSetHeadingLevel}
       onSetPaperType={onSetPaperType}
       onSetParagraph={onSetParagraph}
       onToggleBulletList={onToggleBulletList}
       onToggleBlockquote={onToggleBlockquote}
-      onToggleAbstract={onToggleAbstract}
       onToggleOrderedList={onToggleOrderedList}
       paperType={paperDraft.paper.paperType}
     />

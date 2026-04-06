@@ -6,18 +6,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PaperCanvasToolbar } from '@renderer/app/paper-canvas/PaperCanvasToolbar';
 
 const defaultProps = {
-  abstractEnabled: false,
   collapsed: false,
   selectedFont: 'times' as const,
   onCollapsedChange: vi.fn(),
   onFontChange: vi.fn(),
   onOpenCitation: vi.fn(),
-  onOpenDetails: vi.fn(),
   onOpenReferences: vi.fn(),
   onSetHeadingLevel: vi.fn(),
   onSetPaperType: vi.fn(),
   onSetParagraph: vi.fn(),
-  onToggleAbstract: vi.fn(),
   onToggleBulletList: vi.fn(),
   onToggleBlockquote: vi.fn(),
   onToggleOrderedList: vi.fn(),
@@ -38,12 +35,6 @@ describe('PaperCanvasToolbar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'APA Professional' }));
     expect(defaultProps.onSetPaperType).toHaveBeenCalledWith('professional');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Include abstract' }));
-    expect(defaultProps.onToggleAbstract).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Paper details' }));
-    expect(defaultProps.onOpenDetails).toHaveBeenCalledTimes(1);
   });
 
   it('expands text structure section and routes formatting actions', () => {

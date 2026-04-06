@@ -1241,7 +1241,6 @@ export const App = () => {
             handleBodyDocumentChange(paper.id, document)
           }
           onOpenCitation={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
-          onOpenDetails={() => dispatch({ type: 'set-inspector-tab', tab: 'details' })}
           onOpenReferences={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
           onPasteWarningsChange={handlePaperPasteWarningsChange}
           onSetHeadingLevel={(level) => bodyEditorRef.current?.setHeadingLevel(level)}
@@ -1249,11 +1248,6 @@ export const App = () => {
           onSetParagraph={() => bodyEditorRef.current?.setParagraph()}
           onToggleBulletList={() => bodyEditorRef.current?.toggleBulletList()}
           onToggleBlockquote={() => bodyEditorRef.current?.toggleBlockquote()}
-          onToggleAbstract={() =>
-            handlePaperMetadataChange({
-              abstractEnabled: !paperDetail.paperMeta.abstractEnabled,
-            })
-          }
           onToggleOrderedList={() => bodyEditorRef.current?.toggleOrderedList()}
           paperDraft={paperDetail}
         />
