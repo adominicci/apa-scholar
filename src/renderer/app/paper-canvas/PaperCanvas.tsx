@@ -33,7 +33,10 @@ const getBlocksWrapperClass = (kind: GhostPageViewModel['kind']): string => {
   if (kind === 'title-page') {
     return 'flex flex-1 flex-col items-center justify-center text-center';
   }
-  return 'mt-[var(--page-margin)]';
+  // Body/abstract/references pages: content starts at the 1-inch top margin
+  // which is already set by the page article's pt-[var(--page-margin)].
+  // No extra top margin needed — APA body text begins right at the margin.
+  return '';
 };
 
 export const PaperCanvas = ({
