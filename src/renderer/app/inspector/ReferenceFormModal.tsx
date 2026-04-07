@@ -9,6 +9,23 @@ import {
   typeLabelKeys,
 } from '@renderer/app/inspector/reference-form-helpers';
 
+/** Maps CrossRef work types to our supported ReferenceType enum. */
+const crossRefTypeMap: Record<string, ReferenceType> = {
+  'journal-article': 'journal-article',
+  'book': 'book',
+  'monograph': 'book',
+  'reference-book': 'book',
+  'edited-book': 'book',
+  'book-chapter': 'edited-book-chapter',
+  'book-part': 'edited-book-chapter',
+  'book-section': 'edited-book-chapter',
+  'reference-entry': 'edited-book-chapter',
+  'proceedings-article': 'conference-paper',
+  'proceedings': 'conference-paper',
+  'report': 'report',
+  'report-component': 'report',
+};
+
 const fetchDOIMetadata = async (input: string): Promise<Partial<ReferenceFormState> | null> => {
   const doiMatch = input.match(/10\.\d{4,}[^\s]*/);
   if (!doiMatch) return null;
@@ -19,20 +36,57 @@ const fetchDOIMetadata = async (input: string): Promise<Partial<ReferenceFormSta
   if (!res.ok) return null;
   const data = await res.json();
   const item = data.message;
-  return {
-    referenceType: 'journal-article' as ReferenceType,
+  const referenceType: ReferenceType = crossRefTypeMap[item.type] ?? 'journal-article';
+  const containerTitle = item['container-title']?.[0] ?? '';
+  const publisher = item.publisher ?? '';
+
+  // Map shared fields, then add type-specific fields based on the resolved type.
+  const base: Partial<ReferenceFormState> = {
+    referenceType,
     title: item.title?.[0] ?? '',
     authors: (item.author ?? []).map((a: { family?: string; given?: string }) => ({
       family: a.family ?? '',
       given: a.given ?? '',
     })),
     year: item.published?.['date-parts']?.[0]?.[0]?.toString() ?? '',
-    journalName: item['container-title']?.[0] ?? '',
-    volume: item.volume ?? '',
-    issue: item.issue ?? '',
-    pages: item.page ?? '',
     doi: `https://doi.org/${doi}`,
   };
+
+  switch (referenceType) {
+    case 'journal-article':
+      return {
+        ...base,
+        journalName: containerTitle,
+        volume: item.volume ?? '',
+        issue: item.issue ?? '',
+        pages: item.page ?? '',
+      };
+    case 'book':
+      return {
+        ...base,
+        publisher,
+        edition: item.edition ?? '',
+      };
+    case 'edited-book-chapter':
+      return {
+        ...base,
+        bookTitle: containerTitle,
+        publisher,
+        pages: item.page ?? '',
+      };
+    case 'conference-paper':
+      return {
+        ...base,
+        conferenceName: containerTitle,
+      };
+    case 'report':
+      return {
+        ...base,
+        institution: publisher,
+      };
+    default:
+      return base;
+  }
 };
 
 interface ReferenceFormModalProps {
