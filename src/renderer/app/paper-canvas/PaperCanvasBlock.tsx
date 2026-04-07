@@ -22,7 +22,10 @@ export const PaperCanvasBlock = ({
 }: PaperCanvasBlockProps) => {
   if (block.kind === 'title') {
     return (
-      <p className="font-[var(--font-display)] text-base font-bold leading-[2] text-[var(--color-page-ink)]">
+      <p
+        className="font-[var(--font-display)] font-bold leading-[2] text-[var(--color-page-ink)]"
+        style={{ fontSize: 'var(--apa-font-size)' }}
+      >
         {block.text}
       </p>
     );
@@ -31,9 +34,10 @@ export const PaperCanvasBlock = ({
   if (block.kind === 'line') {
     return (
       <p
-        className={`font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)] ${
+        className={`font-[var(--font-display)] leading-[2] text-[var(--color-page-ink)] ${
           block.align === 'center' ? 'text-center' : ''
         }`}
+        style={{ fontSize: 'var(--apa-font-size)' }}
       >
         {block.text}
       </p>
@@ -44,8 +48,9 @@ export const PaperCanvasBlock = ({
     return (
       <p
         aria-level={pageKind === 'body-page' ? 3 : undefined}
-        className="font-[var(--font-display)] text-base font-bold leading-[2] text-center text-[var(--color-page-ink)]"
+        className="font-[var(--font-display)] font-bold leading-[2] text-center text-[var(--color-page-ink)]"
         role={pageKind === 'body-page' ? 'heading' : undefined}
+        style={{ fontSize: 'var(--apa-font-size)' }}
       >
         {block.text}
       </p>
@@ -65,8 +70,8 @@ export const PaperCanvasBlock = ({
   if (block.kind === 'reference-line') {
     return (
       <p
-        className="font-[var(--font-display)] text-base leading-[2] text-[var(--color-page-ink)]"
-        style={{ paddingLeft: '2em', textIndent: '-2em' }}
+        className="font-[var(--font-display)] leading-[2] text-[var(--color-page-ink)]"
+        style={{ paddingLeft: '2em', textIndent: '-2em', fontSize: 'var(--apa-font-size)' }}
       >
         {block.text}
       </p>

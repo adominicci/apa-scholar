@@ -57,7 +57,7 @@ export const InspectorTextField = ({
   placeholder,
   value,
 }: FieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <input
       className={fieldClassName}
@@ -74,7 +74,7 @@ export const InspectorTextAreaField = ({
   placeholder,
   value,
 }: FieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <textarea
       className={`${fieldClassName} min-h-[104px] resize-y`}
@@ -91,7 +91,7 @@ export const InspectorSelectField = ({
   options,
   value,
 }: SelectFieldProps) => (
-  <label className="block text-sm text-[var(--color-ink-strong)]">
+  <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
     {label}
     <select
       className={fieldClassName}
@@ -112,7 +112,7 @@ export const InspectorToggleField = ({
   label,
   onChange,
 }: ToggleFieldProps) => (
-  <label className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3 text-sm text-[var(--color-ink-strong)]">
+  <label className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-3 text-[13px] font-medium text-[var(--color-ink-strong)]">
     <span>{label}</span>
     <input
       checked={checked}
@@ -173,10 +173,10 @@ export const InspectorIssuesList = ({
         return (
           <section className="space-y-3" key={severity}>
             <div className="flex items-center justify-between">
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
+              <p className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
                 {t(issueSeverityKeys[severity])}
               </p>
-              <span className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[0.7rem] font-semibold text-[var(--color-muted-strong)]">
+              <span className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-muted-strong)]">
                 {groupedIssues.length}
               </span>
             </div>
@@ -192,7 +192,7 @@ export const InspectorIssuesList = ({
                       <p className="text-sm font-semibold text-[var(--color-ink-strong)]">
                         {issue.title}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.65rem] uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted-strong)]">
                         <span className="rounded-full border border-[var(--color-line)] px-2 py-1">
                           {t(issueScopeKeys[issue.scope])}
                         </span>

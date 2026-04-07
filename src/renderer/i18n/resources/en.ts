@@ -14,8 +14,6 @@ const en = {
   header: {
     searchPlaceholder: 'Search courses and papers...',
     searchLabel: 'Search workspace',
-    draftPaper: 'Draft paper',
-    notifications: 'Notifications',
     settings: 'Settings',
   },
 
@@ -27,9 +25,6 @@ const en = {
     expandSidebar: 'Expand sidebar',
     workspace: 'Workspace',
     dashboard: 'Dashboard',
-    research: 'Research',
-    citations: 'Citations',
-    drafts: 'Drafts',
     newPaper: 'New paper',
     courses: 'Courses',
     total: '{{count}} total',
@@ -43,7 +38,6 @@ const en = {
     loadingWorkspace: 'Loading your workspace...',
     emptyCoursesDefault:
       'No courses yet. Create one to start organizing your APA papers by class.',
-    addReference: 'Add reference',
   },
 
   inspector: {
@@ -52,7 +46,6 @@ const en = {
     details: 'Details',
     issues: 'Issues',
     references: 'References',
-    search: 'Search',
     expandInspector: 'Expand inspector',
     collapseInspector: 'Collapse inspector',
     courseDetails: 'Course details',
@@ -64,8 +57,6 @@ const en = {
     institution: 'Institution',
     issuesPlaceholder:
       'APA formatting checks will appear here when a paper is open.',
-    searchPlaceholder:
-      'Search across your courses and papers will be available soon.',
     noIssues: 'No issues found. Your paper looks good!',
   },
 
@@ -161,6 +152,9 @@ const en = {
     fieldLocation: 'Location',
     fieldInstitution: 'Institution',
     fieldReportNumber: 'Report number',
+    pasteDoiUrl: 'Quick add — paste a DOI',
+    lookup: 'Look up',
+    lookupFailed: 'Could not find metadata for this DOI. Try adding the reference manually.',
   },
 
   courseModal: {
@@ -178,6 +172,7 @@ const en = {
     newPaper: 'New paper',
     heading: 'Open a fresh APA shell',
     paperTitle: 'Paper title',
+    titlePlaceholder: 'e.g. The Impact of Social Media on Academic Performance',
     course: 'Course',
     template: 'Template',
     selectCourse: 'Select a course',
@@ -191,7 +186,7 @@ const en = {
     insert: 'Insert',
     font: 'Font',
     blockQuote: 'Block quote',
-    apaFormat: 'APA format',
+    apaFormat: 'APA Format',
     apaFormatDescription: 'Switch paper mode, manage APA setup, and apply document structure from one menu.',
     paperSetup: 'Paper setup',
     apaBasic: 'APA Basic',
@@ -206,6 +201,8 @@ const en = {
     numberedList: 'Numbered list',
     apaWorkflow: 'APA workflow',
     comingSoon: 'coming soon',
+    showPanel: 'Show format panel',
+    hidePanel: 'Hide format panel',
   },
 
   home: {
@@ -238,7 +235,8 @@ const en = {
   paperView: {
     exportPdf: 'Export PDF',
     exporting: 'Exporting...',
-    printPreview: 'Print preview',
+    wordCount: '{{count}} words',
+    pageCount: '{{count}} pages',
     loadingPaperScaffold: 'Loading paper scaffold',
     loadingPaperDescription: 'Pulling the latest paper skeleton from local storage.',
   },

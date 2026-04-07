@@ -53,12 +53,12 @@ export const PaperModal = ({
             <p className="label-caps">
               {t('paperModal.newPaper')}
             </p>
-            <h2 className="mt-3 font-[var(--font-display)] text-3xl text-[var(--color-ink-strong)]">
+            <h2 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
               {t('paperModal.heading')}
             </h2>
           </div>
           <button
-            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
+            className="rounded-[var(--radius-button)] border border-[var(--color-line)] px-3 py-2 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-muted)] transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
             onClick={onClose}
             type="button"
           >
@@ -67,11 +67,13 @@ export const PaperModal = ({
         </div>
 
         <div className="mt-6 grid gap-4">
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('paperModal.paperTitle')}
             <input
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
+              autoFocus
               name="title"
+              placeholder={t('paperModal.titlePlaceholder')}
               onChange={(event) =>
                 onFormChange((current) => ({
                   ...current,
@@ -82,7 +84,7 @@ export const PaperModal = ({
             />
           </label>
 
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('paperModal.course')}
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"
@@ -113,7 +115,7 @@ export const PaperModal = ({
             </select>
           </label>
 
-          <label className="block text-sm text-[var(--color-ink-strong)]">
+          <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
             {t('paperModal.template')}
             <select
               className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm outline-none focus:border-[var(--color-accent-soft)]"

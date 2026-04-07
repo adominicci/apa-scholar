@@ -139,36 +139,24 @@ export const buildGhostPageViewModels = (input: {
             kind: 'title' as const,
             text: input.paperMeta.title,
           },
-          {
-            align: 'center' as const,
-            id: 'author-name',
-            kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.authorName, s.studentName),
-          },
-          {
-            align: 'center' as const,
-            id: 'institution',
-            kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.institution, s.institution),
-          },
-          {
-            align: 'center' as const,
-            id: 'course-name',
-            kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.courseName, s.courseName),
-          },
-          {
-            align: 'center' as const,
-            id: 'professor-name',
-            kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.professorName, s.professorName),
-          },
-          {
-            align: 'center' as const,
-            id: 'due-date',
-            kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.dueDate, s.dueDate),
-          },
+          // Student title page optional lines — only shown when filled in.
+          // Missing fields are flagged by the issues panel instead.
+          ...(
+            [
+              { id: 'author-name', value: input.paperMeta.authorName },
+              { id: 'institution', value: input.paperMeta.institution },
+              { id: 'course-name', value: input.paperMeta.courseName },
+              { id: 'professor-name', value: input.paperMeta.professorName },
+              { id: 'due-date', value: input.paperMeta.dueDate },
+            ] as const
+          )
+            .filter((field) => field.value?.trim())
+            .map((field) => ({
+              align: 'center' as const,
+              id: field.id,
+              kind: 'line' as const,
+              text: field.value!.trim(),
+            })),
         ];
 
   const pages: GhostPageViewModel[] = [

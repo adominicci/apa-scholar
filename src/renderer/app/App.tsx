@@ -9,6 +9,7 @@ import {
   type PaperIssue,
 } from '@domain/papers/paper-issues';
 import { resolveTemplateDefinitionId } from '@domain/papers/template-definitions';
+import { countBodyWords } from '@domain/papers/word-count';
 import { formatInTextCitation } from '@domain/references/apa-formatter';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
 import type { BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
@@ -48,7 +49,7 @@ import {
 } from '@renderer/app/paper-draft-state';
 import { InlineRenameInput } from '@renderer/app/InlineRenameInput';
 import { Sidebar } from '@renderer/app/Sidebar';
-import { BookOpenIcon, NotificationsIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
+import { BookOpenIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
 
 type ThemeMode = 'dark' | 'light';
 
@@ -121,6 +122,8 @@ export const App = () => {
   const [isSavingReference, setIsSavingReference] = useState(false);
   const [isRenamingPaperTitle, setIsRenamingPaperTitle] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [formatPanelCollapsed, setFormatPanelCollapsed] = useState(false);
+  const [selectedFont, setSelectedFont] = useState<import('@renderer/app/paper-canvas/PaperCanvasToolbar').ApaFontId>('times');
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
@@ -152,6 +155,11 @@ export const App = () => {
     () => getPaperInspectorIssues(activePaperDetail, activePasteIssues, activePaperReferences),
     [activePaperDetail, activePasteIssues, activePaperReferences],
   );
+  const paperWordCount = useMemo(
+    () => activePaperDetail ? countBodyWords(activePaperDetail.paperContent.bodyDoc) : 0,
+    [activePaperDetail],
+  );
+  const paperPageCount = Math.max(1, Math.ceil(paperWordCount / 250));
 
   useEffect(() => {
     let cancelled = false;
@@ -1161,8 +1169,8 @@ export const App = () => {
   };
 
   const renderPaperView = (course: Course, paper: Paper, paperDetail: PaperDraft | null) => (
-    <section className="flex h-full flex-col gap-6 px-6 py-8 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] pb-4">
+    <section className="flex h-full flex-col" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] px-6 py-4 md:px-10">
         <div className="flex items-center gap-3">
           <p className="label-caps text-[var(--color-accent-strong)]">
             {course.name}
@@ -1188,7 +1196,12 @@ export const App = () => {
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex items-center gap-4">
+          {paperDetail && (
+            <span className="text-xs text-[var(--color-muted)]">
+              {t('paperView.wordCount', { count: paperWordCount })} · {t('paperView.pageCount', { count: paperPageCount })}
+            </span>
+          )}
           <button
             className={`${shellButtonClass} border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]`}
             disabled={isExporting}
@@ -1213,12 +1226,6 @@ export const App = () => {
           >
             {isExporting ? t('paperView.exporting') : t('paperView.exportPdf')}
           </button>
-          <button
-            className={`${shellButtonClass} border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]`}
-            type="button"
-          >
-            {t('paperView.printPreview')}
-          </button>
         </div>
       </div>
 
@@ -1226,11 +1233,14 @@ export const App = () => {
         <PaperCanvas
           bodyDocument={paperDetail.paperContent.bodyDoc}
           bodyEditorRef={bodyEditorRef}
+          formatPanelCollapsed={formatPanelCollapsed}
+          selectedFont={selectedFont}
+          onFormatPanelCollapsedChange={setFormatPanelCollapsed}
+          onFontChange={setSelectedFont}
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
           onOpenCitation={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
-          onOpenDetails={() => dispatch({ type: 'set-inspector-tab', tab: 'details' })}
           onOpenReferences={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
           onPasteWarningsChange={handlePaperPasteWarningsChange}
           onSetHeadingLevel={(level) => bodyEditorRef.current?.setHeadingLevel(level)}
@@ -1238,11 +1248,6 @@ export const App = () => {
           onSetParagraph={() => bodyEditorRef.current?.setParagraph()}
           onToggleBulletList={() => bodyEditorRef.current?.toggleBulletList()}
           onToggleBlockquote={() => bodyEditorRef.current?.toggleBlockquote()}
-          onToggleAbstract={() =>
-            handlePaperMetadataChange({
-              abstractEnabled: !paperDetail.paperMeta.abstractEnabled,
-            })
-          }
           onToggleOrderedList={() => bodyEditorRef.current?.toggleOrderedList()}
           paperDraft={paperDetail}
         />
@@ -1282,7 +1287,7 @@ export const App = () => {
       </h2>
 
       <div className="mt-8 max-w-md">
-        <label className="block text-sm text-[var(--color-ink-strong)]">
+        <label className="block text-[13px] font-medium text-[var(--color-ink-strong)]">
           {t('settings.language')}
           <select
             className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm text-[var(--color-ink-strong)] outline-none transition focus:border-[var(--color-accent-soft)]"
@@ -1323,7 +1328,7 @@ export const App = () => {
       data-theme={theme}
     >
       {/* Top Navigation Bar */}
-      <header className="drag-region flex h-14 shrink-0 items-center justify-between border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6">
+      <header className="drag-region flex h-[60px] shrink-0 items-center justify-between border-b border-[var(--color-line)] bg-[var(--color-panel)] px-6">
         <div className="flex items-center gap-6">
           {/* macOS traffic light spacer */}
           <div className="w-14" />
@@ -1342,7 +1347,7 @@ export const App = () => {
               {t('header.searchLabel')}
             </label>
             <input
-              className="w-full rounded-lg border-none bg-[var(--color-input)] py-1.5 pl-10 text-sm text-[var(--color-ink-strong)] outline-none placeholder:text-[var(--color-muted)] focus:ring-1 focus:ring-[var(--color-accent-soft)]"
+              className="w-full rounded-lg border-none bg-[var(--color-input)] py-2 pl-10 pr-4 text-[13px] text-[var(--color-ink-strong)] outline-none placeholder:text-[var(--color-muted)] focus:ring-1 focus:ring-[var(--color-accent-soft)]"
               id="workspace-search"
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder={t('header.searchPlaceholder')}
@@ -1352,22 +1357,7 @@ export const App = () => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            className="flex items-center gap-2 rounded-lg bg-[var(--color-accent)] px-3 py-1.5 text-xs font-bold text-[var(--color-accent-ink)] transition hover:opacity-90"
-            onClick={openPaperModal}
-            type="button"
-          >
-            <PlusIcon />
-            {t('header.draftPaper')}
-          </button>
           <div className="flex gap-1">
-            <button
-              aria-label={t('header.notifications')}
-              className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"
-              type="button"
-            >
-              <NotificationsIcon />
-            </button>
             <button
               aria-label={t('header.settings')}
               className="rounded-lg p-2 text-[var(--color-muted)] transition hover:bg-[var(--color-panel-muted)] hover:text-[var(--color-ink-strong)]"

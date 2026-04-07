@@ -8,7 +8,6 @@ import {
   BookmarkIcon,
   ChevronLeftIcon,
   InfoIcon,
-  SearchIcon,
 } from '@renderer/app/icons';
 import { PaperInspectorPanel } from '@renderer/app/inspector/PaperInspectorPanel';
 import { ReferencesPanel } from '@renderer/app/inspector/ReferencesPanel';
@@ -37,7 +36,7 @@ const railButtonClass =
   'flex h-9 w-9 items-center justify-center rounded-[var(--radius-button)] text-[var(--color-muted)] transition hover:text-[var(--color-accent)]';
 
 const tabButtonClass = (isActive: boolean) =>
-  `px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] transition ${
+  `px-3 py-1.5 text-xs font-semibold uppercase tracking-[var(--tracking-caps)] transition ${
     isActive
       ? 'text-[var(--color-accent-strong)] border-b-2 border-[var(--color-accent)]'
       : 'text-[var(--color-muted)] hover:text-[var(--color-ink-strong)]'
@@ -99,13 +98,6 @@ export const Inspector = ({
       >
         <BookmarkIcon />
       </button>
-      <button
-        aria-label={t('inspector.search')}
-        className={railButtonClass}
-        type="button"
-      >
-        <SearchIcon />
-      </button>
       <div className="mt-auto">
         <button
           aria-label={t('inspector.expandInspector')}
@@ -125,12 +117,12 @@ export const Inspector = ({
       data-collapsed={collapsed ? 'true' : 'false'}
     >
       <div className="flex items-center justify-between border-b border-[var(--color-line)] p-4">
-        <div>
+        <div className="min-w-0 flex-1 pr-2">
           <p className="label-caps">
             {t('inspector.inspector')}
           </p>
           {activePaper ? (
-            <div className="mt-2 flex gap-1">
+            <div className="mt-2 flex flex-wrap gap-1">
               <button
                 className={tabButtonClass(inspectorTab === 'details')}
                 onClick={() => onInspectorTabChange('details')}
@@ -271,14 +263,6 @@ export const Inspector = ({
         </div>
       )}
 
-      <div className="p-4">
-        <p className="label-caps">
-          {t('inspector.search')}
-        </p>
-        <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-          {t('inspector.searchPlaceholder')}
-        </p>
-      </div>
     </div>
   </aside>
   );

@@ -1,93 +1,91 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PaperCanvasToolbar } from '@renderer/app/paper-canvas/PaperCanvasToolbar';
+
+const defaultProps = {
+  collapsed: false,
+  selectedFont: 'times' as const,
+  onCollapsedChange: vi.fn(),
+  onFontChange: vi.fn(),
+  onOpenCitation: vi.fn(),
+  onOpenReferences: vi.fn(),
+  onSetHeadingLevel: vi.fn(),
+  onSetPaperType: vi.fn(),
+  onSetParagraph: vi.fn(),
+  onToggleBulletList: vi.fn(),
+  onToggleBlockquote: vi.fn(),
+  onToggleOrderedList: vi.fn(),
+  paperType: 'student' as const,
+};
 
 describe('PaperCanvasToolbar', () => {
   afterEach(() => {
     cleanup();
+    vi.clearAllMocks();
   });
 
-  it('opens the APA command center and routes paper setup and formatting actions', () => {
-    const onOpenCitation = vi.fn();
-    const onOpenDetails = vi.fn();
-    const onOpenReferences = vi.fn();
-    const onSetHeadingLevel = vi.fn();
-    const onSetPaperType = vi.fn();
-    const onSetParagraph = vi.fn();
-    const onToggleAbstract = vi.fn();
-    const onToggleBulletList = vi.fn();
-    const onToggleBlockquote = vi.fn();
-    const onToggleOrderedList = vi.fn();
+  it('renders paper setup actions in the expanded panel', () => {
+    render(<PaperCanvasToolbar {...defaultProps} />);
 
+    // Paper setup section is expanded by default
+    expect(screen.getByRole('button', { name: 'APA Basic' })).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'APA Professional' }));
+    expect(defaultProps.onSetPaperType).toHaveBeenCalledWith('professional');
+  });
+
+  it('expands text structure section and routes formatting actions', () => {
+    render(<PaperCanvasToolbar {...defaultProps} />);
+
+    // Open Text Structure section
+    fireEvent.click(screen.getByText('Text structure'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Body text' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Heading 2' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Bulleted list' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Numbered list' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Block quote' }));
+
+    expect(defaultProps.onSetParagraph).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onSetHeadingLevel).toHaveBeenCalledWith(2);
+    expect(defaultProps.onToggleBulletList).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onToggleOrderedList).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onToggleBlockquote).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders collapsed state with expand button', () => {
+    const onCollapsedChange = vi.fn();
     render(
       <PaperCanvasToolbar
-        abstractEnabled={false}
-        onOpenCitation={onOpenCitation}
-        onOpenDetails={onOpenDetails}
-        onOpenReferences={onOpenReferences}
-        onSetHeadingLevel={onSetHeadingLevel}
-        onSetPaperType={onSetPaperType}
-        onSetParagraph={onSetParagraph}
-        onToggleAbstract={onToggleAbstract}
-        onToggleBulletList={onToggleBulletList}
-        onToggleBlockquote={onToggleBlockquote}
-        onToggleOrderedList={onToggleOrderedList}
-        paperType="student"
+        {...defaultProps}
+        collapsed={true}
+        onCollapsedChange={onCollapsedChange}
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Font' }));
+    const expandButton = screen.getByRole('button', { name: 'Show format panel' });
+    expect(expandButton).toBeInTheDocument();
 
-    const dialog = screen.getByRole('dialog', { name: 'APA format' });
-
-    expect(dialog).toBeVisible();
-    expect(dialog).toHaveClass('top-0');
-    expect(dialog).toHaveClass('translate-y-0');
-    expect(within(dialog).getByRole('button', { name: 'APA Basic' })).toHaveAttribute('aria-pressed', 'true');
-
-    fireEvent.click(within(dialog).getByRole('button', { name: 'APA Professional' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Include abstract' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Heading 2' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Bulleted list' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Numbered list' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Body text' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Block quote' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Paper details' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'References' }));
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Citation' }));
-
-    expect(onSetPaperType).toHaveBeenCalledWith('professional');
-    expect(onToggleAbstract).toHaveBeenCalledTimes(1);
-    expect(onSetHeadingLevel).toHaveBeenCalledWith(2);
-    expect(onToggleBulletList).toHaveBeenCalledTimes(1);
-    expect(onToggleOrderedList).toHaveBeenCalledTimes(1);
-    expect(onSetParagraph).toHaveBeenCalledTimes(1);
-    expect(onToggleBlockquote).toHaveBeenCalledTimes(1);
-    expect(onOpenDetails).toHaveBeenCalledTimes(1);
-    expect(onOpenReferences).toHaveBeenCalledTimes(1);
-    expect(onOpenCitation).toHaveBeenCalledTimes(1);
+    fireEvent.click(expandButton);
+    expect(onCollapsedChange).toHaveBeenCalledWith(false);
   });
 
-  it('keeps the APA command center above the paper stack', () => {
-    render(
-      <PaperCanvasToolbar
-        abstractEnabled={false}
-        onSetPaperType={vi.fn()}
-        onToggleBulletList={vi.fn()}
-        onToggleOrderedList={vi.fn()}
-        paperType="student"
-      />,
-    );
+  it('renders font options in the font section', () => {
+    render(<PaperCanvasToolbar {...defaultProps} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Font' }));
+    // Open Font section
+    fireEvent.click(screen.getByText('Font'));
 
-    const dialog = screen.getByRole('dialog', { name: 'APA format' });
-    const toolbarLayer = dialog.parentElement;
+    expect(screen.getByRole('button', { name: /Times New Roman/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /Calibri/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Arial/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Georgia/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lucida Sans/i })).toBeInTheDocument();
 
-    expect(toolbarLayer).toHaveClass('z-20');
-    expect(dialog).toHaveClass('z-30');
+    fireEvent.click(screen.getByRole('button', { name: /Calibri/i }));
+    expect(defaultProps.onFontChange).toHaveBeenCalledWith('calibri');
   });
 });

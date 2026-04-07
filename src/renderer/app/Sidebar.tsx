@@ -3,13 +3,9 @@ import { useTranslation } from 'react-i18next';
 import type { Course, Paper } from '@domain/shared/persistence-models';
 import { InlineRenameInput } from '@renderer/app/InlineRenameInput';
 import {
-  BookmarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  DatabaseIcon,
-  FileTextIcon,
   HomeIcon,
-  LibraryAddIcon,
   PlusIcon,
   SearchIcon,
   SettingsIcon,
@@ -171,41 +167,20 @@ export const Sidebar = ({
               <HomeIcon />
               <span className="text-sm font-medium">{t('sidebar.dashboard')}</span>
             </button>
-            <button
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
-              type="button"
-            >
-              <DatabaseIcon />
-              <span className="text-sm font-medium">{t('sidebar.research')}</span>
-            </button>
-            <button
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
-              type="button"
-            >
-              <BookmarkIcon />
-              <span className="text-sm font-medium">{t('sidebar.citations')}</span>
-            </button>
-            <button
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-[var(--color-muted)] transition hover:bg-[var(--color-input)] hover:text-[var(--color-ink-strong)]"
-              type="button"
-            >
-              <FileTextIcon />
-              <span className="text-sm font-medium">{t('sidebar.drafts')}</span>
-            </button>
           </nav>
         </div>
       </div>
 
       <div className="flex gap-2 border-y border-[var(--color-line)] p-4">
         <button
-          className="flex-1 rounded-lg bg-[var(--color-accent)] px-3 py-2 text-xs font-bold text-[var(--color-accent-ink)] transition hover:opacity-90"
+          className="flex-1 rounded-lg bg-[var(--color-accent)] px-3 py-2.5 text-[13px] font-semibold text-[var(--color-accent-ink)] transition hover:opacity-90"
           onClick={onCourseModalOpen}
           type="button"
         >
           {t('sidebar.newCourse')}
         </button>
         <button
-          className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-3 py-2 text-xs font-bold text-[var(--color-ink-strong)] transition hover:border-[var(--color-accent-soft)]"
+          className="flex-1 rounded-lg border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-3 py-2.5 text-[13px] font-semibold text-[var(--color-ink-strong)] transition hover:border-[var(--color-accent-soft)]"
           onClick={onPaperModalOpen}
           type="button"
         >
@@ -299,7 +274,7 @@ export const Sidebar = ({
                             onClick={() => onPaperOpen(course.id, paper.id)}
                             type="button"
                           >
-                            <span className="block font-medium">{paper.title}</span>
+                            <span className="block font-normal">{paper.title}</span>
                             <span className="mt-0.5 block text-xs text-[var(--color-muted)]">
                               {paper.paperType}
                             </span>
@@ -326,17 +301,6 @@ export const Sidebar = ({
         </div>
       </div>
 
-      <div className="mt-auto border-t border-[var(--color-line)] p-4">
-        <button
-          aria-label={t('sidebar.addReference')}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--color-accent-soft)] py-2 text-xs font-bold text-[var(--color-accent)] transition hover:bg-[var(--color-selection)]"
-          disabled
-          type="button"
-        >
-          <LibraryAddIcon />
-          {t('sidebar.addReference')}
-        </button>
-      </div>
     </div>
   </aside>
   );
