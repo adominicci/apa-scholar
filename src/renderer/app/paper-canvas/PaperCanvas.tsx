@@ -75,7 +75,8 @@ export const PaperCanvas = ({
     <div
       className="flex-1 overflow-y-auto"
       style={{
-        '--font-display': apaFonts.find((f) => f.id === selectedFont)?.family ?? apaFonts[0].family,
+        '--font-display': (apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]).family,
+        '--apa-font-size': (apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]).size,
       } as React.CSSProperties}
     >
       <div className="flex flex-col items-center gap-[var(--page-gap)] py-8">

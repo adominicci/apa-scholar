@@ -1,4 +1,10 @@
-import type { BodyEditorBlockNode, BodyEditorDocument } from './body-editor-schema';
+import type {
+  BodyEditorBlockNode,
+  BodyEditorDocument,
+  BodyEditorListItem,
+  BodyEditorListItemContentNode,
+  BodyEditorListNode,
+} from './body-editor-schema';
 
 const getInlineText = (node: { type: string; text?: string }): string =>
   node.type === 'text' && node.text ? node.text : '';
@@ -6,16 +12,21 @@ const getInlineText = (node: { type: string; text?: string }): string =>
 const getParagraphText = (node: { content?: { type: string; text?: string }[] }): string =>
   (node.content ?? []).map(getInlineText).join('');
 
+const getListItemContentText = (node: BodyEditorListItemContentNode): string =>
+  node.type === 'paragraph' ? getParagraphText(node) : getListText(node);
+
+const getListItemText = (item: BodyEditorListItem): string =>
+  item.content.map(getListItemContentText).join(' ');
+
+const getListText = (node: BodyEditorListNode): string =>
+  node.content.map(getListItemText).join(' ');
+
 const getBlockText = (node: BodyEditorBlockNode): string => {
   if (node.type === 'blockquote') {
     return node.content.map(getParagraphText).join(' ');
   }
   if (node.type === 'bulletList' || node.type === 'orderedList') {
-    return node.content
-      .flatMap((item) =>
-        item.content.map((child) =>
-          child.type === 'paragraph' ? getParagraphText(child) : ''))
-      .join(' ');
+    return getListText(node);
   }
   return getParagraphText(node);
 };
