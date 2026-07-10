@@ -63,8 +63,8 @@ The docs will add one current status matrix containing the exact verification sn
 2. Restore ghost placeholders and make the existing regression test pass.
 3. Update stale renderer expectations and extract/validate CrossRef mapping.
 4. Fix all remaining lint findings without suppressions, then run Prettier across non-ignored files.
-5. Re-run typecheck, unit/integration, build, Electron E2E, lint, format, and `git diff --check`.
-6. Update documentation and milestone state using only the verified results.
+5. Reconcile documentation and milestone state from the audited baseline and focused red-green evidence, leaving final-suite claims explicitly pending.
+6. Synchronize the final base, re-run typecheck, unit/integration, build, Electron E2E, lint, format, and `git diff --check`, then record the exact final results.
 
 Rollback is a normal branch revert. There is no database migration and the test-only path override is inert in production.
 
