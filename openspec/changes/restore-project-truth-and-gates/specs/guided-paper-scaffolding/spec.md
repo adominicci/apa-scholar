@@ -7,6 +7,11 @@ The student ghost title page SHALL render localized instructional placeholders f
 - **WHEN** a student paper is opened before all title-page metadata has been entered
 - **THEN** the ghost title page displays the localized placeholder for each missing field in its APA title-page position
 
+#### Scenario: Spanish student paper has incomplete metadata
+- **WHEN** a Spanish-language student paper is opened with one or more title-page metadata fields empty
+- **THEN** every missing field displays Spanish instructional guidance in its APA title-page position
+- **AND** no English fallback guidance is displayed for those fields
+
 #### Scenario: User fills a title-page field
 - **WHEN** the user supplies a non-empty value for a guided title-page field
 - **THEN** the ghost block displays the user's value instead of the instructional placeholder
