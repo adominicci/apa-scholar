@@ -62,7 +62,7 @@ The docs will add one current status matrix containing the exact verification sn
 1. Add the isolated-user-data bootstrap and regression tests before changing the E2E launch.
 2. Restore ghost placeholders and make the existing regression test pass.
 3. Update stale renderer expectations and extract/validate CrossRef mapping.
-4. Run Prettier across non-ignored files, then fix all remaining lint findings without suppressions.
+4. Fix all remaining lint findings without suppressions, then run Prettier across non-ignored files.
 5. Re-run typecheck, unit/integration, build, Electron E2E, lint, format, and `git diff --check`.
 6. Update documentation and milestone state using only the verified results.
 
