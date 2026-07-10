@@ -59,10 +59,12 @@ Archive a completed change in the experimental workflow.
 
    **If delta specs exist:**
    - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
+   - If a corresponding main spec does not exist, classify that capability as unsynced; its first promotion must use the sync path
    - Determine what changes would be applied (adds, modifications, removals, renames)
    - Show a combined summary before prompting
 
    **Prompt options:**
+   - If any corresponding main spec is missing: "Sync and archive (required)", "Cancel"
    - If changes are needed: "Sync and archive (recommended)", "Archive without syncing", "Cancel"
    - If already synced: "Archive now", "Cancel"
 
@@ -76,12 +78,12 @@ Archive a completed change in the experimental workflow.
      ```bash
      openspec archive "<name>" --yes
      ```
-   - To archive without syncing, or when the main specs are already synchronized:
+   - To archive without syncing an existing main spec, or when the main specs are already synchronized:
      ```bash
      openspec archive "<name>" --yes --skip-specs
      ```
 
-   Do not add `--no-validate`. If the command fails, report the error and leave the change active; do not move files manually.
+   Never use `--skip-specs` when any corresponding main spec is missing. Do not add `--no-validate`. If the command fails, report the error and leave the change active; do not move files manually.
 
 6. **Display summary**
 
@@ -113,4 +115,5 @@ All artifacts complete. All tasks complete.
 - Show clear summary of what happened
 - Use `openspec archive` for both spec synchronization and the archive move; do not depend on an uninstalled helper skill
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- A missing main spec is unsynced and requires the sync path before archival
 - A cancel choice stops the workflow before any synchronization or filesystem move
