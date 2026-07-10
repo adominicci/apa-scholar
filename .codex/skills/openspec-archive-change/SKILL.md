@@ -19,7 +19,7 @@ Archive a completed change in the experimental workflow.
 
 1. **If no change name provided, prompt for selection**
 
-   Run `openspec list --json` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+   Run `openspec list --json` to get available changes. Ask the user directly to select one.
 
    Show only active changes (not already archived).
    Include the schema used for each change if available.
@@ -37,7 +37,7 @@ Archive a completed change in the experimental workflow.
 
    **If any artifacts are not `done`:**
    - Display warning listing incomplete artifacts
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
+   - Ask the user directly to confirm they want to proceed
    - Proceed if user confirms
 
 3. **Check task completion status**
@@ -48,7 +48,7 @@ Archive a completed change in the experimental workflow.
 
    **If incomplete tasks found:**
    - Display warning showing count of incomplete tasks
-   - Use **AskUserQuestion tool** to confirm user wants to proceed
+   - Ask the user directly to confirm they want to proceed
    - Proceed if user confirms
 
    **If no tasks file exists:** Proceed without task-related warning.
@@ -63,27 +63,25 @@ Archive a completed change in the experimental workflow.
    - Show a combined summary before prompting
 
    **Prompt options:**
-   - If changes needed: "Sync now (recommended)", "Archive without syncing"
-   - If already synced: "Archive now", "Sync anyway", "Cancel"
+   - If changes are needed: "Sync and archive (recommended)", "Archive without syncing", "Cancel"
+   - If already synced: "Archive now", "Cancel"
 
-   If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
+   Honor an explicit archive/sync choice already present in the user's request. Otherwise, ask the user directly to choose. If the user chooses "Cancel", stop immediately without syncing specs or moving the change.
 
 5. **Perform the archive**
 
-   Create an `archive` directory under `planningHome.changesDir` if it doesn't exist:
-   ```bash
-   mkdir -p "<planningHome.changesDir>/archive"
-   ```
+   Use the OpenSpec CLI so validation, delta application, collision checks, and the archive move happen as one supported operation. Preserve `--store <id>` when a store was selected.
 
-   Generate target name using current date: `YYYY-MM-DD-<change-name>`
+   - To sync outstanding deltas and archive:
+     ```bash
+     openspec archive "<name>" --yes
+     ```
+   - To archive without syncing, or when the main specs are already synchronized:
+     ```bash
+     openspec archive "<name>" --yes --skip-specs
+     ```
 
-   **Check if target already exists:**
-   - If yes: Fail with error, suggest renaming existing archive or using different date
-   - If no: Move `changeRoot` to the archive directory
-
-   ```bash
-   mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
-   ```
+   Do not add `--no-validate`. If the command fails, report the error and leave the change active; do not move files manually.
 
 6. **Display summary**
 
@@ -113,5 +111,6 @@ All artifacts complete. All tasks complete.
 - Don't block archive on warnings - just inform and confirm
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
-- If sync is requested, use openspec-sync-specs approach (agent-driven)
+- Use `openspec archive` for both spec synchronization and the archive move; do not depend on an uninstalled helper skill
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- A cancel choice stops the workflow before any synchronization or filesystem move
