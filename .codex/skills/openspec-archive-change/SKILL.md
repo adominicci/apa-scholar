@@ -58,7 +58,9 @@ Archive a completed change in the experimental workflow.
    Use `artifactPaths.specs.existingOutputPaths` from status JSON to check for delta specs. If none exist, proceed without sync prompt.
 
    **If delta specs exist:**
-   - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
+   - Resolve the canonical specs directory as `<planningHome.root>/openspec/specs` from the status JSON; never resolve it from the current working directory
+   - When `--store <id>` is selected, `planningHome.root` is the selected store root, so all comparisons must stay inside that store
+   - Compare each delta spec with its corresponding main spec at `<canonical-specs-dir>/<capability>/spec.md`
    - If a corresponding main spec does not exist, classify that capability as unsynced; its first promotion must use the sync path
    - Determine what changes would be applied (adds, modifications, removals, renames)
    - Show a combined summary before prompting
@@ -114,6 +116,7 @@ All artifacts complete. All tasks complete.
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
 - Use `openspec archive` for both spec synchronization and the archive move; do not depend on an uninstalled helper skill
+- Resolve canonical specs from `planningHome.root`, including for a selected store; never compare against an unrelated checkout
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
 - A missing main spec is unsynced and requires the sync path before archival
 - A cancel choice stops the workflow before any synchronization or filesystem move
