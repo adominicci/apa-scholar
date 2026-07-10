@@ -116,7 +116,8 @@ Archive a completed change in the experimental workflow.
 **Archived to:** <path returned by `openspec archive`, or `planningHome.changesDir`/archive/YYYY-MM-DD-<name>/>
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
 
-All artifacts complete. All tasks complete.
+<If complete: "All artifacts complete. All tasks complete.">
+<If warnings were confirmed: "Archived with acknowledged warnings: <list incomplete artifacts/tasks>.">
 ```
 
 **Guardrails**
