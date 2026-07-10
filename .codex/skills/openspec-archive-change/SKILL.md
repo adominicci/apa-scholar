@@ -5,8 +5,8 @@ license: MIT
 compatibility: Requires openspec CLI.
 metadata:
   author: openspec
-  version: "1.0"
-  generatedBy: "1.5.0"
+  version: '1.0'
+  generatedBy: '1.5.0'
 ---
 
 Archive a completed change in the experimental workflow.
@@ -75,8 +75,8 @@ Archive a completed change in the experimental workflow.
 5. **Perform the archive**
 
    Use the OpenSpec CLI so validation, delta application, collision checks, and the archive move happen as one supported operation. Preserve `--store <id>` when a store was selected.
-
    - To sync outstanding deltas and archive:
+
      ```bash
      # Repository-local root
      openspec archive "<name>" --yes
@@ -84,7 +84,9 @@ Archive a completed change in the experimental workflow.
      # Selected registered store
      openspec archive "<name>" --yes --store "<id>"
      ```
+
    - To archive without syncing an existing main spec, or when the main specs are already synchronized:
+
      ```bash
      # Repository-local root
      openspec archive "<name>" --yes --skip-specs
@@ -118,6 +120,7 @@ All artifacts complete. All tasks complete.
 ```
 
 **Guardrails**
+
 - Always prompt for change selection if not provided
 - Use artifact graph (openspec status --json) for completion checking
 - Don't block archive on warnings - just inform and confirm
