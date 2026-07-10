@@ -113,7 +113,7 @@ Archive a completed change in the experimental workflow.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Archived to:** the archive path derived from `planningHome.changesDir`/YYYY-MM-DD-<name>/
+**Archived to:** <path returned by `openspec archive`, or `planningHome.changesDir`/archive/YYYY-MM-DD-<name>/>
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
 
 All artifacts complete. All tasks complete.
