@@ -52,7 +52,7 @@ When ready to implement, run /opsx:apply
 
 4. **Create artifacts in sequence until apply-ready**
 
-   Use the **update_plan tool** to track progress through the artifacts.
+   Use the **update_plan tool** when available to track progress through the artifacts. If it is unavailable, maintain a concise inline checklist instead.
 
    Loop through artifacts in dependency order (artifacts with no pending dependencies first):
 

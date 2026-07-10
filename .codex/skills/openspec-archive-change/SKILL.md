@@ -78,11 +78,19 @@ Archive a completed change in the experimental workflow.
 
    - To sync outstanding deltas and archive:
      ```bash
+     # Repository-local root
      openspec archive "<name>" --yes
+
+     # Selected registered store
+     openspec archive "<name>" --yes --store "<id>"
      ```
    - To archive without syncing an existing main spec, or when the main specs are already synchronized:
      ```bash
+     # Repository-local root
      openspec archive "<name>" --yes --skip-specs
+
+     # Selected registered store
+     openspec archive "<name>" --yes --skip-specs --store "<id>"
      ```
 
    Never use `--skip-specs` when any corresponding main spec is missing. Do not add `--no-validate`. If the command fails, report the error and leave the change active; do not move files manually.
