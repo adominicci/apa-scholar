@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HandleAppReadyDependencies } from '@main/app/handle-app-ready';
@@ -48,6 +50,15 @@ vi.mock('@main/app/handle-app-ready', () => ({
 }));
 
 const originalUserDataDirectory = process.env.APA_SCHOLAR_USER_DATA_DIR;
+const temporaryDirectories = new Set<string>();
+
+const createTemporaryDirectory = (): string => {
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'apa-scholar-main-test-'),
+  );
+  temporaryDirectories.add(directory);
+  return directory;
+};
 
 describe('main process startup', () => {
   beforeEach(() => {
@@ -69,19 +80,49 @@ describe('main process startup', () => {
     } else {
       process.env.APA_SCHOLAR_USER_DATA_DIR = originalUserDataDirectory;
     }
+
+    for (const directory of temporaryDirectories) {
+      fs.rmSync(directory, { force: true, recursive: true });
+    }
+    temporaryDirectories.clear();
   });
 
-  it('applies an absolute user-data override before persistence bootstrap', async () => {
-    const userDataDirectory = path.resolve('/tmp/apa-scholar-main-test');
+  it('creates a fresh absolute user-data override before applying it and bootstrapping persistence', async () => {
+    const userDataDirectory = path.join(
+      createTemporaryDirectory(),
+      'nested',
+      'user-data',
+    );
     process.env.APA_SCHOLAR_USER_DATA_DIR = userDataDirectory;
 
     await import('@main/index');
     await vi.waitFor(() => expect(mocks.handleAppReady).toHaveBeenCalledOnce());
 
+    expect(fs.statSync(userDataDirectory).isDirectory()).toBe(true);
     expect(mocks.callOrder).toEqual([
       `setPath:userData:${userDataDirectory}`,
       'bootstrap',
     ]);
+  });
+
+  it('shows a startup error and quits when the user-data override cannot be created', async () => {
+    const blocker = path.join(createTemporaryDirectory(), 'not-a-directory');
+    fs.writeFileSync(blocker, 'blocked');
+    const userDataDirectory = path.join(blocker, 'user-data');
+    process.env.APA_SCHOLAR_USER_DATA_DIR = userDataDirectory;
+
+    await import('@main/index');
+
+    expect(mocks.showErrorBox).toHaveBeenCalledWith(
+      'Startup error',
+      expect.stringContaining(
+        `Unable to prepare user data directory "${userDataDirectory}"`,
+      ),
+    );
+    expect(mocks.appQuit).toHaveBeenCalledTimes(1);
+    expect(mocks.appSetPath).not.toHaveBeenCalled();
+    expect(mocks.appWhenReady).not.toHaveBeenCalled();
+    expect(mocks.handleAppReady).not.toHaveBeenCalled();
   });
 
   it('keeps Electron default user-data behavior when the override is absent', async () => {
