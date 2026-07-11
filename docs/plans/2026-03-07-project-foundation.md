@@ -1,5 +1,9 @@
 # Project Foundation Implementation Plan
 
+**Lifecycle status:** Completed historical plan.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), [`docs/architecture.md`](../architecture.md), and the current repository scripts. Do not treat the command expectations below as fresh verification evidence.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build the secure, documented, AI-friendly APA Scholar project foundation with Electron Forge, Vite, React, TypeScript, Tailwind v4, and baseline quality tooling.

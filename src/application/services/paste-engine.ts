@@ -14,9 +14,12 @@ import {
 
 export const suspiciousPastePatternMessages = {
   embeddedMedia: 'Embedded media was removed from the pasted content.',
-  executableContent: 'Potentially unsafe embedded content was removed before insertion.',
-  figureStructure: 'Figure containers were restructured into plain text and should be reviewed before insertion.',
-  tableStructure: 'Complex table structure was flattened and should be reviewed before insertion.',
+  executableContent:
+    'Potentially unsafe embedded content was removed before insertion.',
+  figureStructure:
+    'Figure containers were restructured into plain text and should be reviewed before insertion.',
+  tableStructure:
+    'Complex table structure was flattened and should be reviewed before insertion.',
 } as const;
 
 type ClipboardPayload = {
@@ -113,9 +116,7 @@ const escapeHtml = (value: string): string =>
     .replaceAll('>', '&gt;');
 
 const cleanTextFragment = (value: string): string =>
-  value
-    .replace(/\u00a0/g, ' ')
-    .replace(/\s+/g, ' ');
+  value.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ');
 
 const normalizeParagraphInlineNodes = (
   inlineNodes: BodyEditorInlineNode[],
@@ -145,11 +146,12 @@ const normalizeParagraphInlineNodes = (
     }
 
     const previousNode = normalized.at(-1);
-    const nextText = normalized.length === 0
-      ? cleanedText.trimStart()
-      : previousNode?.type === 'hardBreak'
+    const nextText =
+      normalized.length === 0
         ? cleanedText.trimStart()
-        : cleanedText;
+        : previousNode?.type === 'hardBreak'
+          ? cleanedText.trimStart()
+          : cleanedText;
 
     const nextNode: BodyEditorTextNode = {
       marks: node.marks,
@@ -158,8 +160,9 @@ const normalizeParagraphInlineNodes = (
     };
 
     if (
-      previousNode?.type === 'text'
-      && JSON.stringify(previousNode.marks ?? []) === JSON.stringify(nextNode.marks ?? [])
+      previousNode?.type === 'text' &&
+      JSON.stringify(previousNode.marks ?? []) ===
+        JSON.stringify(nextNode.marks ?? [])
     ) {
       previousNode.text += nextNode.text;
       continue;
@@ -181,15 +184,19 @@ const normalizeParagraphInlineNodes = (
   return normalized;
 };
 
-const createParagraphNode = (inlineNodes: BodyEditorInlineNode[]): BodyEditorParagraphNode => ({
+const createParagraphNode = (
+  inlineNodes: BodyEditorInlineNode[],
+): BodyEditorParagraphNode => ({
   content: normalizeParagraphInlineNodes(inlineNodes),
   type: 'paragraph',
 });
 
 const hasNestedBlockElement = (element: HTMLElement): boolean =>
-  Array.from(element.children).some((child) =>
-    child instanceof HTMLElement
-    && (blockElementNames.has(child.tagName.toLowerCase()) || child.matches('div')),
+  Array.from(element.children).some(
+    (child) =>
+      child instanceof HTMLElement &&
+      (blockElementNames.has(child.tagName.toLowerCase()) ||
+        child.matches('div')),
   );
 
 const collectInlineNodes = (
@@ -204,9 +211,7 @@ const collectInlineNodes = (
     }
 
     return [
-      marks.length > 0
-        ? { marks, text, type: 'text' }
-        : { text, type: 'text' },
+      marks.length > 0 ? { marks, text, type: 'text' } : { text, type: 'text' },
     ];
   }
 
@@ -221,7 +226,10 @@ const collectInlineNodes = (
   const nextMarks = [...marks];
   const style = node.getAttribute('style')?.toLowerCase() ?? '';
 
-  if (node.matches('b, strong') || /font-weight:\s*(bold|[6-9]00)/.test(style)) {
+  if (
+    node.matches('b, strong') ||
+    /font-weight:\s*(bold|[6-9]00)/.test(style)
+  ) {
     nextMarks.splice(0, nextMarks.length, ...appendMark(nextMarks, 'bold'));
   }
 
@@ -263,7 +271,11 @@ const collectBlockNodes = (node: Node): BodyEditorBlockNode[] => {
       : [];
   }
 
-  if (node.matches('div') || node.matches('section') || node.matches('article')) {
+  if (
+    node.matches('div') ||
+    node.matches('section') ||
+    node.matches('article')
+  ) {
     if (hasNestedBlockElement(node)) {
       return Array.from(node.childNodes).flatMap(collectBlockNodes);
     }
@@ -282,13 +294,17 @@ const collectBlockNodes = (node: Node): BodyEditorBlockNode[] => {
   return Array.from(node.childNodes).flatMap(collectBlockNodes);
 };
 
-const createDocumentFromBlocks = (blocks: BodyEditorBlockNode[]): BodyEditorDocument => {
+const createDocumentFromBlocks = (
+  blocks: BodyEditorBlockNode[],
+): BodyEditorDocument => {
   const document = normalizeBodyEditorDocument({
     content: blocks,
     type: 'doc',
   });
 
-  return document.content.length > 0 ? document : createEmptyBodyEditorDocument();
+  return document.content.length > 0
+    ? document
+    : createEmptyBodyEditorDocument();
 };
 
 const sanitizePlainText = (text: string): BodyEditorDocument => {
@@ -313,7 +329,9 @@ const sanitizePlainText = (text: string): BodyEditorDocument => {
 
 const sanitizeHtml = (html: string): BodyEditorDocument => {
   const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
-  const blocks = Array.from(parsedDocument.body.childNodes).flatMap(collectBlockNodes);
+  const blocks = Array.from(parsedDocument.body.childNodes).flatMap(
+    collectBlockNodes,
+  );
 
   if (blocks.length === 0) {
     return sanitizePlainText(parsedDocument.body.textContent ?? '');
@@ -326,15 +344,16 @@ const renderTextNode = (node: BodyEditorTextNode): string => {
   let value = escapeHtml(node.text);
 
   for (const mark of node.marks ?? []) {
-    value = mark.type === 'bold'
-      ? `<strong>${value}</strong>`
-      : `<em>${value}</em>`;
+    value =
+      mark.type === 'bold' ? `<strong>${value}</strong>` : `<em>${value}</em>`;
   }
 
   return value;
 };
 
-const renderInlineNodesAsHtml = (inlineNodes: BodyEditorInlineNode[] | undefined): string =>
+const renderInlineNodesAsHtml = (
+  inlineNodes: BodyEditorInlineNode[] | undefined,
+): string =>
   (inlineNodes ?? [])
     .map((node) => (node.type === 'hardBreak' ? '<br>' : renderTextNode(node)))
     .join('');
@@ -343,12 +362,15 @@ const renderParagraphAsHtml = (paragraph: BodyEditorParagraphNode): string =>
   `<p>${renderInlineNodesAsHtml(paragraph.content)}</p>`;
 
 const renderListItemAsHtml = (item: BodyEditorListItem): string =>
-  `<li>${item.content.map((node) =>
-    node.type === 'paragraph'
-      ? renderParagraphAsHtml(node)
-      : node.type === 'bulletList'
-        ? `<ul>${node.content.map(renderListItemAsHtml).join('')}</ul>`
-        : `<ol>${node.content.map(renderListItemAsHtml).join('')}</ol>`).join('')}</li>`;
+  `<li>${item.content
+    .map((node) =>
+      node.type === 'paragraph'
+        ? renderParagraphAsHtml(node)
+        : node.type === 'bulletList'
+          ? `<ul>${node.content.map(renderListItemAsHtml).join('')}</ul>`
+          : `<ol>${node.content.map(renderListItemAsHtml).join('')}</ol>`,
+    )
+    .join('')}</li>`;
 
 const renderBlockAsHtml = (block: BodyEditorBlockNode): string => {
   if (block.type === 'blockquote') {
@@ -371,11 +393,11 @@ const renderBlockAsHtml = (block: BodyEditorBlockNode): string => {
 };
 
 const renderDocumentAsHtml = (document: BodyEditorDocument): string =>
-  document.content
-    .map(renderBlockAsHtml)
-    .join('');
+  document.content.map(renderBlockAsHtml).join('');
 
-const renderInlineNodesAsText = (inlineNodes: BodyEditorInlineNode[] | undefined): string =>
+const renderInlineNodesAsText = (
+  inlineNodes: BodyEditorInlineNode[] | undefined,
+): string =>
   (inlineNodes ?? [])
     .map((node) => (node.type === 'hardBreak' ? '\n' : node.text))
     .join('');
@@ -392,20 +414,19 @@ const renderListItemAsText = (
       node.type === 'paragraph'
         ? `${prefix}${renderParagraphAsText(node)}`
         : node.content
-          .map((childItem, index) =>
-            renderListItemAsText(
-              childItem,
-              node.type === 'orderedList' ? `${index + 1}. ` : '- ',
-            ),
-          )
-          .join('\n'))
+            .map((childItem, index) =>
+              renderListItemAsText(
+                childItem,
+                node.type === 'orderedList' ? `${index + 1}. ` : '- ',
+              ),
+            )
+            .join('\n'),
+    )
     .join('\n');
 
 const renderBlockAsText = (block: BodyEditorBlockNode): string => {
   if (block.type === 'blockquote') {
-    return block.content
-      .map(renderParagraphAsText)
-      .join('\n\n');
+    return block.content.map(renderParagraphAsText).join('\n\n');
   }
 
   if (block.type === 'paragraph' || block.type === 'heading') {
@@ -417,14 +438,14 @@ const renderBlockAsText = (block: BodyEditorBlockNode): string => {
       renderListItemAsText(
         item,
         block.type === 'orderedList' ? `${index + 1}. ` : '- ',
-      ))
+      ),
+    )
     .join('\n');
 };
 
-export const renderBodyEditorDocumentAsText = (document: BodyEditorDocument): string =>
-  document.content
-    .map(renderBlockAsText)
-    .join('\n\n');
+export const renderBodyEditorDocumentAsText = (
+  document: BodyEditorDocument,
+): string => document.content.map(renderBlockAsText).join('\n\n');
 
 export const sanitizeBodyEditorClipboardPayload = (
   payload: ClipboardPayload,

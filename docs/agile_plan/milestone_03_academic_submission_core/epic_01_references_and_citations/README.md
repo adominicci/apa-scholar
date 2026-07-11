@@ -8,4 +8,6 @@ Tracking rule: all tasks in this epic must be marked `Done` before the epic is c
 
 Epic status:
 
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10. Core reference/citation code remains implemented, but citation text is not reconciled after reference edits and reference-load failure can produce false orphan findings. See `docs/project-status.md`.

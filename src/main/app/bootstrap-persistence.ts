@@ -42,12 +42,16 @@ export const bootstrapPersistence = () => {
 
   const printPreloadPath = path.join(__dirname, 'print-preload.js');
   const exportPdfHandler = createExportPdfHandler({
-    getAggregate: (paperId) => persistenceContext.paperRepository.getAggregateById(paperId),
-    getReferences: (paperId) => persistenceContext.referenceRepository.listByPaper(paperId),
+    getAggregate: (paperId) =>
+      persistenceContext.paperRepository.getAggregateById(paperId),
+    getReferences: (paperId) =>
+      persistenceContext.referenceRepository.listByPaper(paperId),
     printPreloadPath,
   });
 
-  ipcMain.handle(exportIpcChannels.exportPdf, (_event, payload) => exportPdfHandler(payload));
+  ipcMain.handle(exportIpcChannels.exportPdf, (_event, payload) =>
+    exportPdfHandler(payload),
+  );
 
   return persistenceContext;
 };

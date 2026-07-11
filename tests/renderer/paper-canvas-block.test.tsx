@@ -27,17 +27,22 @@ describe('PaperCanvasBlock', () => {
       />,
     );
 
-    expect(screen.getByRole('textbox', { name: 'Paper body draft' })).toBeVisible();
-    expect(screen.queryByRole('textbox', { name: 'Paper body draft' })).toHaveAttribute(
-      'contenteditable',
-      'true',
-    );
+    expect(
+      screen.getByRole('textbox', { name: 'Paper body draft' }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole('textbox', { name: 'Paper body draft' }),
+    ).toHaveAttribute('contenteditable', 'true');
   });
 
   it('exposes the body-page section heading with heading semantics', () => {
     render(
       <PaperCanvasBlock
-        block={{ id: 'body-heading', kind: 'section-heading', text: 'Capstone Draft' }}
+        block={{
+          id: 'body-heading',
+          kind: 'section-heading',
+          text: 'Capstone Draft',
+        }}
         bodyDocument={createEmptyBodyEditorDocument()}
         onBodyDocumentChange={vi.fn()}
         onPasteWarningsChange={vi.fn()}

@@ -29,7 +29,9 @@ describe('reference entry schemas', () => {
   });
 
   it('rejects an unsupported reference type', () => {
-    expect(() => referenceTypeSchema.parse('newspaper')).toThrow(/reference type/i);
+    expect(() => referenceTypeSchema.parse('newspaper')).toThrow(
+      /reference type/i,
+    );
   });
 
   it('parses a valid reference author', () => {
@@ -43,9 +45,35 @@ describe('reference entry schemas', () => {
     expect(author.isGroup).toBe(false);
   });
 
+  it('parses an organizational author with an empty given name', () => {
+    expect(
+      referenceAuthorSchema.parse({
+        family: 'World Health Organization',
+        given: '',
+        isGroup: true,
+      }),
+    ).toEqual({
+      family: 'World Health Organization',
+      given: '',
+      isGroup: true,
+    });
+  });
+
+  it('parses a family-only author with an empty given name', () => {
+    expect(
+      referenceAuthorSchema.parse({ family: 'Santiago', given: '' }),
+    ).toEqual({ family: 'Santiago', given: '' });
+  });
+
   it('rejects an author with empty family name', () => {
     expect(() =>
       referenceAuthorSchema.parse({ family: '', given: 'Avery' }),
+    ).toThrow(/family/i);
+  });
+
+  it('rejects an author with both names empty', () => {
+    expect(() =>
+      referenceAuthorSchema.parse({ family: '', given: '' }),
     ).toThrow(/family/i);
   });
 

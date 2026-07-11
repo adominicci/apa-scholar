@@ -115,7 +115,9 @@ export const resolveTemplateDefinitionId = (
 ): TemplateDefinitionId =>
   isTemplateDefinitionId(templateId) ? templateId : 'apa-student';
 
-export const getTemplateDefinition = (templateId: TemplateId): TemplateDefinition => {
+export const getTemplateDefinition = (
+  templateId: TemplateId,
+): TemplateDefinition => {
   const definition = templateDefinitionMap.get(templateId);
 
   if (!definition) {
@@ -131,8 +133,11 @@ export const listTemplateDefinitions = (): Array<{
 }> =>
   templateDefinitions
     .filter(
-      (definition): definition is TemplateDefinition & { id: TemplateDefinitionId } =>
-        definition.id === 'apa-student' || definition.id === 'apa-student-abstract',
+      (
+        definition,
+      ): definition is TemplateDefinition & { id: TemplateDefinitionId } =>
+        definition.id === 'apa-student' ||
+        definition.id === 'apa-student-abstract',
     )
     .map((definition) => ({
       id: definition.id,

@@ -7,7 +7,8 @@ This file is for agents working in this repository. It should help you make good
 - Product: `APA Scholar`
 - Type: local-first Electron desktop app for APA-compliant academic writing
 - Core model: `Workspace -> Course -> Paper`
-- Current emphasis: references and citations (M3 E01), with Milestones 01 and 02 complete. Next: PDF export, bilingual polish, release prep.
+- Current stage: Milestones 01 and 02 have completed implementation history. Milestone 03 is partially implemented but reopened for PDF/export safety, bilingual completion, and format persistence; Milestone 04 remains incomplete and release checks are unverified.
+- Current stabilization work: `restore-project-truth-and-gates`. Use `docs/project-status.md` for the evidence-backed matrix and blockers.
 - Platform focus: macOS first
 
 The app is not a generic word processor. It is a guided academic writing workspace with a semantic paper model.
@@ -17,9 +18,10 @@ The app is not a generic word processor. It is a guided academic writing workspa
 Before making architecture, product, or UI decisions, read these in order:
 
 1. `docs/apa-scholar-prd-v2.md`
-2. `docs/architecture.md`
-3. `docs/implementation_plan.md`
-4. `docs/agile_plan/README.md`
+2. `docs/project-status.md`
+3. `docs/architecture.md`
+4. `docs/implementation_plan.md`
+5. `docs/agile_plan/README.md`
 
 For shell and visual work, also read:
 
@@ -56,6 +58,7 @@ The workspace shell is componentized under `src/renderer/app/`:
 - `PaperModal.tsx`: create-paper flow
 - `workspace-shell-state.ts`: reducer and route state
 - `icons.tsx`: icon helpers
+- `paper-canvas/PaperCanvasToolbar.tsx`: collapsible APA Format panel inside the paper canvas
 
 Design expectations:
 
@@ -68,6 +71,9 @@ Design expectations:
 Important current behavior:
 
 - Search belongs in the header, not the sidebar
+- Settings is the only current header icon action; Notifications was intentionally removed
+- References are managed from the paper inspector
+- The APA Format panel is part of the paper canvas, not the global left sidebar or right inspector
 - Epic 03 was reconciled with the extracted shell on 2026-03-07
 - If shell behavior changes, compare docs and implementation before reopening old scope
 

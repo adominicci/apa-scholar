@@ -1,4 +1,12 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Language } from '@domain/shared/contracts';
 import { supportedLanguages } from '@domain/shared/contracts';
@@ -49,7 +57,7 @@ import {
 } from '@renderer/app/paper-draft-state';
 import { InlineRenameInput } from '@renderer/app/InlineRenameInput';
 import { Sidebar } from '@renderer/app/Sidebar';
-import { BookOpenIcon, SearchIcon, PlusIcon, SettingsIcon } from '@renderer/app/icons';
+import { BookOpenIcon, SearchIcon, SettingsIcon } from '@renderer/app/icons';
 
 type ThemeMode = 'dark' | 'light';
 
@@ -96,44 +104,65 @@ export const App = () => {
   );
   const [courses, setCourses] = useState<Course[]>([]);
   const [coursePapers, setCoursePapers] = useState<Record<string, Paper[]>>({});
-  const [paperDetails, setPaperDetails] = useState<Record<string, PaperDraft | null>>({});
+  const [paperDetails, setPaperDetails] = useState<
+    Record<string, PaperDraft | null>
+  >({});
   const [recentPapers, setRecentPapers] = useState<Paper[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingCourseIds, setLoadingCourseIds] = useState<string[]>([]);
   const [loadingPaperIds, setLoadingPaperIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>('idle');
+  const [searchStatus, setSearchStatus] = useState<'idle' | 'placeholder'>(
+    'idle',
+  );
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [activePasteIssues, setActivePasteIssues] = useState<PaperIssue[]>([]);
-  const [paperReferences, setPaperReferences] = useState<Record<string, ReferenceEntry[]>>({});
+  const [paperReferences, setPaperReferences] = useState<
+    Record<string, ReferenceEntry[]>
+  >({});
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isPaperModalOpen, setIsPaperModalOpen] = useState(false);
-  const [courseForm, setCourseForm] = useState<CreateCourseInput>(emptyCourseForm);
+  const [courseForm, setCourseForm] =
+    useState<CreateCourseInput>(emptyCourseForm);
   const [paperForm, setPaperForm] = useState<CreatePaperInput>(emptyPaperForm);
   const [courseFormError, setCourseFormError] = useState<string | null>(null);
   const [paperFormError, setPaperFormError] = useState<string | null>(null);
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [isCreatingPaper, setIsCreatingPaper] = useState(false);
   const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
-  const [referenceForm, setReferenceForm] = useState<ReferenceFormState>(createEmptyFormState);
-  const [editingReferenceId, setEditingReferenceId] = useState<string | null>(null);
-  const [referenceFormError, setReferenceFormError] = useState<string | null>(null);
+  const [referenceForm, setReferenceForm] =
+    useState<ReferenceFormState>(createEmptyFormState);
+  const [editingReferenceId, setEditingReferenceId] = useState<string | null>(
+    null,
+  );
+  const [referenceFormError, setReferenceFormError] = useState<string | null>(
+    null,
+  );
   const [isSavingReference, setIsSavingReference] = useState(false);
   const [isRenamingPaperTitle, setIsRenamingPaperTitle] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [formatPanelCollapsed, setFormatPanelCollapsed] = useState(false);
-  const [selectedFont, setSelectedFont] = useState<import('@renderer/app/paper-canvas/PaperCanvasToolbar').ApaFontId>('times');
+  const [selectedFont, setSelectedFont] =
+    useState<import('@renderer/app/paper-canvas/PaperCanvasToolbar').ApaFontId>(
+      'times',
+    );
   const bodyEditorRef = useRef<BodyEditorHandle>(null);
   // Keep in-flight course loads current without retriggering the fetch effects.
   const loadingCourseIdsRef = useRef<string[]>([]);
   const loadingPaperIdsRef = useRef<string[]>([]);
-  const bodySaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const bodySaveTimeoutsRef = useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
   const pendingBodyUpdatesRef = useRef<Record<string, BodyEditorDocument>>({});
   const paperBodyVersionRef = useRef<Record<string, number>>({});
   const bodySaveRetryCountsRef = useRef<Record<string, number>>({});
-  const metadataSaveTimeoutsRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const pendingMetadataUpdatesRef = useRef<Record<string, UpdatePaperMetadataInput>>({});
+  const metadataSaveTimeoutsRef = useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
+  const pendingMetadataUpdatesRef = useRef<
+    Record<string, UpdatePaperMetadataInput>
+  >({});
   const paperMetadataVersionRef = useRef<Record<string, number>>({});
   const metadataSaveRetryCountsRef = useRef<Record<string, number>>({});
 
@@ -141,22 +170,30 @@ export const App = () => {
     courses.find((course) => course.id === shellState.selectedCourseId) ?? null;
   const activePaper =
     shellState.selectedCourseId && shellState.selectedPaperId
-      ? (coursePapers[shellState.selectedCourseId] ?? []).find(
+      ? ((coursePapers[shellState.selectedCourseId] ?? []).find(
           (paper) => paper.id === shellState.selectedPaperId,
-        ) ?? null
+        ) ?? null)
       : null;
   const activePaperDetail = shellState.selectedPaperId
-    ? paperDetails[shellState.selectedPaperId] ?? null
+    ? (paperDetails[shellState.selectedPaperId] ?? null)
     : null;
   const activePaperReferences = shellState.selectedPaperId
-    ? paperReferences[shellState.selectedPaperId] ?? []
+    ? (paperReferences[shellState.selectedPaperId] ?? [])
     : [];
   const activePaperIssues = useMemo(
-    () => getPaperInspectorIssues(activePaperDetail, activePasteIssues, activePaperReferences),
+    () =>
+      getPaperInspectorIssues(
+        activePaperDetail,
+        activePasteIssues,
+        activePaperReferences,
+      ),
     [activePaperDetail, activePasteIssues, activePaperReferences],
   );
   const paperWordCount = useMemo(
-    () => activePaperDetail ? countBodyWords(activePaperDetail.paperContent.bodyDoc) : 0,
+    () =>
+      activePaperDetail
+        ? countBodyWords(activePaperDetail.paperContent.bodyDoc)
+        : 0,
     [activePaperDetail],
   );
   const paperPageCount = Math.max(1, Math.ceil(paperWordCount / 250));
@@ -201,19 +238,25 @@ export const App = () => {
   useEffect(() => {
     if (!api) return;
 
-    void api.settings.get().then((settings) => {
-      if (settings?.language && settings.language !== i18n.language) {
-        void i18n.changeLanguage(settings.language);
-        setAppLanguage(settings.language);
-      }
-    }).catch(() => {
-      // Settings load is non-critical; default language is fine.
-    });
+    void api.settings
+      .get()
+      .then((settings) => {
+        if (settings?.language && settings.language !== i18n.language) {
+          void i18n.changeLanguage(settings.language);
+          setAppLanguage(settings.language);
+        }
+      })
+      .catch(() => {
+        // Settings load is non-critical; default language is fine.
+      });
   }, [api, i18n]);
 
   const refreshRecentPapers = useCallback(() => {
     if (!api) return;
-    void api.papers.listRecent(10).then(setRecentPapers).catch(() => {});
+    void api.papers
+      .listRecent(10)
+      .then(setRecentPapers)
+      .catch(() => {});
   }, [api]);
 
   useEffect(() => {
@@ -228,21 +271,27 @@ export const App = () => {
     loadingPaperIdsRef.current = loadingPaperIds;
   }, [loadingPaperIds]);
 
-  useEffect(() => () => {
-    Object.values(bodySaveTimeoutsRef.current).forEach((timeoutId) => {
-      clearTimeout(timeoutId);
-    });
-    Object.values(metadataSaveTimeoutsRef.current).forEach((timeoutId) => {
-      clearTimeout(timeoutId);
-    });
-  }, []);
+  useEffect(
+    () => () => {
+      Object.values(bodySaveTimeoutsRef.current).forEach((timeoutId) => {
+        clearTimeout(timeoutId);
+      });
+      Object.values(metadataSaveTimeoutsRef.current).forEach((timeoutId) => {
+        clearTimeout(timeoutId);
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     setActivePasteIssues([]);
   }, [shellState.selectedPaperId]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    if (
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function'
+    ) {
       return;
     }
 
@@ -363,8 +412,12 @@ export const App = () => {
       }
 
       const fulfilledResults = results.filter(
-        (result): result is PromiseFulfilledResult<{ courseId: string; papers: Paper[] }> =>
-          result.status === 'fulfilled',
+        (
+          result,
+        ): result is PromiseFulfilledResult<{
+          courseId: string;
+          papers: Paper[];
+        }> => result.status === 'fulfilled',
       );
 
       setCoursePapers((current) => {
@@ -485,7 +538,10 @@ export const App = () => {
       if (!currentDraft) return current;
       return {
         ...current,
-        [selectedPaperId]: rebuildGhostPagesWithReferences(currentDraft, refsToUse),
+        [selectedPaperId]: rebuildGhostPagesWithReferences(
+          currentDraft,
+          refsToUse,
+        ),
       };
     });
   }, [paperReferences, shellState.selectedPaperId]);
@@ -523,11 +579,14 @@ export const App = () => {
 
   const openPaperModal = () => {
     const defaultCourse =
-      courses.find((course) => course.id === shellState.selectedCourseId) ?? courses[0];
+      courses.find((course) => course.id === shellState.selectedCourseId) ??
+      courses[0];
 
     setPaperForm({
       courseId: defaultCourse?.id ?? '',
-      templateId: resolveTemplateDefinitionId(defaultCourse?.defaultPaperTemplate),
+      templateId: resolveTemplateDefinitionId(
+        defaultCourse?.defaultPaperTemplate,
+      ),
       title: '',
     });
     setPaperFormError(null);
@@ -648,7 +707,9 @@ export const App = () => {
     void api.papers
       .updateMetadata(paperId, pendingInput)
       .then((updatedDraft) => {
-        const hasPendingEdits = Boolean(pendingMetadataUpdatesRef.current[paperId]);
+        const hasPendingEdits = Boolean(
+          pendingMetadataUpdatesRef.current[paperId],
+        );
         const latestVersion = paperMetadataVersionRef.current[paperId] ?? 0;
 
         if (hasPendingEdits || version !== latestVersion) {
@@ -671,9 +732,7 @@ export const App = () => {
           ...pendingInput,
           ...(pendingMetadataUpdatesRef.current[paperId] ?? {}),
         };
-        setWorkspaceError(
-          t('errors.unableToSaveMetadata'),
-        );
+        setWorkspaceError(t('errors.unableToSaveMetadata'));
         const isValidationError =
           error instanceof Error &&
           (error.name === 'ZodError' ||
@@ -745,9 +804,7 @@ export const App = () => {
       .catch((error: unknown) => {
         pendingBodyUpdatesRef.current[paperId] =
           pendingBodyUpdatesRef.current[paperId] ?? pendingBodyDocument;
-        setWorkspaceError(
-          t('errors.unableToSaveBody'),
-        );
+        setWorkspaceError(t('errors.unableToSaveBody'));
 
         const isValidationError =
           error instanceof Error &&
@@ -755,7 +812,8 @@ export const App = () => {
             /required|must be|At least one/i.test(error.message));
 
         if (!isValidationError) {
-          const nextRetryCount = (bodySaveRetryCountsRef.current[paperId] ?? 0) + 1;
+          const nextRetryCount =
+            (bodySaveRetryCountsRef.current[paperId] ?? 0) + 1;
 
           bodySaveRetryCountsRef.current[paperId] = nextRetryCount;
 
@@ -993,7 +1051,10 @@ export const App = () => {
   );
 
   const renderHomeView = () => (
-    <section className="flex h-full flex-col px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+    <section
+      className="flex h-full flex-col px-6 py-10 md:px-10"
+      style={{ animation: 'viewFadeIn 300ms ease-out' }}
+    >
       <p className="label-caps text-[var(--color-accent-strong)]">
         {t('home.workspaceShell')}
       </p>
@@ -1031,7 +1092,9 @@ export const App = () => {
               <button
                 className="flex items-center justify-between rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] px-4 py-4 text-left transition-all duration-200 hover:shadow-[0_0_16px_rgba(212,149,106,0.1)] hover:border-[rgba(212,149,106,0.2)]"
                 key={paper.id}
-                onClick={() => paper.courseId && openPaper(paper.courseId, paper.id)}
+                onClick={() =>
+                  paper.courseId && openPaper(paper.courseId, paper.id)
+                }
                 type="button"
               >
                 <span>
@@ -1066,7 +1129,10 @@ export const App = () => {
     const papers = coursePapers[course.id] ?? [];
 
     return (
-      <section className="flex h-full flex-col gap-6 px-6 py-8 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+      <section
+        className="flex h-full flex-col gap-6 px-6 py-8 md:px-10"
+        style={{ animation: 'viewFadeIn 300ms ease-out' }}
+      >
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-line)] pb-6">
           <div>
             <p className="label-caps text-[var(--color-accent-strong)]">
@@ -1096,33 +1162,25 @@ export const App = () => {
             </h3>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-                <p className="label-caps">
-                  {t('courseView.professor')}
-                </p>
+                <p className="label-caps">{t('courseView.professor')}</p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
                   {course.professorName ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-                <p className="label-caps">
-                  {t('courseView.semester')}
-                </p>
+                <p className="label-caps">{t('courseView.semester')}</p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
                   {course.semester ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-                <p className="label-caps">
-                  {t('courseView.institution')}
-                </p>
+                <p className="label-caps">{t('courseView.institution')}</p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
                   {course.institution ?? t('common.notSetYet')}
                 </p>
               </div>
               <div className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel)] p-4">
-                <p className="label-caps">
-                  {t('courseView.defaultTemplate')}
-                </p>
+                <p className="label-caps">{t('courseView.defaultTemplate')}</p>
                 <p className="mt-2 text-sm text-[var(--color-ink-strong)]">
                   {course.defaultPaperTemplate}
                 </p>
@@ -1168,8 +1226,15 @@ export const App = () => {
     );
   };
 
-  const renderPaperView = (course: Course, paper: Paper, paperDetail: PaperDraft | null) => (
-    <section className="flex h-full flex-col" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+  const renderPaperView = (
+    course: Course,
+    paper: Paper,
+    paperDetail: PaperDraft | null,
+  ) => (
+    <section
+      className="flex h-full flex-col"
+      style={{ animation: 'viewFadeIn 300ms ease-out' }}
+    >
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-line)] px-6 py-4 md:px-10">
         <div className="flex items-center gap-3">
           <p className="label-caps text-[var(--color-accent-strong)]">
@@ -1199,7 +1264,8 @@ export const App = () => {
         <div className="flex items-center gap-4">
           {paperDetail && (
             <span className="text-xs text-[var(--color-muted)]">
-              {t('paperView.wordCount', { count: paperWordCount })} · {t('paperView.pageCount', { count: paperPageCount })}
+              {t('paperView.wordCount', { count: paperWordCount })} ·{' '}
+              {t('paperView.pageCount', { count: paperPageCount })}
             </span>
           )}
           <button
@@ -1209,7 +1275,8 @@ export const App = () => {
               if (!api || isExporting) return;
               setIsExporting(true);
               setWorkspaceError(null);
-              void api.export.pdf(paper.id)
+              void api.export
+                .pdf(paper.id)
                 .then((result) => {
                   if (result.status === 'error') {
                     setWorkspaceError(result.message);
@@ -1240,11 +1307,19 @@ export const App = () => {
           onBodyDocumentChange={(document) =>
             handleBodyDocumentChange(paper.id, document)
           }
-          onOpenCitation={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
-          onOpenReferences={() => dispatch({ type: 'set-inspector-tab', tab: 'references' })}
+          onOpenCitation={() =>
+            dispatch({ type: 'set-inspector-tab', tab: 'references' })
+          }
+          onOpenReferences={() =>
+            dispatch({ type: 'set-inspector-tab', tab: 'references' })
+          }
           onPasteWarningsChange={handlePaperPasteWarningsChange}
-          onSetHeadingLevel={(level) => bodyEditorRef.current?.setHeadingLevel(level)}
-          onSetPaperType={(paperType) => handlePaperMetadataChange({ paperType })}
+          onSetHeadingLevel={(level) =>
+            bodyEditorRef.current?.setHeadingLevel(level)
+          }
+          onSetPaperType={(paperType) =>
+            handlePaperMetadataChange({ paperType })
+          }
           onSetParagraph={() => bodyEditorRef.current?.setParagraph()}
           onToggleBulletList={() => bodyEditorRef.current?.toggleBulletList()}
           onToggleBlockquote={() => bodyEditorRef.current?.toggleBlockquote()}
@@ -1253,9 +1328,7 @@ export const App = () => {
         />
       ) : (
         <div className="mx-auto w-full max-w-[820px] rounded-[var(--radius-panel)] border border-[var(--color-page-line)] bg-[var(--color-page)] px-8 py-10 shadow-[var(--shadow-page)]">
-          <p className="label-caps">
-            {t('paperView.loadingPaperScaffold')}
-          </p>
+          <p className="label-caps">{t('paperView.loadingPaperScaffold')}</p>
           <p className="mt-6 text-sm leading-7 text-[var(--color-page-muted)]">
             {t('paperView.loadingPaperDescription')}
           </p>
@@ -1278,7 +1351,10 @@ export const App = () => {
   };
 
   const renderSettingsView = () => (
-    <section className="flex h-full flex-col px-6 py-10 md:px-10" style={{ animation: 'viewFadeIn 300ms ease-out' }}>
+    <section
+      className="flex h-full flex-col px-6 py-10 md:px-10"
+      style={{ animation: 'viewFadeIn 300ms ease-out' }}
+    >
       <p className="label-caps text-[var(--color-accent-strong)]">
         {t('settings.settings')}
       </p>
@@ -1291,7 +1367,9 @@ export const App = () => {
           {t('settings.language')}
           <select
             className="mt-2 w-full rounded-[var(--radius-input)] border border-[var(--color-line)] bg-[var(--color-input)] px-4 py-3 text-sm text-[var(--color-ink-strong)] outline-none transition focus:border-[var(--color-accent-soft)]"
-            onChange={(event) => void handleLanguageChange(event.target.value as Language)}
+            onChange={(event) =>
+              void handleLanguageChange(event.target.value as Language)
+            }
             value={appLanguage}
           >
             {supportedLanguages.map((lang) => (
@@ -1401,19 +1479,18 @@ export const App = () => {
           expandedCourseIds={shellState.expandedCourseIds}
           loadingCourses={loadingCourses}
           loadingCourseIds={loadingCourseIds}
-          searchQuery={searchQuery}
-          searchStatus={searchStatus}
           selectedCourseId={shellState.selectedCourseId}
           selectedPaperId={shellState.selectedPaperId}
           onCollapseToggle={() => dispatch({ type: 'toggleLeftPanel' })}
           onCourseOpen={openCourse}
-          onCourseRename={(courseId, name) => void handleCourseRename(courseId, name)}
+          onCourseRename={(courseId, name) =>
+            void handleCourseRename(courseId, name)
+          }
           onCourseToggle={toggleCourse}
           onCourseModalOpen={openCourseModal}
           onHomeNavigate={() => dispatch({ type: 'navigateHome' })}
           onPaperModalOpen={openPaperModal}
           onPaperOpen={openPaper}
-          onSearchChange={setSearchQuery}
           onSettingsNavigate={() => dispatch({ type: 'navigateSettings' })}
         />
 
@@ -1436,7 +1513,9 @@ export const App = () => {
           }}
           onEditReference={openEditReferenceModal}
           onInsertCitation={handleInsertCitation}
-          onInspectorTabChange={(tab) => dispatch({ type: 'set-inspector-tab', tab })}
+          onInspectorTabChange={(tab) =>
+            dispatch({ type: 'set-inspector-tab', tab })
+          }
           onPaperIssueAutofix={handlePaperIssueAutofix}
           onPaperMetadataChange={handlePaperMetadataChange}
         />

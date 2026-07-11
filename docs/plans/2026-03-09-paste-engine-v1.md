@@ -1,5 +1,9 @@
 # Paste Engine v1 Implementation Plan
 
+**Lifecycle status:** Completed historical plan.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), [`docs/architecture.md`](../architecture.md), and the current paste-engine implementation/tests. Expected outputs below are historical instructions, not fresh verification evidence.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build a safe, paste-first body editor flow that sanitizes clipboard content, preserves useful APA-friendly structure, and asks for review before inserting risky payloads.

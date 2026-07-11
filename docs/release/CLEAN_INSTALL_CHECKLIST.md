@@ -2,10 +2,20 @@
 
 Use this checklist when validating a new build on a clean environment.
 
+**Document status:** Unexecuted reusable template.
+
+**Result handling:** Copy this file to a dated/versioned result file before checking boxes. Record the artifact path and environment; leaving this template in the repository does not prove a clean install ran.
+
+Safety rules:
+
+- Use a separate machine, a disposable macOS user/profile, or an explicitly isolated absolute `APA_SCHOLAR_USER_DATA_DIR`.
+- Never delete, rename, or reuse an existing normal APA Scholar `userData` directory to manufacture a clean state.
+- Remove only the disposable directory created for this run after APA Scholar has quit.
+
 ## Environment Setup
 
 - [ ] Testing on a machine or user profile that has never run APA Scholar
-- [ ] No `~/Library/Application Support/APA Scholar/` directory exists
+- [ ] The selected disposable profile has never run APA Scholar, or an isolated absolute test/diagnostic `userData` directory was created for this run
 - [ ] macOS version: ________
 - [ ] Architecture: arm64 / x64
 - [ ] Build artifact: DMG / ZIP
@@ -32,8 +42,8 @@ Use this checklist when validating a new build on a clean environment.
 
 - [ ] `~/Library/Application Support/APA Scholar/` directory was created
 - [ ] `apa-scholar.sqlite` file exists in that directory
-- [ ] `apa-scholar.sqlite-wal` file exists (WAL mode active)
-- [ ] `apa-scholar.sqlite-shm` file exists
+- [ ] SQLite reports WAL mode while the database is open
+- [ ] Any transient `-wal` / `-shm` files remain beside the isolated database (their absence after a clean quit is not a failure)
 
 ## Core Functionality
 

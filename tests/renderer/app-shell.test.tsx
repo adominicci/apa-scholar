@@ -66,31 +66,33 @@ const createPaperDraft = (
   options?: { includeAbstract?: boolean; course?: Course },
 ): PaperDraft => {
   const paper = createPaper(paperOverrides);
-  const course = options?.course ?? createCourse({ id: paper.courseId ?? 'course-1' });
-  const includeAbstract = options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
+  const course =
+    options?.course ?? createCourse({ id: paper.courseId ?? 'course-1' });
+  const includeAbstract =
+    options?.includeAbstract ?? paper.templateId === 'apa-student-abstract';
   const paperContent: PaperDraft['paperContent'] = {
-      abstractDoc: { content: [], type: 'doc' },
-      bodyDoc: createEmptyBodyEditorDocument(),
-      createdAt: paper.createdAt,
-      paperId: paper.id,
-      updatedAt: paper.updatedAt,
-    };
+    abstractDoc: { content: [], type: 'doc' },
+    bodyDoc: createEmptyBodyEditorDocument(),
+    createdAt: paper.createdAt,
+    paperId: paper.id,
+    updatedAt: paper.updatedAt,
+  };
   const paperMeta: PaperDraft['paperMeta'] = {
-      abstractEnabled: includeAbstract,
-      authorName: null,
-      authorNote: null,
-      courseCode: course.code ?? null,
-      courseName: course.name,
-      createdAt: paper.createdAt,
-      dueDate: null,
-      institution: course.institution ?? null,
-      paperId: paper.id,
-      professorName: course.professorName ?? null,
-      runningHead: null,
-      shortTitle: null,
-      title: paper.title,
-      updatedAt: paper.updatedAt,
-    };
+    abstractEnabled: includeAbstract,
+    authorName: null,
+    authorNote: null,
+    courseCode: course.code ?? null,
+    courseName: course.name,
+    createdAt: paper.createdAt,
+    dueDate: null,
+    institution: course.institution ?? null,
+    paperId: paper.id,
+    professorName: course.professorName ?? null,
+    runningHead: null,
+    shortTitle: null,
+    title: paper.title,
+    updatedAt: paper.updatedAt,
+  };
 
   return {
     ghostPages: buildGhostPageViewModels({
@@ -130,8 +132,10 @@ const createTestApi = (seed?: {
       runtime: 'electron',
     },
     courses: {
-      list: vi.fn(async () => courses),
-      create: vi.fn(async (input) => {
+      list: vi.fn<ApaScholarApi['courses']['list']>(() =>
+        Promise.resolve(courses),
+      ),
+      create: vi.fn<ApaScholarApi['courses']['create']>((input) => {
         const nextCourse = createCourse({
           code: input.code ?? null,
           defaultLanguage: input.defaultLanguage ?? 'en',
@@ -144,18 +148,25 @@ const createTestApi = (seed?: {
         });
 
         courses.unshift(nextCourse);
-        return nextCourse;
+        return Promise.resolve(nextCourse);
       }),
-      update: vi.fn(async (courseId: string, input: Record<string, unknown>) => {
-        const existing = courses.find((c) => c.id === courseId) ?? createCourse();
-        return { ...existing, ...input };
+      update: vi.fn<ApaScholarApi['courses']['update']>((courseId, input) => {
+        const existing =
+          courses.find((c) => c.id === courseId) ?? createCourse();
+        return Promise.resolve({ ...existing, ...input });
       }),
     },
     papers: {
-      listByCourse: vi.fn(async (courseId) => papersByCourse.get(courseId) ?? []),
-      listRecent: vi.fn(async () => []),
-      getById: vi.fn(async (paperId) => paperDraftsById.get(paperId) ?? null),
-      create: vi.fn(async (input) => {
+      listByCourse: vi.fn<ApaScholarApi['papers']['listByCourse']>((courseId) =>
+        Promise.resolve(papersByCourse.get(courseId) ?? []),
+      ),
+      listRecent: vi.fn<ApaScholarApi['papers']['listRecent']>(() =>
+        Promise.resolve([]),
+      ),
+      getById: vi.fn<ApaScholarApi['papers']['getById']>((paperId) =>
+        Promise.resolve(paperDraftsById.get(paperId) ?? null),
+      ),
+      create: vi.fn<ApaScholarApi['papers']['create']>((input) => {
         const nextPaper = createPaper({
           courseId: input.courseId,
           id: `paper-${(papersByCourse.get(input.courseId)?.length ?? 0) + 1}`,
@@ -164,7 +175,9 @@ const createTestApi = (seed?: {
           templateId: input.templateId ?? 'apa-student',
           title: input.title,
         });
-        const nextCourse = courses.find((course) => course.id === input.courseId);
+        const nextCourse = courses.find(
+          (course) => course.id === input.courseId,
+        );
 
         papersByCourse.set(input.courseId, [
           nextPaper,
@@ -172,101 +185,137 @@ const createTestApi = (seed?: {
         ]);
         paperDraftsById.set(
           nextPaper.id,
-          createPaperDraft(
-            nextPaper,
-            { course: nextCourse, includeAbstract: nextPaper.templateId === 'apa-student-abstract' },
-          ),
+          createPaperDraft(nextPaper, {
+            course: nextCourse,
+            includeAbstract: nextPaper.templateId === 'apa-student-abstract',
+          }),
         );
 
-        return nextPaper;
+        return Promise.resolve(nextPaper);
       }),
-      updateMetadata: vi.fn(async (paperId, input) => {
-        const currentDraft = paperDraftsById.get(paperId);
+      updateMetadata: vi.fn<ApaScholarApi['papers']['updateMetadata']>(
+        (paperId, input) => {
+          const currentDraft = paperDraftsById.get(paperId);
 
-        if (!currentDraft) {
-          throw new Error(`Missing paper draft "${paperId}" in test API.`);
-        }
+          if (!currentDraft) {
+            throw new Error(`Missing paper draft "${paperId}" in test API.`);
+          }
 
-        const updatedDraft = applyPaperMetadataUpdateToDraft(currentDraft, input);
-        const courseId = updatedDraft.paper.courseId;
-
-        paperDraftsById.set(paperId, updatedDraft);
-
-        if (courseId) {
-          papersByCourse.set(
-            courseId,
-            (papersByCourse.get(courseId) ?? []).map((paper) =>
-              paper.id === paperId ? updatedDraft.paper : paper,
-            ),
+          const updatedDraft = applyPaperMetadataUpdateToDraft(
+            currentDraft,
+            input,
           );
-        }
+          const courseId = updatedDraft.paper.courseId;
 
-        return updatedDraft;
-      }),
-      updateBodyContent: vi.fn(async (paperId, bodyDoc) => {
-        const currentDraft = paperDraftsById.get(paperId);
+          paperDraftsById.set(paperId, updatedDraft);
 
-        if (!currentDraft) {
-          throw new Error(`Missing paper draft "${paperId}" in test API.`);
-        }
+          if (courseId) {
+            papersByCourse.set(
+              courseId,
+              (papersByCourse.get(courseId) ?? []).map((paper) =>
+                paper.id === paperId ? updatedDraft.paper : paper,
+              ),
+            );
+          }
 
-        const updatedDraft = applyOptimisticPaperBodyUpdate(currentDraft, bodyDoc);
-        const courseId = updatedDraft.paper.courseId;
+          return Promise.resolve(updatedDraft);
+        },
+      ),
+      updateBodyContent: vi.fn<ApaScholarApi['papers']['updateBodyContent']>(
+        (paperId, bodyDoc) => {
+          const currentDraft = paperDraftsById.get(paperId);
 
-        paperDraftsById.set(paperId, updatedDraft);
+          if (!currentDraft) {
+            throw new Error(`Missing paper draft "${paperId}" in test API.`);
+          }
 
-        if (courseId) {
-          papersByCourse.set(
-            courseId,
-            (papersByCourse.get(courseId) ?? []).map((paper) =>
-              paper.id === paperId ? updatedDraft.paper : paper,
-            ),
+          const updatedDraft = applyOptimisticPaperBodyUpdate(
+            currentDraft,
+            bodyDoc,
           );
-        }
+          const courseId = updatedDraft.paper.courseId;
 
-        return updatedDraft;
-      }),
+          paperDraftsById.set(paperId, updatedDraft);
+
+          if (courseId) {
+            papersByCourse.set(
+              courseId,
+              (papersByCourse.get(courseId) ?? []).map((paper) =>
+                paper.id === paperId ? updatedDraft.paper : paper,
+              ),
+            );
+          }
+
+          return Promise.resolve(updatedDraft);
+        },
+      ),
     },
     references: {
-      listByPaper: vi.fn(async () => []),
-      create: vi.fn(async () => ({
-        id: 'ref-1',
-        paperId: 'paper-1',
-        referenceType: 'book' as const,
-        fields: { authors: [{ family: 'Test', given: 'Author' }], year: '2020', title: 'Test', publisher: 'Test' },
-        sortKey: 'test|2020|test',
-        createdAt: '2026-03-07T14:00:00.000Z',
-        updatedAt: '2026-03-07T14:00:00.000Z',
-      })),
-      getById: vi.fn(async () => null),
-      update: vi.fn(async () => ({
-        id: 'ref-1',
-        paperId: 'paper-1',
-        referenceType: 'book' as const,
-        fields: { authors: [{ family: 'Test', given: 'Author' }], year: '2020', title: 'Test', publisher: 'Test' },
-        sortKey: 'test|2020|test',
-        createdAt: '2026-03-07T14:00:00.000Z',
-        updatedAt: '2026-03-07T14:00:00.000Z',
-      })),
-      delete: vi.fn(async () => undefined),
+      listByPaper: vi.fn<ApaScholarApi['references']['listByPaper']>(() =>
+        Promise.resolve([]),
+      ),
+      create: vi.fn<ApaScholarApi['references']['create']>(() =>
+        Promise.resolve({
+          id: 'ref-1',
+          paperId: 'paper-1',
+          referenceType: 'book',
+          fields: {
+            authors: [{ family: 'Test', given: 'Author' }],
+            publisher: 'Test',
+            title: 'Test',
+            year: '2020',
+          },
+          sortKey: 'test|2020|test',
+          createdAt: '2026-03-07T14:00:00.000Z',
+          updatedAt: '2026-03-07T14:00:00.000Z',
+        }),
+      ),
+      getById: vi.fn<ApaScholarApi['references']['getById']>(() =>
+        Promise.resolve(null),
+      ),
+      update: vi.fn<ApaScholarApi['references']['update']>(() =>
+        Promise.resolve({
+          id: 'ref-1',
+          paperId: 'paper-1',
+          referenceType: 'book',
+          fields: {
+            authors: [{ family: 'Test', given: 'Author' }],
+            publisher: 'Test',
+            title: 'Test',
+            year: '2020',
+          },
+          sortKey: 'test|2020|test',
+          createdAt: '2026-03-07T14:00:00.000Z',
+          updatedAt: '2026-03-07T14:00:00.000Z',
+        }),
+      ),
+      delete: vi.fn<ApaScholarApi['references']['delete']>(() =>
+        Promise.resolve(),
+      ),
     },
     search: {
-      query: vi.fn(async () => ({
-        courses: [],
-        papers: [],
-        status: 'placeholder' as const,
-      })),
+      query: vi.fn<ApaScholarApi['search']['query']>(() =>
+        Promise.resolve({
+          courses: [],
+          papers: [],
+          status: 'placeholder',
+        }),
+      ),
     },
     settings: {
-      get: vi.fn(async () => null),
-      save: vi.fn(async (input: { language: 'en' | 'es'; debug?: boolean }) => ({
-        language: input.language,
-        debug: input.debug ?? false,
-        updatedAt: '2026-04-03T00:00:00.000Z',
-      })),
+      get: vi.fn<ApaScholarApi['settings']['get']>(() => Promise.resolve(null)),
+      save: vi.fn<ApaScholarApi['settings']['save']>((input) =>
+        Promise.resolve({
+          language: input.language,
+          debug: input.debug ?? false,
+          updatedAt: '2026-04-03T00:00:00.000Z',
+        }),
+      ),
     },
     export: {
-      pdf: vi.fn(async () => ({ status: 'cancelled' as const })),
+      pdf: vi.fn<ApaScholarApi['export']['pdf']>(() =>
+        Promise.resolve({ status: 'cancelled' }),
+      ),
     },
   };
 
@@ -297,13 +346,17 @@ describe('App', () => {
 
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: 'APA Scholar' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { name: 'APA Scholar' }),
+    ).toBeVisible();
     expect(screen.getByTestId('workspace-shell')).toHaveAttribute(
       'data-theme',
       'dark',
     );
     expect(
-      screen.getByRole('heading', { name: 'Your academic workspace starts here' }),
+      screen.getByRole('heading', {
+        name: 'Your academic workspace starts here',
+      }),
     ).toBeVisible();
     expect(
       screen.getByRole('button', { name: 'Create your first course' }),
@@ -370,8 +423,9 @@ describe('App', () => {
       await screen.findByRole('button', { name: 'Create your first course' }),
     );
 
-    const courseNameInput = screen.getByLabelText('Course name') as HTMLInputElement;
-    const professorInput = screen.getByLabelText('Professor') as HTMLInputElement;
+    const courseNameInput =
+      screen.getByLabelText<HTMLInputElement>('Course name');
+    const professorInput = screen.getByLabelText<HTMLInputElement>('Professor');
     courseNameInput.value = 'Advanced Composition';
     professorInput.value = 'Dr. Santiago';
     fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
@@ -401,7 +455,9 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
 
     expect(
-      await screen.findByText('The desktop bridge is unavailable right now. Restart the app.'),
+      await screen.findByText(
+        'The desktop bridge is unavailable right now. Restart the app.',
+      ),
     ).toBeVisible();
   });
 
@@ -421,9 +477,13 @@ describe('App', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
 
-    expect(await screen.findByRole('button', { name: 'Creating course' })).toBeDisabled();
+    expect(
+      await screen.findByRole('button', { name: 'Creating course' }),
+    ).toBeDisabled();
 
-    const form = screen.getByRole('button', { name: 'Creating course' }).closest('form');
+    const form = screen
+      .getByRole('button', { name: 'Creating course' })
+      .closest('form');
 
     if (!form) {
       throw new Error('Expected the course modal form to be rendered.');
@@ -453,9 +513,13 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
-    const newPaperButton = screen.getAllByRole('button', { name: 'New paper' })[0];
+    const newPaperButton = screen.getAllByRole('button', {
+      name: 'New paper',
+    })[0];
 
     if (!newPaperButton) {
       throw new Error('Expected a New paper button to be available.');
@@ -469,11 +533,17 @@ describe('App', () => {
     expect(
       await screen.findByRole('heading', { level: 2, name: 'Capstone Draft' }),
     ).toBeVisible();
-    expect(screen.getByRole('textbox', { name: 'Paper body draft' })).toBeVisible();
+    expect(
+      screen.getByRole('textbox', { name: 'Paper body draft' }),
+    ).toBeVisible();
 
-    const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
+    const inspector = screen.getByRole('complementary', {
+      name: 'Inspector panel',
+    });
     expect(within(inspector).getAllByText('Paper details')[0]).toBeVisible();
-    expect(within(inspector).getByLabelText('Paper type')).toHaveValue('student');
+    expect(within(inspector).getByLabelText('Paper type')).toHaveValue(
+      'student',
+    );
   });
 
   it('creates an abstract template paper and renders the abstract page between title and body', async () => {
@@ -490,7 +560,9 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
     fireEvent.change(screen.getByLabelText('Paper title'), {
@@ -524,14 +596,21 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     expect(
-      await screen.findByRole('heading', { level: 2, name: 'Literature Review' }),
+      await screen.findByRole('heading', {
+        level: 2,
+        name: 'Literature Review',
+      }),
     ).toBeVisible();
     expect(
       await screen.findByRole('textbox', { name: 'Paper body draft' }),
@@ -552,21 +631,25 @@ describe('App', () => {
     const originalGetById = api.papers.getById;
     let getByIdCalls = 0;
 
-    api.papers.getById = vi.fn(async (paperId) => {
-      getByIdCalls += 1;
+    api.papers.getById = vi.fn<ApaScholarApi['papers']['getById']>(
+      (paperId) => {
+        getByIdCalls += 1;
 
-      if (getByIdCalls === 1) {
-        return null;
-      }
+        if (getByIdCalls === 1) {
+          return Promise.resolve(null);
+        }
 
-      return originalGetById(paperId);
-    });
+        return originalGetById(paperId);
+      },
+    );
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
     fireEvent.change(screen.getByLabelText('Paper title'), {
@@ -600,10 +683,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -612,8 +699,12 @@ describe('App', () => {
       target: { value: 'Faculty Draft' },
     });
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Faculty Draft' })).toBeVisible();
-    expect(screen.getAllByRole('heading', { name: 'Faculty Draft' })).toHaveLength(2);
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Faculty Draft' }),
+    ).toBeVisible();
+    expect(
+      screen.getAllByRole('heading', { name: 'Faculty Draft' }),
+    ).toHaveLength(2);
     expect(api.papers.updateMetadata).not.toHaveBeenCalled();
 
     await act(async () => {
@@ -629,7 +720,9 @@ describe('App', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 2, name: 'Faculty Draft' })).toBeVisible();
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Faculty Draft' }),
+      ).toBeVisible();
       expect(api.papers.updateMetadata).toHaveBeenCalledTimes(1);
       expect(api.papers.updateMetadata).toHaveBeenCalledWith('paper-1', {
         title: 'Faculty Draft',
@@ -651,27 +744,41 @@ describe('App', () => {
       },
     });
     const firstSave = createDeferred<PaperDraft>();
+    let updateMetadataCalls = 0;
 
-    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
-      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+    api.papers.updateMetadata = vi.fn<
+      ApaScholarApi['papers']['updateMetadata']
+    >((paperId, input) => {
+      updateMetadataCalls += 1;
+
+      if (updateMetadataCalls === 1) {
         return firstSave.promise;
       }
 
-      const currentDraft = input.title === 'Title B'
-        ? applyPaperMetadataUpdateToDraft(initialDraft, input)
-        : applyPaperMetadataUpdateToDraft(initialDraft, { title: 'Unexpected stale payload' });
+      const currentDraft =
+        input.title === 'Title B'
+          ? applyPaperMetadataUpdateToDraft(initialDraft, input)
+          : applyPaperMetadataUpdateToDraft(initialDraft, {
+              title: 'Unexpected stale payload',
+            });
 
-      return currentDraft.paper.id === paperId ? currentDraft : initialDraft;
+      return Promise.resolve(
+        currentDraft.paper.id === paperId ? currentDraft : initialDraft,
+      );
     });
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -734,10 +841,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -769,23 +880,34 @@ describe('App', () => {
       },
     });
     const firstSave = createDeferred<PaperDraft>();
+    let updateMetadataCalls = 0;
 
-    api.papers.updateMetadata = vi.fn(async (paperId, input) => {
-      if ((api.papers.updateMetadata as ReturnType<typeof vi.fn>).mock.calls.length === 1) {
+    api.papers.updateMetadata = vi.fn<
+      ApaScholarApi['papers']['updateMetadata']
+    >((paperId, input) => {
+      updateMetadataCalls += 1;
+
+      if (updateMetadataCalls === 1) {
         return firstSave.promise;
       }
 
-      return applyPaperMetadataUpdateToDraft(initialDraft, input);
+      return Promise.resolve(
+        applyPaperMetadataUpdateToDraft(initialDraft, input),
+      );
     });
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -830,21 +952,27 @@ describe('App', () => {
       },
     });
 
-    api.papers.updateMetadata = vi.fn(async () => {
+    api.papers.updateMetadata = vi.fn<
+      ApaScholarApi['papers']['updateMetadata']
+    >(() => {
       const error = new Error('Paper title is required.');
 
       error.name = 'ZodError';
-      throw error;
+      return Promise.reject(error);
     });
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -886,10 +1014,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -922,18 +1054,28 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
 
-    const inspector = screen.getByRole('complementary', { name: 'Inspector panel' });
-    expect(within(inspector).getByRole('button', { name: 'Issues' })).toBeVisible();
+    const inspector = screen.getByRole('complementary', {
+      name: 'Inspector panel',
+    });
+    expect(
+      within(inspector).getByRole('button', { name: 'Issues' }),
+    ).toBeVisible();
     expect(within(inspector).getByText('High priority')).toBeVisible();
-    expect(within(inspector).getByText('Author name is required.')).toBeVisible();
+    expect(
+      within(inspector).getByText('Author name is required.'),
+    ).toBeVisible();
 
     fireEvent.change(screen.getByLabelText('Paper type'), {
       target: { value: 'professional' },
@@ -947,7 +1089,9 @@ describe('App', () => {
 
     expect(within(inspector).getByText('Medium priority')).toBeVisible();
     expect(
-      within(inspector).getByText('Running head is not used for student papers.'),
+      within(inspector).getByText(
+        'Running head is not used for student papers.',
+      ),
     ).toBeVisible();
   });
 
@@ -968,10 +1112,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -1019,18 +1167,22 @@ describe('App', () => {
       },
     });
 
-    api.papers.updateMetadata = vi.fn(async () => {
-      throw new Error('Transient failure');
-    });
+    api.papers.updateMetadata = vi.fn<
+      ApaScholarApi['papers']['updateMetadata']
+    >(() => Promise.reject(new Error('Transient failure')));
     window.apaScholar = api;
 
     const view = render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -1079,18 +1231,22 @@ describe('App', () => {
       },
     });
 
-    api.papers.updateMetadata = vi.fn(async () => {
-      throw new Error('Persistent outage');
-    });
+    api.papers.updateMetadata = vi.fn<
+      ApaScholarApi['papers']['updateMetadata']
+    >(() => Promise.reject(new Error('Persistent outage')));
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -1130,10 +1286,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -1146,7 +1306,9 @@ describe('App', () => {
     expect(screen.getByLabelText('Running head')).toBeVisible();
     expect(screen.queryByLabelText('Course name')).not.toBeInTheDocument();
     expect(screen.getByText('Running head is required.')).toBeVisible();
-    expect(screen.queryByText('Course name is required.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Course name is required.'),
+    ).not.toBeInTheDocument();
     expect(screen.getAllByText('Abstract')[0]).toBeVisible();
     expect(screen.getAllByText('Running head: Short title')[0]).toBeVisible();
   });
@@ -1167,10 +1329,14 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /open paper literature review/i }),
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
     );
 
     await screen.findByRole('heading', { level: 2, name: 'Literature Review' });
@@ -1188,7 +1354,9 @@ describe('App', () => {
       target: { value: 'student' },
     });
 
-    expect(screen.getByLabelText('Course name')).toHaveValue('Advanced Composition');
+    expect(screen.getByLabelText('Course name')).toHaveValue(
+      'Advanced Composition',
+    );
 
     fireEvent.change(screen.getByLabelText('Paper type'), {
       target: { value: 'professional' },
@@ -1212,7 +1380,9 @@ describe('App', () => {
       expect(api.search.query).toHaveBeenCalledWith('draft');
     });
     expect(
-      screen.getByText('Full-text search across courses and papers is coming soon.'),
+      screen.getByText(
+        'Full-text search across courses and papers is coming soon.',
+      ),
     ).toBeVisible();
   });
 
@@ -1230,7 +1400,9 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     expect(await screen.findByText('Loading papers')).toBeVisible();
 
@@ -1238,7 +1410,9 @@ describe('App', () => {
     firstLoad.resolve([createPaper()]);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
 
     await waitFor(() => {
@@ -1269,23 +1443,27 @@ describe('App', () => {
     fireEvent.change(search, { target: { value: 'draft' } });
 
     expect(
-      await screen.findByText('Full-text search across courses and papers is coming soon.'),
+      await screen.findByText(
+        'Full-text search across courses and papers is coming soon.',
+      ),
     ).toBeVisible();
 
     fireEvent.change(search, { target: { value: 'outline' } });
 
     await waitFor(() => {
       expect(
-        screen.queryByText('Full-text search across courses and papers is coming soon.'),
+        screen.queryByText(
+          'Full-text search across courses and papers is coming soon.',
+        ),
       ).not.toBeInTheDocument();
     });
   });
 
   it('shows a workspace error when the initial course load fails', async () => {
     const api = createTestApi();
-    api.courses.list = vi.fn(async () => {
-      throw new Error('courses unavailable');
-    });
+    api.courses.list = vi.fn<ApaScholarApi['courses']['list']>(() =>
+      Promise.reject(new Error('courses unavailable')),
+    );
     window.apaScholar = api;
 
     render(<App />);
@@ -1294,18 +1472,22 @@ describe('App', () => {
       await screen.findAllByText('Unable to load your courses right now.'),
     ).toHaveLength(2);
     expect(
-      screen.queryByText('No courses yet. Create one to start organizing APA papers by class.'),
+      screen.queryByText(
+        'No courses yet. Create one to start organizing APA papers by class.',
+      ),
     ).not.toBeInTheDocument();
   });
 
-  it('gives the top-bar icon buttons accessible names', async () => {
+  it('exposes Settings as the remaining top-bar icon action', async () => {
     window.apaScholar = createTestApi();
 
     render(<App />);
 
+    await screen.findByRole('heading', { name: 'APA Scholar' });
+
     expect(
-      await screen.findByRole('button', { name: 'Notifications' }),
-    ).toBeVisible();
+      screen.queryByRole('button', { name: 'Notifications' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeVisible();
   });
 
@@ -1318,20 +1500,51 @@ describe('App', () => {
 
     await screen.findByRole('heading', { name: 'APA Scholar' });
 
-    expect(screen.getAllByRole('button', { name: 'New course' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: 'New paper' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'New course' })).toHaveLength(
+      1,
+    );
+    expect(screen.getAllByRole('button', { name: 'New paper' })).toHaveLength(
+      1,
+    );
   });
 
-  it('disables the reference action until the references workflow exists', async () => {
+  it('makes the references workflow available from the paper inspector', async () => {
+    const paper = createPaper();
     window.apaScholar = createTestApi({
       courses: [createCourse()],
+      paperDraftsById: {
+        [paper.id]: createPaperDraft(paper),
+      },
+      papersByCourse: {
+        'course-1': [paper],
+      },
     });
 
     render(<App />);
 
-    const button = await screen.findByRole('button', { name: 'Add reference' });
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: /open paper literature review/i,
+      }),
+    );
 
-    expect(button).toBeDisabled();
+    const inspector = await screen.findByRole('complementary', {
+      name: 'Inspector panel',
+    });
+    fireEvent.click(
+      within(inspector).getByRole('button', { name: 'References' }),
+    );
+
+    const button = within(inspector).getByRole('button', {
+      name: 'Add reference',
+    });
+
+    expect(button).toBeEnabled();
   });
 
   it('clears failed paper loading state so the user can retry', async () => {
@@ -1347,7 +1560,9 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
 
     expect(await screen.findByText('Loading papers')).toBeVisible();
@@ -1357,7 +1572,9 @@ describe('App', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Dashboard' }));
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
 
     await waitFor(() => {
@@ -1370,9 +1587,9 @@ describe('App', () => {
 
   it('keeps the course modal open and shows an error when course creation fails', async () => {
     const api = createTestApi();
-    api.courses.create = vi.fn(async () => {
-      throw new Error('create failed');
-    });
+    api.courses.create = vi.fn<ApaScholarApi['courses']['create']>(() =>
+      Promise.reject(new Error('create failed')),
+    );
     window.apaScholar = api;
 
     render(<App />);
@@ -1386,24 +1603,30 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create course' }));
 
     expect(
-      await screen.findByText('Unable to create the course right now. Try again.'),
+      await screen.findByText(
+        'Unable to create the course right now. Try again.',
+      ),
     ).toBeVisible();
-    expect(screen.getByLabelText('Course name')).toHaveValue('Advanced Composition');
+    expect(screen.getByLabelText('Course name')).toHaveValue(
+      'Advanced Composition',
+    );
   });
 
   it('keeps the paper modal open and shows an error when paper creation fails', async () => {
     const api = createTestApi({
       courses: [createCourse()],
     });
-    api.papers.create = vi.fn(async () => {
-      throw new Error('create failed');
-    });
+    api.papers.create = vi.fn<ApaScholarApi['papers']['create']>(() =>
+      Promise.reject(new Error('create failed')),
+    );
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
     fireEvent.change(screen.getByLabelText('Paper title'), {
@@ -1412,7 +1635,9 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
     expect(
-      await screen.findByText('Unable to create the paper right now. Try again.'),
+      await screen.findByText(
+        'Unable to create the paper right now. Try again.',
+      ),
     ).toBeVisible();
     expect(screen.getByLabelText('Paper title')).toHaveValue('Capstone Draft');
   });
@@ -1432,7 +1657,9 @@ describe('App', () => {
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
     fireEvent.change(screen.getByLabelText('Paper title'), {
@@ -1440,9 +1667,13 @@ describe('App', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Create paper' }));
 
-    expect(await screen.findByRole('button', { name: 'Creating paper' })).toBeDisabled();
+    expect(
+      await screen.findByRole('button', { name: 'Creating paper' }),
+    ).toBeDisabled();
 
-    const form = screen.getByRole('button', { name: 'Creating paper' }).closest('form');
+    const form = screen
+      .getByRole('button', { name: 'Creating paper' })
+      .closest('form');
 
     if (!form) {
       throw new Error('Expected the paper modal form to be rendered.');
@@ -1453,7 +1684,11 @@ describe('App', () => {
     expect(api.papers.create).toHaveBeenCalledTimes(1);
 
     createPaperDeferred.resolve(
-      createPaper({ courseId: course.id, id: 'paper-2', title: 'Capstone Draft' }),
+      createPaper({
+        courseId: course.id,
+        id: 'paper-2',
+        title: 'Capstone Draft',
+      }),
     );
 
     expect(
@@ -1465,13 +1700,17 @@ describe('App', () => {
     const api = createTestApi({
       courses: [createCourse()],
     });
-    api.papers.getById = vi.fn(async () => null);
+    api.papers.getById = vi.fn<ApaScholarApi['papers']['getById']>(() =>
+      Promise.resolve(null),
+    );
     window.apaScholar = api;
 
     render(<App />);
 
     fireEvent.click(
-      await screen.findByRole('button', { name: /open course research methods/i }),
+      await screen.findByRole('button', {
+        name: /open course research methods/i,
+      }),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'New paper' })[0]!);
     fireEvent.change(screen.getByLabelText('Paper title'), {

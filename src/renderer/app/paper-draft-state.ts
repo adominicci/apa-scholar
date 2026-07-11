@@ -1,7 +1,5 @@
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
-import {
-  applyPaperMetadataUpdateToDraft,
-} from '@domain/papers/paper-metadata';
+import { applyPaperMetadataUpdateToDraft } from '@domain/papers/paper-metadata';
 import {
   evaluatePaperIssues,
   type PaperIssue,
@@ -21,7 +19,10 @@ export const applyOptimisticPaperMetadataUpdate = (
 ): PaperDraft => {
   const updated = applyPaperMetadataUpdateToDraft(draft, input);
   if (!references) return updated;
-  return { ...updated, ghostPages: buildGhostPageViewModels({ ...updated, references }) };
+  return {
+    ...updated,
+    ghostPages: buildGhostPageViewModels({ ...updated, references }),
+  };
 };
 
 export const applyOptimisticPaperBodyUpdate = (
@@ -55,7 +56,10 @@ export const getPaperInspectorIssues = (
   draft: PaperDraft | null,
   supplementaryIssues: PaperIssue[] = [],
   references: ReferenceEntry[] = [],
-): PaperIssue[] => (draft ? [...evaluatePaperIssues(draft, references), ...supplementaryIssues] : supplementaryIssues);
+): PaperIssue[] =>
+  draft
+    ? [...evaluatePaperIssues(draft, references), ...supplementaryIssues]
+    : supplementaryIssues;
 
 export const upsertPaperInCourseCollections = (
   coursePapers: Record<string, Paper[]>,
@@ -67,8 +71,8 @@ export const upsertPaperInCourseCollections = (
 
   return {
     ...coursePapers,
-    [paper.courseId]: (coursePapers[paper.courseId] ?? []).map((currentPaper) =>
-      currentPaper.id === paper.id ? paper : currentPaper,
+    [paper.courseId]: (coursePapers[paper.courseId] ?? []).map(
+      (currentPaper) => (currentPaper.id === paper.id ? paper : currentPaper),
     ),
   };
 };

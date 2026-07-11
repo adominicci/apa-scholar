@@ -69,4 +69,28 @@ describe('buildPaperDraft', () => {
       'references-page',
     ]);
   });
+
+  it('derives Spanish student guidance from the persisted paper language', () => {
+    const draft = buildPaperDraft({
+      paper: createPaper({ language: 'es', templateId: 'apa-student' }),
+      paperContent: createPaperContent(),
+      paperMeta: createPaperMeta({
+        abstractEnabled: false,
+        authorName: null,
+        courseName: null,
+        dueDate: null,
+        institution: null,
+        professorName: null,
+      }),
+    });
+
+    expect(draft.ghostPages[0]?.blocks.map((block) => block.text)).toEqual([
+      'Capstone Draft',
+      'Nombre del Estudiante',
+      'Institución',
+      'Nombre del Curso',
+      'Nombre del profesor',
+      'Fecha de entrega',
+    ]);
+  });
 });

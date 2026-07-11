@@ -7,7 +7,9 @@ import {
 
 describe('body-editor-document', () => {
   it('creates a valid empty body editor document with a starter paragraph', () => {
-    expect(createEmptyBodyEditorDocument()).toEqual(createEmptyBodyEditorFixture());
+    expect(createEmptyBodyEditorDocument()).toEqual(
+      createEmptyBodyEditorFixture(),
+    );
     expect(() =>
       bodyEditorDocumentSchema.parse(createEmptyBodyEditorDocument()),
     ).not.toThrow();

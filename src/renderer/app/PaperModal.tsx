@@ -4,7 +4,10 @@ import {
   resolveTemplateDefinitionId,
 } from '@domain/papers/template-definitions';
 import type { TemplateId } from '@domain/shared/contracts';
-import type { Course, CreatePaperInput } from '@domain/shared/persistence-models';
+import type {
+  Course,
+  CreatePaperInput,
+} from '@domain/shared/persistence-models';
 
 interface PaperModalProps {
   isOpen: boolean;
@@ -12,7 +15,9 @@ interface PaperModalProps {
   courses: Course[];
   errorMessage?: string | null;
   isSubmitting?: boolean;
-  onFormChange: (updater: (current: CreatePaperInput) => CreatePaperInput) => void;
+  onFormChange: (
+    updater: (current: CreatePaperInput) => CreatePaperInput,
+  ) => void;
   onSubmit: (form: HTMLFormElement) => void;
   onClose: () => void;
 }
@@ -50,9 +55,7 @@ export const PaperModal = ({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="label-caps">
-              {t('paperModal.newPaper')}
-            </p>
+            <p className="label-caps">{t('paperModal.newPaper')}</p>
             <h2 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
               {t('paperModal.heading')}
             </h2>
@@ -99,7 +102,8 @@ export const PaperModal = ({
                     ...current,
                     courseId: event.target.value,
                     templateId: resolveTemplateDefinitionId(
-                      selectedCourse?.defaultPaperTemplate ?? current.templateId,
+                      selectedCourse?.defaultPaperTemplate ??
+                        current.templateId,
                     ),
                   };
                 })
@@ -168,7 +172,9 @@ export const PaperModal = ({
             }}
             type="button"
           >
-            {isSubmitting ? t('paperModal.creatingPaper') : t('paperModal.createPaper')}
+            {isSubmitting
+              ? t('paperModal.creatingPaper')
+              : t('paperModal.createPaper')}
           </button>
         </div>
       </form>

@@ -44,7 +44,11 @@ describe('translation key parity', () => {
       for (const [key, value] of Object.entries(obj)) {
         const path = prefix ? `${prefix}.${key}` : key;
 
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
           check(value as Record<string, unknown>, path);
         } else if (value === '') {
           empties.push(path);
@@ -55,6 +59,11 @@ describe('translation key parity', () => {
     check(es);
     expect(empties).toEqual([]);
   });
+
+  it('describes the family or organization name requirement in both languages', () => {
+    expect(en.validation.authorIncomplete).toContain('organization name');
+    expect(es.validation.authorIncomplete).toContain('nombre de organización');
+  });
 });
 
 describe('ghost page strings parity', () => {
@@ -62,7 +71,9 @@ describe('ghost page strings parity', () => {
   const esStrings = getGhostPageStrings('es');
 
   it('EN and ES have the same keys', () => {
-    expect(Object.keys(esStrings).sort()).toEqual(Object.keys(enStrings).sort());
+    expect(Object.keys(esStrings).sort()).toEqual(
+      Object.keys(enStrings).sort(),
+    );
   });
 
   it('no ES ghost page string is empty', () => {

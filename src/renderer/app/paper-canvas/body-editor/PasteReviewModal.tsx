@@ -53,7 +53,8 @@ export const PasteReviewModal = ({
 
       const activeElement = document.activeElement;
       const dialogElement = dialogRef.current;
-      const focusOutsideDialog = !activeElement || !dialogElement?.contains(activeElement);
+      const focusOutsideDialog =
+        !activeElement || !dialogElement?.contains(activeElement);
 
       if (focusOutsideDialog) {
         event.preventDefault();
@@ -95,9 +96,7 @@ export const PasteReviewModal = ({
       <div className="glass-panel w-full max-w-2xl rounded-[var(--radius-panel)] border border-[var(--color-line)] bg-[var(--color-panel)] p-6 shadow-[var(--shadow-shell)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="label-caps">
-              Paste review
-            </p>
+            <p className="label-caps">Paste review</p>
             <h2
               className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]"
               id="paste-review-title"
@@ -127,9 +126,7 @@ export const PasteReviewModal = ({
         </div>
 
         <div className="mt-6 rounded-[var(--radius-card)] border border-[var(--color-page-line)] bg-[var(--color-page-muted-surface)] px-5 py-4">
-          <p className="label-caps">
-            Clean preview
-          </p>
+          <p className="label-caps">Clean preview</p>
           <pre className="mt-3 whitespace-pre-wrap font-[var(--font-ui)] text-sm leading-7 text-[var(--color-page-ink)]">
             {previewText}
           </pre>

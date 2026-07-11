@@ -6,6 +6,8 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 
 Includes:
 
-- [x] Epic 01: References and Citations
-- [x] Epic 02: PDF Export and Print Renderer
-- [x] Epic 03: Bilingual UI Completion and Polish
+- [ ] Epic 01: References and Citations
+- [ ] Epic 02: PDF Export and Print Renderer
+- [ ] Epic 03: Bilingual UI Completion and Polish
+
+Current state: partially implemented and reopened on 2026-07-10. All three epics retain directly evidenced acceptance gaps recorded in [`docs/project-status.md`](../../project-status.md); completed implementation history remains in their task files.

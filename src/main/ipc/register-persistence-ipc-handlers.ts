@@ -11,9 +11,11 @@ export const registerPersistenceIpcHandlers = (
   },
   handlers: Record<PersistenceIpcChannel, PersistenceHandler>,
 ): void => {
-  (Object.entries(handlers) as Array<
-    [PersistenceIpcChannel, PersistenceHandler]
-  >).forEach(([channel, handler]) => {
+  (
+    Object.entries(handlers) as Array<
+      [PersistenceIpcChannel, PersistenceHandler]
+    >
+  ).forEach(([channel, handler]) => {
     ipcMainLike.handle(channel, (_event, payload) => handler(payload));
   });
 };

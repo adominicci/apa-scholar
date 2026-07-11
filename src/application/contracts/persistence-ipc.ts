@@ -83,7 +83,9 @@ export const searchQueryPayloadSchema = z.object({
 export type ListPapersByCoursePayload = z.infer<
   typeof listPapersByCoursePayloadSchema
 >;
-export type ListRecentPapersPayload = z.infer<typeof listRecentPapersPayloadSchema>;
+export type ListRecentPapersPayload = z.infer<
+  typeof listRecentPapersPayloadSchema
+>;
 
 export type GetPaperByIdPayload = z.infer<typeof getPaperByIdPayloadSchema>;
 export type UpdatePaperMetadataPayload = z.infer<
@@ -93,10 +95,18 @@ export type UpdatePaperBodyContentPayload = z.infer<
   typeof updatePaperBodyContentPayloadSchema
 >;
 
-export type ListReferencesByPaperPayload = z.infer<typeof listReferencesByPaperPayloadSchema>;
-export type GetReferenceByIdPayload = z.infer<typeof getReferenceByIdPayloadSchema>;
-export type UpdateReferencePayload = z.infer<typeof updateReferencePayloadSchema>;
-export type DeleteReferencePayload = z.infer<typeof deleteReferencePayloadSchema>;
+export type ListReferencesByPaperPayload = z.infer<
+  typeof listReferencesByPaperPayloadSchema
+>;
+export type GetReferenceByIdPayload = z.infer<
+  typeof getReferenceByIdPayloadSchema
+>;
+export type UpdateReferencePayload = z.infer<
+  typeof updateReferencePayloadSchema
+>;
+export type DeleteReferencePayload = z.infer<
+  typeof deleteReferencePayloadSchema
+>;
 export type SearchQueryPayload = z.infer<typeof searchQueryPayloadSchema>;
 
 export {

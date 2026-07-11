@@ -8,4 +8,6 @@ Tracking rule: all tasks in this epic must be marked `Done` before the epic is c
 
 Epic status:
 
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10. Language persistence and resource files exist, but complete externalization, core bilingual acceptance, and persisted/exported paper formatting remain incomplete. See `docs/project-status.md`.

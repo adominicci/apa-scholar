@@ -29,7 +29,9 @@ describe('template definitions', () => {
     expect(definition.paperType).toBe('student');
     expect(seed.paperMeta.title).toBe('Capstone Draft');
     expect(seed.paperMeta.abstractEnabled).toBe(true);
-    expect(seed.paperContent.abstractDoc).toEqual(createEmptyRichTextDocument());
+    expect(seed.paperContent.abstractDoc).toEqual(
+      createEmptyRichTextDocument(),
+    );
     expect(seed.paperContent.bodyDoc).toEqual(createEmptyRichTextDocument());
   });
 

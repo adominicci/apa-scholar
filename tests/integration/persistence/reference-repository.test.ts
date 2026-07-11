@@ -42,7 +42,9 @@ const bookFields = {
   edition: '7th',
 };
 
-const createTestPaper = (context: ReturnType<typeof createPersistenceContext>) => {
+const createTestPaper = (
+  context: ReturnType<typeof createPersistenceContext>,
+) => {
   const course = context.courseRepository.create({
     name: 'Research Methods',
     code: 'PSY-500',
@@ -70,9 +72,13 @@ describe('referenceRepository', () => {
 
     expect(created.referenceType).toBe('journal-article');
     expect(created.paperId).toBe(paper.id);
-    expect(created.sortKey).toBe('smith|2020|cognitive effects of sleep deprivation');
+    expect(created.sortKey).toBe(
+      'smith|2020|cognitive effects of sleep deprivation',
+    );
     expect(reloaded).not.toBeNull();
-    expect(reloaded!.fields).toEqual(expect.objectContaining({ journalName: 'Journal of Psychology' }));
+    expect(reloaded!.fields).toEqual(
+      expect.objectContaining({ journalName: 'Journal of Psychology' }),
+    );
   });
 
   it('lists references for a paper sorted by sort key', () => {
@@ -214,7 +220,9 @@ describe('referenceRepository', () => {
   it('throws when deleting a non-existent reference', () => {
     const context = createPersistenceContext({ dbPath: createTempDbPath() });
 
-    expect(() => context.referenceRepository.delete('non-existent')).toThrow(/not found/i);
+    expect(() => context.referenceRepository.delete('non-existent')).toThrow(
+      /not found/i,
+    );
 
     context.close();
   });
@@ -228,6 +236,8 @@ describe('referenceRepository', () => {
 
     context.close();
 
-    expect(appliedMigrations.map((m) => m.id)).toContain('002_references_table');
+    expect(appliedMigrations.map((m) => m.id)).toContain(
+      '002_references_table',
+    );
   });
 });

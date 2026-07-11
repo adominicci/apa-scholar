@@ -1,5 +1,9 @@
 # Epic 04 Template Engine and Ghost-Page View Models Implementation Plan
 
+**Lifecycle status:** Completed historical plan.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), the guided-scaffolding PRD contract, and the current domain/application implementation. Later remediation restored missing student guidance without rewriting this historical execution plan.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build Epic 04 as a thin-UI vertical slice that creates template-backed paper starter data, derives ghost-page view models outside React, and renders a shared paper canvas from one renderer-facing paper draft contract.

@@ -27,7 +27,9 @@ export type WorkspaceShellAction =
   | { type: 'set-inspector-tab'; tab: InspectorTab };
 
 const toggleInList = (items: string[], value: string): string[] =>
-  items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
+  items.includes(value)
+    ? items.filter((item) => item !== value)
+    : [...items, value];
 
 const ensureExpanded = (items: string[], value: string): string[] =>
   items.includes(value) ? items : [...items, value];
@@ -64,7 +66,10 @@ export const workspaceShellReducer = (
     case 'navigateCourse':
       return {
         ...state,
-        expandedCourseIds: ensureExpanded(state.expandedCourseIds, action.courseId),
+        expandedCourseIds: ensureExpanded(
+          state.expandedCourseIds,
+          action.courseId,
+        ),
         route: { courseId: action.courseId, view: 'course' },
         selectedCourseId: action.courseId,
         selectedPaperId: null,
@@ -72,7 +77,10 @@ export const workspaceShellReducer = (
     case 'navigatePaper':
       return {
         ...state,
-        expandedCourseIds: ensureExpanded(state.expandedCourseIds, action.courseId),
+        expandedCourseIds: ensureExpanded(
+          state.expandedCourseIds,
+          action.courseId,
+        ),
         route: {
           courseId: action.courseId,
           paperId: action.paperId,
@@ -84,7 +92,10 @@ export const workspaceShellReducer = (
     case 'toggleCourseExpansion':
       return {
         ...state,
-        expandedCourseIds: toggleInList(state.expandedCourseIds, action.courseId),
+        expandedCourseIds: toggleInList(
+          state.expandedCourseIds,
+          action.courseId,
+        ),
       };
     case 'toggleLeftPanel':
       return {

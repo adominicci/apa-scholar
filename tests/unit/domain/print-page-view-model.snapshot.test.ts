@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyBodyEditorDocument } from '@domain/papers/body-editor-document';
 import { createEmptyRichTextDocument } from '@domain/shared/entity-helpers';
-import type { Paper, PaperContent, PaperMeta } from '@domain/shared/persistence-models';
+import type {
+  Paper,
+  PaperContent,
+  PaperMeta,
+} from '@domain/shared/persistence-models';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
 import { buildPrintPageViewModels } from '@domain/papers/print-page-view-model';
 

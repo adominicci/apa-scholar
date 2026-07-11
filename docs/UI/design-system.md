@@ -1,7 +1,8 @@
 # APA Scholar — Design System
 
-**Last updated:** 2026-03-07
+**Last updated:** 2026-07-10
 **Reference artifacts:** [`docs/UI/code.html`](./code.html) (Stitch reference), [`docs/UI/screen.png`](./screen.png) (target screenshot)
+**Implementation authority:** The reference artifacts establish visual direction; current component behavior is defined by the renderer files named below and tracked in [`docs/project-status.md`](../project-status.md).
 
 ---
 
@@ -118,41 +119,53 @@ Defined as CSS custom properties in `src/renderer/styles/index.css`. The light t
 
 ## Layout Structure
 
-The workspace uses a **header + three-column flex** layout:
+The workspace uses a **header + three-column flex** layout. Paper routes add a collapsible APA Format panel inside the main canvas:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Header bar (h-14) — logo, search, actions, settings             │
+│ Header bar (60px) — logo, global search, settings               │
 ├───────────┬─────────────────────────────────────┬───────────────┤
 │ Sidebar   │ Main content area                   │ Inspector     │
 │ (w-300)   │ (flex-1, scrollable)                │ (w-340)       │
 │ border-r  │                                     │ border-l      │
-│           │                                     │               │
+│           │ Paper route: Format panel + pages   │               │
 │           │                                     │               │
 │           │                                     │               │
 ├───────────┴─────────────────────────────────────┴───────────────┘
 ```
 
 ### Header bar
-- Full-width, fixed height (56px / `h-14`)
-- Contains: macOS traffic-light spacer (w-14), vertical divider, "APA Scholar" branding with `auto_stories` icon, centered search input, "Draft paper" CTA, notification + settings icon buttons
+- Full-width, fixed height (60px / `h-[60px]`)
+- Contains: macOS traffic-light spacer, vertical divider, "APA Scholar" branding, centered global search input, and Settings
+- Settings is the only header icon action. Notifications and the header-level Draft paper CTA were intentionally removed; paper creation remains available in the sidebar and content views.
 - The header has the `drag-region` class for macOS window dragging (`-webkit-app-region: drag`). Interactive elements (buttons, inputs) use `-webkit-app-region: no-drag` via a global rule.
 
 ### Sidebar (left)
 - Fixed width: 300px expanded, 48px collapsed (icon rail)
 - Separated from main by `border-r border-[var(--color-line)]`
-- Contains: workspace nav (Dashboard, Research, Citations, Drafts), New course / New paper buttons, course tree, "Add reference" footer
+- Contains: Dashboard, New course / New paper buttons, and the expandable course/paper tree
+- The collapsed rail exposes Home, Search/expand, New course, course initials, and Settings. References are not a workspace-sidebar footer action.
 - Collapsible: expanded content uses `.panel-content[data-collapsed]`, icon rail uses `.panel-rail[data-visible]`
 
 ### Main content
 - `flex-1`, darker background (`--color-main`), scrollable
 - Renders views: home, course overview, paper canvas, settings
+- Paper routes render `PaperCanvasToolbar` as an inner 256px panel (40px collapsed rail) beside the scrollable page canvas. Its sections cover paper type, live font preview, body structure commands, and APA workflow shortcuts.
 
 ### Inspector (right)
 - Fixed width: 340px expanded, 48px collapsed
 - Separated from main by `border-l border-[var(--color-line)]`
-- Contains: contextual details (paper/course/workspace), issues placeholder, search placeholder
+- Contains: contextual workspace/course details and, for papers, Details, Issues, and References tabs
+- References are created, edited, deleted, and inserted as citations from this inspector surface.
 - Same collapse mechanism as sidebar
+
+### Current APA Format Behavior
+
+- Paper-type controls update the semantic paper metadata flow.
+- Paragraph, heading, list, and block-quote controls dispatch commands to the body editor.
+- References and Citation controls focus the paper inspector's References tab.
+- Font choices currently override canvas CSS variables only. They are not persisted and are not passed into the print model, so font persistence/export acceptance remains open.
+- Abstract authoring is not part of the format panel; the current abstract page remains derived read-only guidance.
 
 ---
 
@@ -183,6 +196,8 @@ The workspace shell is composed of extracted components:
 | `Inspector` | `src/renderer/app/Inspector.tsx` | Right panel with context details, collapse |
 | `CourseModal` | `src/renderer/app/CourseModal.tsx` | Course creation modal |
 | `PaperModal` | `src/renderer/app/PaperModal.tsx` | Paper creation modal |
+| `PaperCanvas` | `src/renderer/app/paper-canvas/PaperCanvas.tsx` | Paper-route canvas composition |
+| `PaperCanvasToolbar` | `src/renderer/app/paper-canvas/PaperCanvasToolbar.tsx` | Inner collapsible APA Format panel |
 | `icons` | `src/renderer/app/icons.tsx` | Material Symbols icon components |
 
 State is managed via `useReducer` in `src/renderer/app/workspace-shell-state.ts` with actions for navigation, panel collapse, and course expansion.
@@ -205,3 +220,5 @@ State is managed via `useReducer` in `src/renderer/app/workspace-shell-state.ts`
 4. **Bundled fonts** — All three font families are locally bundled woff2 files. No network dependency.
 5. **Material Symbols for icons** — Consistent icon language using Google's Material Symbols Outlined font, rendered via CSS ligatures.
 6. **Search in header** — Global search lives in the top header bar, not duplicated in the sidebar.
+7. **References in context** — Reference management belongs to the paper inspector, not the global workspace sidebar.
+8. **Formatting inside the paper route** — APA Format controls live beside the paper pages inside `PaperCanvas`, keeping global navigation and contextual metadata separate.

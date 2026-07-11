@@ -2,7 +2,9 @@
 
 Status:
 - [ ] Not started
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10 because user-facing hard-coded English remains in core paths. Existing localization work is preserved; see `docs/project-status.md`.
 
 - Objective: move all user-facing copy into the localization system.
 - Why: bilingual support requires complete string externalization.

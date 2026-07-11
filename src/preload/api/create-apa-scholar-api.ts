@@ -33,7 +33,10 @@ export const createApaScholarApi = (
       invoke(persistenceIpcChannels.papersGetById, { paperId }),
     create: (input) => invoke(persistenceIpcChannels.papersCreate, input),
     updateBodyContent: (paperId, bodyDoc) =>
-      invoke(persistenceIpcChannels.papersUpdateBodyContent, { bodyDoc, paperId }),
+      invoke(persistenceIpcChannels.papersUpdateBodyContent, {
+        bodyDoc,
+        paperId,
+      }),
     updateMetadata: (paperId, input) =>
       invoke(persistenceIpcChannels.papersUpdateMetadata, { input, paperId }),
   },

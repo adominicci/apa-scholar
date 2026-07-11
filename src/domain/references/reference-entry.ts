@@ -20,14 +20,16 @@ export const referenceTypeSchema = z.enum(supportedReferenceTypes, {
 
 export const referenceAuthorSchema = z.object({
   family: z.string().trim().min(1, 'Author family name is required.'),
-  given: z.string().trim().min(1, 'Author given name is required.'),
+  given: z.string().trim(),
   isGroup: z.boolean().optional(),
 });
 
 export type ReferenceAuthor = z.infer<typeof referenceAuthorSchema>;
 
 const baseFieldsSchema = z.object({
-  authors: z.array(referenceAuthorSchema).min(1, 'At least one author is required.'),
+  authors: z
+    .array(referenceAuthorSchema)
+    .min(1, 'At least one author is required.'),
   year: z.string().trim().nullable(),
   title: z.string().trim().min(1, 'Title is required.'),
   doi: z.string().trim().nullable().optional(),
@@ -48,7 +50,9 @@ const bookFieldsSchema = baseFieldsSchema.extend({
 
 const editedBookChapterFieldsSchema = baseFieldsSchema.extend({
   bookTitle: z.string().trim().min(1, 'Book title is required.'),
-  editors: z.array(referenceAuthorSchema).min(1, 'At least one editor is required.'),
+  editors: z
+    .array(referenceAuthorSchema)
+    .min(1, 'At least one editor is required.'),
   publisher: z.string().trim().min(1, 'Publisher is required.'),
   pages: z.string().trim().nullable().optional(),
   edition: z.string().trim().nullable().optional(),
@@ -71,16 +75,18 @@ const reportFieldsSchema = baseFieldsSchema.extend({
 
 export const referenceFieldsByType = {
   'journal-article': journalArticleFieldsSchema,
-  'book': bookFieldsSchema,
+  book: bookFieldsSchema,
   'edited-book-chapter': editedBookChapterFieldsSchema,
-  'website': websiteFieldsSchema,
+  website: websiteFieldsSchema,
   'conference-paper': conferencePaperFieldsSchema,
-  'report': reportFieldsSchema,
+  report: reportFieldsSchema,
 } as const;
 
 export type JournalArticleFields = z.infer<typeof journalArticleFieldsSchema>;
 export type BookFields = z.infer<typeof bookFieldsSchema>;
-export type EditedBookChapterFields = z.infer<typeof editedBookChapterFieldsSchema>;
+export type EditedBookChapterFields = z.infer<
+  typeof editedBookChapterFieldsSchema
+>;
 export type WebsiteFields = z.infer<typeof websiteFieldsSchema>;
 export type ConferencePaperFields = z.infer<typeof conferencePaperFieldsSchema>;
 export type ReportFields = z.infer<typeof reportFieldsSchema>;

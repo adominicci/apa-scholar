@@ -45,11 +45,18 @@ export const createSettingsRepository = (
     get,
     save: (input) => {
       const timestamp = createIsoTimestamp();
-      upsertSettingsStatement.run(input.language, input.debug ? 1 : 0, timestamp);
+      upsertSettingsStatement.run(
+        input.language,
+        input.debug ? 1 : 0,
+        timestamp,
+      );
 
-      return get() ?? (() => {
-        throw new Error('Saved settings could not be reloaded.');
-      })();
+      return (
+        get() ??
+        (() => {
+          throw new Error('Saved settings could not be reloaded.');
+        })()
+      );
     },
   };
 };

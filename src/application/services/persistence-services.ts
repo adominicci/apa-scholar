@@ -10,11 +10,7 @@ import {
   createReferenceInputSchema,
   updateReferenceInputSchema,
 } from '@domain/references/reference-entry';
-import type {
-  CreateReferenceInput,
-  ReferenceEntry,
-  UpdateReferenceInput,
-} from '@domain/references/reference-entry';
+import type { ReferenceEntry } from '@domain/references/reference-entry';
 import {
   createPaperInputSchema,
   updatePaperMetadataInputSchema,
@@ -27,11 +23,16 @@ export interface PersistenceServices {
   courses: {
     list: () => ReturnType<CourseRepository['listActive']>;
     create: (input: unknown) => ReturnType<CourseRepository['create']>;
-    update: (id: string, input: unknown) => ReturnType<CourseRepository['update']>;
+    update: (
+      id: string,
+      input: unknown,
+    ) => ReturnType<CourseRepository['update']>;
   };
   papers: {
     getById: (paperId: string) => ReturnType<typeof buildPaperDraft> | null;
-    listByCourse: (courseId: string) => ReturnType<PaperRepository['listByCourse']>;
+    listByCourse: (
+      courseId: string,
+    ) => ReturnType<PaperRepository['listByCourse']>;
     listRecent: (limit: number) => ReturnType<PaperRepository['listRecent']>;
     create: (input: unknown) => ReturnType<PaperRepository['create']>;
     updateBodyContent: (
@@ -76,14 +77,20 @@ export const createPersistenceServices = (repositories: {
 
       return aggregate ? buildPaperDraft(aggregate) : null;
     },
-    listByCourse: (courseId) => repositories.paperRepository.listByCourse(courseId),
-    listRecent: (limit: number) => repositories.paperRepository.listRecent(limit),
+    listByCourse: (courseId) =>
+      repositories.paperRepository.listByCourse(courseId),
+    listRecent: (limit: number) =>
+      repositories.paperRepository.listRecent(limit),
     create: (input) => {
       const parsedInput = createPaperInputSchema.parse(input);
-      const course = repositories.courseRepository.getById(parsedInput.courseId);
+      const course = repositories.courseRepository.getById(
+        parsedInput.courseId,
+      );
 
       if (!course || course.archivedAt) {
-        throw new Error(`Cannot create a paper for missing course "${parsedInput.courseId}".`);
+        throw new Error(
+          `Cannot create a paper for missing course "${parsedInput.courseId}".`,
+        );
       }
 
       const resolvedInput = resolveCreatePaperDefaults(
@@ -91,7 +98,9 @@ export const createPersistenceServices = (repositories: {
         course,
         repositories.settingsRepository.get() ?? undefined,
       );
-      const templateDefinition = getTemplateDefinition(resolvedInput.templateId);
+      const templateDefinition = getTemplateDefinition(
+        resolvedInput.templateId,
+      );
       const seed = templateDefinition.createSeed({
         courseCode: course.code,
         courseName: course.name,
@@ -103,7 +112,8 @@ export const createPersistenceServices = (repositories: {
       return repositories.paperRepository.create(resolvedInput, seed);
     },
     updateBodyContent: (paperId, bodyDoc) => {
-      const existingAggregate = repositories.paperRepository.getAggregateById(paperId);
+      const existingAggregate =
+        repositories.paperRepository.getAggregateById(paperId);
 
       if (!existingAggregate) {
         throw new Error(`Paper "${paperId}" was not found.`);
@@ -117,14 +127,18 @@ export const createPersistenceServices = (repositories: {
       return buildPaperDraft(updatedAggregate);
     },
     updateMetadata: (paperId, input) => {
-      const existingAggregate = repositories.paperRepository.getAggregateById(paperId);
+      const existingAggregate =
+        repositories.paperRepository.getAggregateById(paperId);
 
       if (!existingAggregate) {
         throw new Error(`Paper "${paperId}" was not found.`);
       }
 
       const parsedInput = updatePaperMetadataInputSchema.parse(input);
-      const normalizedAggregate = applyPaperMetadataUpdate(existingAggregate, parsedInput);
+      const normalizedAggregate = applyPaperMetadataUpdate(
+        existingAggregate,
+        parsedInput,
+      );
       const updatedAggregate = repositories.paperRepository.updateMetadata(
         paperId,
         normalizedAggregate,
@@ -134,16 +148,19 @@ export const createPersistenceServices = (repositories: {
     },
   },
   references: {
-    listByPaper: (paperId) => repositories.referenceRepository.listByPaper(paperId),
+    listByPaper: (paperId) =>
+      repositories.referenceRepository.listByPaper(paperId),
     create: (input) => {
       const parsedInput = createReferenceInputSchema.parse(input);
       return repositories.referenceRepository.create(parsedInput);
     },
-    getById: (referenceId) => repositories.referenceRepository.getById(referenceId),
+    getById: (referenceId) =>
+      repositories.referenceRepository.getById(referenceId),
     update: (referenceId, input) => {
       const parsedInput = updateReferenceInputSchema.parse(input);
       return repositories.referenceRepository.update(referenceId, parsedInput);
     },
-    delete: (referenceId) => repositories.referenceRepository.delete(referenceId),
+    delete: (referenceId) =>
+      repositories.referenceRepository.delete(referenceId),
   },
 });

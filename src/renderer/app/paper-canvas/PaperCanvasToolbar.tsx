@@ -5,11 +5,36 @@ import type { PaperDraft } from '@domain/papers/paper-draft';
 
 /** APA 7th Edition accepted fonts with their required sizes. */
 const apaFonts = [
-  { id: 'times', label: 'Times New Roman', family: "'Times New Roman', Times, serif", size: '12pt' },
-  { id: 'calibri', label: 'Calibri', family: "Calibri, 'Gill Sans', sans-serif", size: '11pt' },
-  { id: 'arial', label: 'Arial', family: "Arial, Helvetica, sans-serif", size: '11pt' },
-  { id: 'georgia', label: 'Georgia', family: "Georgia, 'Palatino Linotype', serif", size: '11pt' },
-  { id: 'lucida', label: 'Lucida Sans', family: "'Lucida Sans Unicode', 'Lucida Grande', sans-serif", size: '10pt' },
+  {
+    id: 'times',
+    label: 'Times New Roman',
+    family: "'Times New Roman', Times, serif",
+    size: '12pt',
+  },
+  {
+    id: 'calibri',
+    label: 'Calibri',
+    family: "Calibri, 'Gill Sans', sans-serif",
+    size: '11pt',
+  },
+  {
+    id: 'arial',
+    label: 'Arial',
+    family: 'Arial, Helvetica, sans-serif',
+    size: '11pt',
+  },
+  {
+    id: 'georgia',
+    label: 'Georgia',
+    family: "Georgia, 'Palatino Linotype', serif",
+    size: '11pt',
+  },
+  {
+    id: 'lucida',
+    label: 'Lucida Sans',
+    family: "'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
+    size: '10pt',
+  },
 ] as const;
 
 export type ApaFontId = (typeof apaFonts)[number]['id'];
@@ -51,7 +76,9 @@ export const PaperCanvasToolbar = ({
   paperType,
 }: PaperCanvasToolbarProps) => {
   const { t } = useTranslation();
-  const [expandedSection, setExpandedSection] = useState<string | null>('paperSetup');
+  const [expandedSection, setExpandedSection] = useState<string | null>(
+    'paperSetup',
+  );
 
   const toggleSection = (section: string) =>
     setExpandedSection((current) => (current === section ? null : section));
@@ -66,7 +93,10 @@ export const PaperCanvasToolbar = ({
           title={t('toolbar.showPanel')}
           type="button"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: '20px' }}
+          >
             chevron_right
           </span>
         </button>
@@ -87,7 +117,10 @@ export const PaperCanvasToolbar = ({
           onClick={() => onCollapsedChange(true)}
           type="button"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: '18px' }}
+          >
             chevron_left
           </span>
         </button>
@@ -105,7 +138,10 @@ export const PaperCanvasToolbar = ({
             <span className="label-caps text-[var(--color-muted-strong)]">
               {t('toolbar.paperSetup')}
             </span>
-            <span className="material-symbols-outlined text-[var(--color-muted)]" style={{ fontSize: '16px' }}>
+            <span
+              className="material-symbols-outlined text-[var(--color-muted)]"
+              style={{ fontSize: '16px' }}
+            >
               {expandedSection === 'paperSetup' ? 'expand_less' : 'expand_more'}
             </span>
           </button>
@@ -151,7 +187,10 @@ export const PaperCanvasToolbar = ({
             <span className="label-caps text-[var(--color-muted-strong)]">
               {t('toolbar.font')}
             </span>
-            <span className="material-symbols-outlined text-[var(--color-muted)]" style={{ fontSize: '16px' }}>
+            <span
+              className="material-symbols-outlined text-[var(--color-muted)]"
+              style={{ fontSize: '16px' }}
+            >
               {expandedSection === 'font' ? 'expand_less' : 'expand_more'}
             </span>
           </button>
@@ -169,10 +208,15 @@ export const PaperCanvasToolbar = ({
                   onClick={() => onFontChange?.(font.id)}
                   type="button"
                 >
-                  <span className="text-[13px]" style={{ fontFamily: font.family }}>
+                  <span
+                    className="text-[13px]"
+                    style={{ fontFamily: font.family }}
+                  >
                     {font.label}
                   </span>
-                  <span className="text-[11px] text-[var(--color-muted)]">{font.size}</span>
+                  <span className="text-[11px] text-[var(--color-muted)]">
+                    {font.size}
+                  </span>
                 </button>
               ))}
             </div>
@@ -189,14 +233,23 @@ export const PaperCanvasToolbar = ({
             <span className="label-caps text-[var(--color-muted-strong)]">
               {t('toolbar.textStructure')}
             </span>
-            <span className="material-symbols-outlined text-[var(--color-muted)]" style={{ fontSize: '16px' }}>
-              {expandedSection === 'textStructure' ? 'expand_less' : 'expand_more'}
+            <span
+              className="material-symbols-outlined text-[var(--color-muted)]"
+              style={{ fontSize: '16px' }}
+            >
+              {expandedSection === 'textStructure'
+                ? 'expand_less'
+                : 'expand_more'}
             </span>
           </button>
           {expandedSection === 'textStructure' && (
             <div className="px-4 pb-4">
               <div className="grid grid-cols-2 gap-2">
-                <button className={sectionButtonClass} onClick={onSetParagraph} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onSetParagraph}
+                  type="button"
+                >
                   {t('toolbar.bodyText')}
                 </button>
                 {supportedBodyEditorHeadingLevels.map((level) => (
@@ -209,13 +262,25 @@ export const PaperCanvasToolbar = ({
                     {t('toolbar.headingLevel', { level })}
                   </button>
                 ))}
-                <button className={sectionButtonClass} onClick={onToggleBulletList} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onToggleBulletList}
+                  type="button"
+                >
                   {t('toolbar.bulletedList')}
                 </button>
-                <button className={sectionButtonClass} onClick={onToggleOrderedList} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onToggleOrderedList}
+                  type="button"
+                >
                   {t('toolbar.numberedList')}
                 </button>
-                <button className={sectionButtonClass} onClick={onToggleBlockquote} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onToggleBlockquote}
+                  type="button"
+                >
                   {t('toolbar.blockQuote')}
                 </button>
               </div>
@@ -233,17 +298,30 @@ export const PaperCanvasToolbar = ({
             <span className="label-caps text-[var(--color-muted-strong)]">
               {t('toolbar.apaWorkflow')}
             </span>
-            <span className="material-symbols-outlined text-[var(--color-muted)]" style={{ fontSize: '16px' }}>
-              {expandedSection === 'apaWorkflow' ? 'expand_less' : 'expand_more'}
+            <span
+              className="material-symbols-outlined text-[var(--color-muted)]"
+              style={{ fontSize: '16px' }}
+            >
+              {expandedSection === 'apaWorkflow'
+                ? 'expand_less'
+                : 'expand_more'}
             </span>
           </button>
           {expandedSection === 'apaWorkflow' && (
             <div className="px-4 pb-4">
               <div className="grid grid-cols-2 gap-2">
-                <button className={sectionButtonClass} onClick={onOpenReferences} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onOpenReferences}
+                  type="button"
+                >
                   {t('toolbar.references')}
                 </button>
-                <button className={sectionButtonClass} onClick={onOpenCitation} type="button">
+                <button
+                  className={sectionButtonClass}
+                  onClick={onOpenCitation}
+                  type="button"
+                >
                   {t('toolbar.citation')}
                 </button>
               </div>

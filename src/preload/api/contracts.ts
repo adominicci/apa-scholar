@@ -52,7 +52,10 @@ export interface ApaScholarApi {
     listByPaper: (paperId: string) => Promise<ReferenceEntry[]>;
     create: (input: CreateReferenceInput) => Promise<ReferenceEntry>;
     getById: (referenceId: string) => Promise<ReferenceEntry | null>;
-    update: (referenceId: string, input: UpdateReferenceInput) => Promise<ReferenceEntry>;
+    update: (
+      referenceId: string,
+      input: UpdateReferenceInput,
+    ) => Promise<ReferenceEntry>;
     delete: (referenceId: string) => Promise<void>;
   };
   search: {
@@ -60,7 +63,10 @@ export interface ApaScholarApi {
   };
   settings: {
     get: () => Promise<AppSettings | null>;
-    save: (input: { language: Language; debug?: boolean }) => Promise<AppSettings>;
+    save: (input: {
+      language: Language;
+      debug?: boolean;
+    }) => Promise<AppSettings>;
   };
   export: {
     pdf: (paperId: string) => Promise<ExportResult>;

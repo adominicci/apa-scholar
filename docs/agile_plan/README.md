@@ -36,5 +36,7 @@ Status roll-up:
 
 - [x] Milestone 01 - Workspace Skeleton
 - [x] Milestone 02 - Writing Core
-- [x] Milestone 03 - Academic Submission Core
+- [ ] Milestone 03 - Academic Submission Core
 - [ ] Milestone 04 - Release Readiness
+
+Milestones 03 and 04 have reopened or unverified acceptance work. See [`docs/project-status.md`](../project-status.md); completed implementation history remains recorded in the individual task files.

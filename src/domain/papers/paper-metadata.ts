@@ -1,4 +1,7 @@
-import type { PaperDraft, StoredPaperAggregate } from '@domain/papers/paper-draft';
+import type {
+  PaperDraft,
+  StoredPaperAggregate,
+} from '@domain/papers/paper-draft';
 import { buildGhostPageViewModels } from '@domain/papers/ghost-page-view-model';
 import type {
   Paper,
@@ -24,7 +27,9 @@ export const resolvePaperStructure = (input: {
   return {
     abstractEnabled: input.abstractEnabled,
     paperType: 'student' as const,
-    templateId: input.abstractEnabled ? ('apa-student-abstract' as const) : ('apa-student' as const),
+    templateId: input.abstractEnabled
+      ? ('apa-student-abstract' as const)
+      : ('apa-student' as const),
   };
 };
 
@@ -73,14 +78,15 @@ export const applyPaperMetadataUpdate = (
   aggregate: StoredPaperAggregate,
   input: UpdatePaperMetadataInput,
 ): StoredPaperAggregate => {
-  const {
-    abstractEnabled: _abstractEnabled,
-    paperType: _paperType,
-    title: _title,
-    ...paperMetaFields
-  } = input;
+  const paperMetaFields = { ...input };
+
+  delete paperMetaFields.abstractEnabled;
+  delete paperMetaFields.paperType;
+  delete paperMetaFields.title;
+
   const nextPaperType = input.paperType ?? aggregate.paper.paperType;
-  const nextAbstractEnabled = input.abstractEnabled ?? aggregate.paperMeta.abstractEnabled;
+  const nextAbstractEnabled =
+    input.abstractEnabled ?? aggregate.paperMeta.abstractEnabled;
   const nextStructure = resolvePaperStructure({
     abstractEnabled: nextAbstractEnabled,
     paperType: nextPaperType,

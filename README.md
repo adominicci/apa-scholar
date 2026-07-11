@@ -1,6 +1,8 @@
 # APA Scholar
 
-APA Scholar is a local-first Electron desktop app for drafting APA-compliant academic papers. The macOS-first workspace includes the full workspace skeleton (course and paper navigation, template engine, ghost-page rendering), the writing core (body editor, paste engine, APA rules engine with issues panel), and initial references management. Built with Electron Forge, Vite, React, TypeScript, and Tailwind CSS v4.
+APA Scholar is a local-first Electron desktop app for drafting APA-compliant academic papers. The macOS-first app organizes work as `Workspace -> Course -> Paper` and derives a guided page canvas from semantic paper data.
+
+The workspace skeleton and writing core have completed implementation history. References/citations and an initial PDF pipeline exist, but Academic Submission Core remains incomplete: export safety/pagination, bilingual completion, professional/abstract workflows, and paper-format persistence still have open acceptance work. Release Readiness is not verified. See [docs/project-status.md](docs/project-status.md) for the current evidence matrix.
 
 ## Foundation Principles
 
@@ -21,6 +23,12 @@ APA Scholar is a local-first Electron desktop app for drafting APA-compliant aca
 - Vitest
 - Playwright
 
+## Runtime
+
+- Recommended Node: `22.x`
+- `@electron/rebuild@4.0.3` requires Node `>=22.12.0`
+- `better-sqlite3` must be rebuilt for the runtime that will load it
+
 ## Project Layout
 
 ```text
@@ -38,17 +46,25 @@ docs/
 ## Scripts
 
 - `npm run dev` starts the Electron app in development mode through Forge.
-- `npm run build` builds the main, preload, and renderer outputs into `.vite/`.
+- `npm run build` builds the main process, main-window preload, and main renderer into `.vite/`; Forge packaging owns the additional print preload/renderer entries.
 - `npm run lint` runs ESLint with typed TypeScript rules.
 - `npm run format` checks formatting with Prettier.
+- `npm run format:write` applies the existing Prettier configuration to non-ignored files.
 - `npm run typecheck` runs TypeScript without emitting files.
-- `npm run test:unit` runs the Vitest suite.
-- `npm run test:e2e` builds the app and runs the Playwright Electron smoke test.
+- `npm run test:unit` rebuilds `better-sqlite3` for Node and runs the Vitest suite.
+- `npm run test:e2e` rebuilds `better-sqlite3` for Electron, builds the app, and runs the isolated Playwright Electron smoke test.
 - `npm run test` runs both unit and end-to-end verification.
+- `npm run rebuild:native` rebuilds `better-sqlite3` for Electron.
+- `npm run package` creates an unpacked app through Electron Forge.
+- `npm run make` creates configured distribution artifacts through Electron Forge.
 
 ## Documentation
 
-- Product requirements: [docs/apa-scholar-prd-v2.md](/Users/andresdominicci/Projects/apa-writer/docs/apa-scholar-prd-v2.md)
-- Architecture: [docs/architecture.md](/Users/andresdominicci/Projects/apa-writer/docs/architecture.md)
-- Implementation roadmap: [docs/implementation_plan.md](/Users/andresdominicci/Projects/apa-writer/docs/implementation_plan.md)
-- Foundation execution plan: [docs/plans/2026-03-07-project-foundation.md](/Users/andresdominicci/Projects/apa-writer/docs/plans/2026-03-07-project-foundation.md)
+- Current evidence and blockers: [docs/project-status.md](docs/project-status.md)
+- Product requirements: [docs/apa-scholar-prd-v2.md](docs/apa-scholar-prd-v2.md)
+- Architecture: [docs/architecture.md](docs/architecture.md)
+- Implementation roadmap: [docs/implementation_plan.md](docs/implementation_plan.md)
+- Agile tracking: [docs/agile_plan/README.md](docs/agile_plan/README.md)
+- UI design system: [docs/UI/design-system.md](docs/UI/design-system.md)
+- Historical execution plans: [docs/plans/](docs/plans/)
+- Release procedures and blank checklists: [docs/release/](docs/release/)

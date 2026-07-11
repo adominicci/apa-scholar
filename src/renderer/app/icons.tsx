@@ -47,7 +47,10 @@ export const BookOpenIcon = ({ className }: IconProps = {}) => (
 );
 
 export const SettingsIcon = ({ className }: IconProps = {}) => (
-  <span aria-hidden="true" className={`${msClass} text-[20px] ${className ?? ''}`}>
+  <span
+    aria-hidden="true"
+    className={`${msClass} text-[20px] ${className ?? ''}`}
+  >
     settings
   </span>
 );
@@ -65,7 +68,10 @@ export const AlertTriangleIcon = ({ className }: IconProps = {}) => (
 );
 
 export const NotificationsIcon = ({ className }: IconProps = {}) => (
-  <span aria-hidden="true" className={`${msClass} text-[20px] ${className ?? ''}`}>
+  <span
+    aria-hidden="true"
+    className={`${msClass} text-[20px] ${className ?? ''}`}
+  >
     notifications
   </span>
 );

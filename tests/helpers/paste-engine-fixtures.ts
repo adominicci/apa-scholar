@@ -117,27 +117,27 @@ export const createGoogleDocsPasteDocumentFixture = (): BodyEditorDocument => ({
   type: 'doc',
 });
 
-export const createWrappedPlainTextDocumentFixture = (): BodyEditorDocument => ({
-  content: [
-    {
-      content: [
-        {
-          text: 'This paragraph was copied from a PDF and the hard wraps should collapse into a single readable paragraph.',
-          type: 'text',
-        },
-      ],
-      type: 'paragraph',
-    },
-    {
-      content: [
-        {
-          text: 'This second paragraph should stay separate even after cleanup.',
-          type: 'text',
-        },
-      ],
-      type: 'paragraph',
-    },
-  ],
-  type: 'doc',
-});
-
+export const createWrappedPlainTextDocumentFixture =
+  (): BodyEditorDocument => ({
+    content: [
+      {
+        content: [
+          {
+            text: 'This paragraph was copied from a PDF and the hard wraps should collapse into a single readable paragraph.',
+            type: 'text',
+          },
+        ],
+        type: 'paragraph',
+      },
+      {
+        content: [
+          {
+            text: 'This second paragraph should stay separate even after cleanup.',
+            type: 'text',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    type: 'doc',
+  });

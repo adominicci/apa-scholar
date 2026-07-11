@@ -3,7 +3,11 @@
   margin: 0;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   font-family: 'Times New Roman', 'Georgia', serif;
@@ -75,11 +79,28 @@ body {
   text-indent: 0;
 }
 
-.print-block--body-html h1 { text-align: center; font-weight: bold; }
-.print-block--body-html h2 { text-align: left; font-weight: bold; }
-.print-block--body-html h3 { text-align: left; font-weight: bold; font-style: italic; }
-.print-block--body-html h4 { text-indent: 0.5in; font-weight: bold; }
-.print-block--body-html h5 { text-indent: 0.5in; font-weight: bold; font-style: italic; }
+.print-block--body-html h1 {
+  text-align: center;
+  font-weight: bold;
+}
+.print-block--body-html h2 {
+  text-align: left;
+  font-weight: bold;
+}
+.print-block--body-html h3 {
+  text-align: left;
+  font-weight: bold;
+  font-style: italic;
+}
+.print-block--body-html h4 {
+  text-indent: 0.5in;
+  font-weight: bold;
+}
+.print-block--body-html h5 {
+  text-indent: 0.5in;
+  font-weight: bold;
+  font-style: italic;
+}
 
 .print-block--body-html blockquote {
   margin-left: 0.5in;

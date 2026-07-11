@@ -15,7 +15,14 @@ export interface GhostPageBlockViewModel {
   align?: 'center' | 'left';
   document?: BodyEditorDocument;
   id: string;
-  kind: 'body-editor' | 'empty-state' | 'line' | 'reference-line' | 'section-heading' | 'textarea' | 'title';
+  kind:
+    | 'body-editor'
+    | 'empty-state'
+    | 'line'
+    | 'reference-line'
+    | 'section-heading'
+    | 'textarea'
+    | 'title';
   text: string;
 }
 
@@ -72,7 +79,9 @@ const buildReferencesPageBlocks = (
   }
 
   // Sort alphabetically by sortKey regardless of caller order.
-  const sorted = [...references].sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+  const sorted = [...references].sort((a, b) =>
+    a.sortKey.localeCompare(b.sortKey),
+  );
   return [
     heading,
     ...sorted.map((ref) => ({
@@ -90,7 +99,7 @@ export const buildGhostPageViewModels = (input: {
   paperMeta: PaperMeta;
   references?: ReferenceEntry[];
 }): GhostPageViewModel[] => {
-  const lang = input.language ?? 'en';
+  const lang = input.language ?? input.paper.language;
   const s = getGhostPageStrings(lang);
 
   const titlePageBlocks =
@@ -129,7 +138,10 @@ export const buildGhostPageViewModels = (input: {
             align: 'center' as const,
             id: 'author-note',
             kind: 'line' as const,
-            text: getDisplayValue(input.paperMeta.authorNote, s.authorNotePlaceholder),
+            text: getDisplayValue(
+              input.paperMeta.authorNote,
+              s.authorNotePlaceholder,
+            ),
           },
         ]
       : [
@@ -139,24 +151,40 @@ export const buildGhostPageViewModels = (input: {
             kind: 'title' as const,
             text: input.paperMeta.title,
           },
-          // Student title page optional lines — only shown when filled in.
-          // Missing fields are flagged by the issues panel instead.
           ...(
             [
-              { id: 'author-name', value: input.paperMeta.authorName },
-              { id: 'institution', value: input.paperMeta.institution },
-              { id: 'course-name', value: input.paperMeta.courseName },
-              { id: 'professor-name', value: input.paperMeta.professorName },
-              { id: 'due-date', value: input.paperMeta.dueDate },
+              {
+                fallback: s.studentName,
+                id: 'author-name',
+                value: input.paperMeta.authorName,
+              },
+              {
+                fallback: s.institution,
+                id: 'institution',
+                value: input.paperMeta.institution,
+              },
+              {
+                fallback: s.courseName,
+                id: 'course-name',
+                value: input.paperMeta.courseName,
+              },
+              {
+                fallback: s.professorName,
+                id: 'professor-name',
+                value: input.paperMeta.professorName,
+              },
+              {
+                fallback: s.dueDate,
+                id: 'due-date',
+                value: input.paperMeta.dueDate,
+              },
             ] as const
-          )
-            .filter((field) => field.value?.trim())
-            .map((field) => ({
-              align: 'center' as const,
-              id: field.id,
-              kind: 'line' as const,
-              text: field.value!.trim(),
-            })),
+          ).map((field) => ({
+            align: 'center' as const,
+            id: field.id,
+            kind: 'line' as const,
+            text: getDisplayValue(field.value, field.fallback),
+          })),
         ];
 
   const pages: GhostPageViewModel[] = [
@@ -183,7 +211,12 @@ export const buildGhostPageViewModels = (input: {
           text: s.abstractPlaceholder,
         },
       ],
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1, s.runningHead),
+      header: getPageHeader(
+        input.paper,
+        input.paperMeta,
+        pages.length + 1,
+        s.runningHead,
+      ),
       id: `${input.paper.id}-abstract-page`,
       kind: 'abstract-page',
       title: s.abstract,
@@ -205,14 +238,24 @@ export const buildGhostPageViewModels = (input: {
           text: s.bodyPlaceholder,
         },
       ],
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 1, s.runningHead),
+      header: getPageHeader(
+        input.paper,
+        input.paperMeta,
+        pages.length + 1,
+        s.runningHead,
+      ),
       id: `${input.paper.id}-body-page`,
       kind: 'body-page',
       title: s.bodyDraft,
     },
     {
       blocks: buildReferencesPageBlocks(input.references ?? [], lang),
-      header: getPageHeader(input.paper, input.paperMeta, pages.length + 2, s.runningHead),
+      header: getPageHeader(
+        input.paper,
+        input.paperMeta,
+        pages.length + 2,
+        s.runningHead,
+      ),
       id: `${input.paper.id}-references-page`,
       kind: 'references-page',
       title: s.references,

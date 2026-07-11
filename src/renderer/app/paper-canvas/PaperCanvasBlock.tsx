@@ -1,7 +1,13 @@
 import type { Ref } from 'react';
 import type { BodyEditorDocument } from '@domain/papers/body-editor-document';
-import type { GhostPageBlockViewModel, GhostPageViewModel } from '@domain/papers/ghost-page-view-model';
-import { BodyEditor, type BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
+import type {
+  GhostPageBlockViewModel,
+  GhostPageViewModel,
+} from '@domain/papers/ghost-page-view-model';
+import {
+  BodyEditor,
+  type BodyEditorHandle,
+} from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 
 interface PaperCanvasBlockProps {
   block: GhostPageBlockViewModel;
@@ -71,7 +77,11 @@ export const PaperCanvasBlock = ({
     return (
       <p
         className="font-[var(--font-display)] leading-[2] text-[var(--color-page-ink)]"
-        style={{ paddingLeft: '2em', textIndent: '-2em', fontSize: 'var(--apa-font-size)' }}
+        style={{
+          paddingLeft: '2em',
+          textIndent: '-2em',
+          fontSize: 'var(--apa-font-size)',
+        }}
       >
         {block.text}
       </p>

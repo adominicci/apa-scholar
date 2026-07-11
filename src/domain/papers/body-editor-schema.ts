@@ -43,13 +43,16 @@ const bodyEditorParagraphSchema = z.object({
 
 const bodyEditorHeadingSchema = z.object({
   attrs: z.object({
-    level: z.number().int().refine(
-      (level): level is SupportedBodyEditorHeadingLevel =>
-        supportedBodyEditorHeadingLevels.includes(
-          level as SupportedBodyEditorHeadingLevel,
-        ),
-      'Heading level must be between 1 and 5.',
-    ),
+    level: z
+      .number()
+      .int()
+      .refine(
+        (level): level is SupportedBodyEditorHeadingLevel =>
+          supportedBodyEditorHeadingLevels.includes(
+            level as SupportedBodyEditorHeadingLevel,
+          ),
+        'Heading level must be between 1 and 5.',
+      ),
   }),
   content: z.array(bodyEditorInlineNodeSchema).optional(),
   type: z.literal('heading'),
@@ -85,9 +88,7 @@ export interface BodyEditorOrderedList {
   type: 'orderedList';
 }
 
-export type BodyEditorListNode =
-  | BodyEditorBulletList
-  | BodyEditorOrderedList;
+export type BodyEditorListNode = BodyEditorBulletList | BodyEditorOrderedList;
 export type BodyEditorListItemContentNode =
   | BodyEditorParagraphNode
   | BodyEditorListNode;
@@ -97,13 +98,14 @@ const bodyEditorBlockquoteSchema: z.ZodType<BodyEditorBlockquote> = z.object({
   type: z.literal('blockquote'),
 });
 
-const bodyEditorListItemContentSchema: z.ZodType<BodyEditorListItemContentNode> = z.lazy(() =>
-  z.union([
-    bodyEditorParagraphSchema,
-    bodyEditorBulletListSchema,
-    bodyEditorOrderedListSchema,
-  ]),
-);
+const bodyEditorListItemContentSchema: z.ZodType<BodyEditorListItemContentNode> =
+  z.lazy(() =>
+    z.union([
+      bodyEditorParagraphSchema,
+      bodyEditorBulletListSchema,
+      bodyEditorOrderedListSchema,
+    ]),
+  );
 
 const bodyEditorListItemSchema: z.ZodType<BodyEditorListItem> = z.lazy(() =>
   z.object({
@@ -119,11 +121,12 @@ const bodyEditorBulletListSchema: z.ZodType<BodyEditorBulletList> = z.lazy(() =>
   }),
 );
 
-const bodyEditorOrderedListSchema: z.ZodType<BodyEditorOrderedList> = z.lazy(() =>
-  z.object({
-    content: z.array(bodyEditorListItemSchema).default([]),
-    type: z.literal('orderedList'),
-  }),
+const bodyEditorOrderedListSchema: z.ZodType<BodyEditorOrderedList> = z.lazy(
+  () =>
+    z.object({
+      content: z.array(bodyEditorListItemSchema).default([]),
+      type: z.literal('orderedList'),
+    }),
 );
 
 const bodyEditorBlockSchema: z.ZodType<BodyEditorBlockNode> = z.lazy(() =>
@@ -217,11 +220,14 @@ const isSupportedHeadingLevel = (
   value: unknown,
 ): value is SupportedBodyEditorHeadingLevel =>
   typeof value === 'number' &&
-  supportedBodyEditorHeadingLevels.includes(value as SupportedBodyEditorHeadingLevel);
+  supportedBodyEditorHeadingLevels.includes(
+    value as SupportedBodyEditorHeadingLevel,
+  );
 
-const normalizeListNode = (
-  value: { content?: unknown; type?: unknown },
-): BodyEditorListNode | null => {
+const normalizeListNode = (value: {
+  content?: unknown;
+  type?: unknown;
+}): BodyEditorListNode | null => {
   const content = normalizeListItems(value.content);
 
   if (content.length === 0) {
@@ -282,10 +288,12 @@ const normalizeListItem = (value: unknown): BodyEditorListItem[] => {
   );
 
   return content.length > 0
-    ? [{
-      content,
-      type: 'listItem',
-    }]
+    ? [
+        {
+          content,
+          type: 'listItem',
+        },
+      ]
     : [];
 };
 
@@ -302,9 +310,7 @@ const flattenListNodeToParagraphs = (
 ): BodyEditorParagraphNode[] =>
   listNode.content.flatMap((item) =>
     item.content.flatMap((node) =>
-      node.type === 'paragraph'
-        ? [node]
-        : flattenListNodeToParagraphs(node),
+      node.type === 'paragraph' ? [node] : flattenListNodeToParagraphs(node),
     ),
   );
 
@@ -342,24 +348,28 @@ const normalizeBlockNode = (value: unknown): BodyEditorBlockNode[] => {
   }
 
   if (candidate.type === 'blockquote') {
-    const paragraphs = normalizeBlockNodes(candidate.content).flatMap((node) => {
-      if (node.type === 'paragraph') {
-        return [node];
-      }
+    const paragraphs = normalizeBlockNodes(candidate.content).flatMap(
+      (node) => {
+        if (node.type === 'paragraph') {
+          return [node];
+        }
 
-      if (node.type === 'heading') {
-        return [{
-          content: node.content,
-          type: 'paragraph' as const,
-        }];
-      }
+        if (node.type === 'heading') {
+          return [
+            {
+              content: node.content,
+              type: 'paragraph' as const,
+            },
+          ];
+        }
 
-      if (node.type === 'blockquote') {
-        return node.content;
-      }
+        if (node.type === 'blockquote') {
+          return node.content;
+        }
 
-      return flattenListNodeToParagraphs(node);
-    });
+        return flattenListNodeToParagraphs(node);
+      },
+    );
 
     return [
       {
@@ -389,7 +399,9 @@ const normalizeBlockNodes = (value: unknown): BodyEditorBlockNode[] => {
   return value.flatMap(normalizeBlockNode);
 };
 
-export const normalizeBodyEditorDocument = (value: unknown): BodyEditorDocument =>
+export const normalizeBodyEditorDocument = (
+  value: unknown,
+): BodyEditorDocument =>
   bodyEditorDocumentSchema.parse({
     content: normalizeBlockNodes(
       (value as { content?: unknown } | undefined)?.content,

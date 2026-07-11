@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ReferenceAuthor, ReferenceType } from '@domain/references/reference-entry';
+import { mapCrossRefWork } from '@application/services/map-crossref-work';
+import type {
+  ReferenceAuthor,
+  ReferenceType,
+} from '@domain/references/reference-entry';
 import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
 import {
   emptyAuthor,
@@ -9,84 +13,23 @@ import {
   typeLabelKeys,
 } from '@renderer/app/inspector/reference-form-helpers';
 
-/** Maps CrossRef work types to our supported ReferenceType enum. */
-const crossRefTypeMap: Record<string, ReferenceType> = {
-  'journal-article': 'journal-article',
-  'book': 'book',
-  'monograph': 'book',
-  'reference-book': 'book',
-  'edited-book': 'book',
-  'book-chapter': 'edited-book-chapter',
-  'book-part': 'edited-book-chapter',
-  'book-section': 'edited-book-chapter',
-  'reference-entry': 'edited-book-chapter',
-  'proceedings-article': 'conference-paper',
-  'proceedings': 'conference-paper',
-  'report': 'report',
-  'report-component': 'report',
-};
-
-const fetchDOIMetadata = async (input: string): Promise<Partial<ReferenceFormState> | null> => {
+const fetchDOIMetadata = async (
+  input: string,
+): Promise<Partial<ReferenceFormState> | null> => {
   const doiMatch = input.match(/10\.\d{4,}[^\s]*/);
   if (!doiMatch) return null;
   const doi = doiMatch[0];
-  const res = await fetch(`https://api.crossref.org/works/${encodeURIComponent(doi)}`, {
-    headers: { Accept: 'application/json' },
-  });
+  const res = await fetch(
+    `https://api.crossref.org/works/${encodeURIComponent(doi)}`,
+    {
+      headers: { Accept: 'application/json' },
+    },
+  );
   if (!res.ok) return null;
-  const data = await res.json();
-  const item = data.message;
-  const referenceType: ReferenceType = crossRefTypeMap[item.type] ?? 'journal-article';
-  const containerTitle = item['container-title']?.[0] ?? '';
-  const publisher = item.publisher ?? '';
+  const data: unknown = await res.json();
+  const result = mapCrossRefWork(data);
 
-  // Map shared fields, then add type-specific fields based on the resolved type.
-  const base: Partial<ReferenceFormState> = {
-    referenceType,
-    title: item.title?.[0] ?? '',
-    authors: (item.author ?? []).map((a: { family?: string; given?: string }) => ({
-      family: a.family ?? '',
-      given: a.given ?? '',
-    })),
-    year: item.published?.['date-parts']?.[0]?.[0]?.toString() ?? '',
-    doi: `https://doi.org/${doi}`,
-  };
-
-  switch (referenceType) {
-    case 'journal-article':
-      return {
-        ...base,
-        journalName: containerTitle,
-        volume: item.volume ?? '',
-        issue: item.issue ?? '',
-        pages: item.page ?? '',
-      };
-    case 'book':
-      return {
-        ...base,
-        publisher,
-        edition: item.edition ?? '',
-      };
-    case 'edited-book-chapter':
-      return {
-        ...base,
-        bookTitle: containerTitle,
-        publisher,
-        pages: item.page ?? '',
-      };
-    case 'conference-paper':
-      return {
-        ...base,
-        conferenceName: containerTitle,
-      };
-    case 'report':
-      return {
-        ...base,
-        institution: publisher,
-      };
-    default:
-      return base;
-  }
+  return result.ok ? result.metadata : null;
 };
 
 interface ReferenceFormModalProps {
@@ -95,7 +38,9 @@ interface ReferenceFormModalProps {
   editingReferenceId: string | null;
   errorMessage?: string | null;
   isSubmitting?: boolean;
-  onFormChange: (updater: (current: ReferenceFormState) => ReferenceFormState) => void;
+  onFormChange: (
+    updater: (current: ReferenceFormState) => ReferenceFormState,
+  ) => void;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -118,56 +63,58 @@ const AuthorRows = ({
   const { t } = useTranslation();
 
   return (
-  <div>
-    <div className="flex items-center justify-between">
-      <span className="text-[13px] font-medium text-[var(--color-ink-strong)]">{label}</span>
-      <button
-        className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
-        onClick={() => onChange([...authors, emptyAuthor()])}
-        type="button"
-      >
-        {t('common.add')}
-      </button>
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-medium text-[var(--color-ink-strong)]">
+          {label}
+        </span>
+        <button
+          className="text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
+          onClick={() => onChange([...authors, emptyAuthor()])}
+          type="button"
+        >
+          {t('common.add')}
+        </button>
+      </div>
+      <div className="mt-1 space-y-2">
+        {authors.map((author, index) => (
+          <div className="flex gap-2" key={index}>
+            <input
+              aria-label={`${label} ${index + 1} family name`}
+              className={inputClass}
+              onChange={(event) => {
+                const next = [...authors];
+                next[index] = { ...author, family: event.target.value };
+                onChange(next);
+              }}
+              placeholder={t('referenceForm.familyName')}
+              value={author.family}
+            />
+            <input
+              aria-label={`${label} ${index + 1} given name`}
+              className={inputClass}
+              onChange={(event) => {
+                const next = [...authors];
+                next[index] = { ...author, given: event.target.value };
+                onChange(next);
+              }}
+              placeholder={t('referenceForm.givenName')}
+              value={author.given}
+            />
+            {authors.length > 1 && (
+              <button
+                aria-label={`Remove ${label.toLowerCase()} ${index + 1}`}
+                className="shrink-0 rounded-[var(--radius-button)] border border-[var(--color-line)] px-2 py-1 text-xs text-[var(--color-muted)] transition hover:text-[var(--color-ink-strong)]"
+                onClick={() => onChange(authors.filter((_, i) => i !== index))}
+                type="button"
+              >
+                {t('common.remove')}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-    <div className="mt-1 space-y-2">
-      {authors.map((author, index) => (
-        <div className="flex gap-2" key={index}>
-          <input
-            aria-label={`${label} ${index + 1} family name`}
-            className={inputClass}
-            onChange={(event) => {
-              const next = [...authors];
-              next[index] = { ...author, family: event.target.value };
-              onChange(next);
-            }}
-            placeholder={t('referenceForm.familyName')}
-            value={author.family}
-          />
-          <input
-            aria-label={`${label} ${index + 1} given name`}
-            className={inputClass}
-            onChange={(event) => {
-              const next = [...authors];
-              next[index] = { ...author, given: event.target.value };
-              onChange(next);
-            }}
-            placeholder={t('referenceForm.givenName')}
-            value={author.given}
-          />
-          {authors.length > 1 && (
-            <button
-              aria-label={`Remove ${label.toLowerCase()} ${index + 1}`}
-              className="shrink-0 rounded-[var(--radius-button)] border border-[var(--color-line)] px-2 py-1 text-xs text-[var(--color-muted)] transition hover:text-[var(--color-ink-strong)]"
-              onClick={() => onChange(authors.filter((_, i) => i !== index))}
-              type="button"
-            >
-              {t('common.remove')}
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
   );
 };
 
@@ -212,7 +159,10 @@ export const ReferenceFormModal = ({
     }
   };
 
-  const updateField = (key: keyof ReferenceFormState, value: string | boolean) => {
+  const updateField = (
+    key: keyof ReferenceFormState,
+    value: string | boolean,
+  ) => {
     onFormChange((current) => ({ ...current, [key]: value }));
   };
 
@@ -228,13 +178,17 @@ export const ReferenceFormModal = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="label-caps">
-                {isEditing ? t('referenceForm.editReference') : t('referenceForm.newReference')}
+                {isEditing
+                  ? t('referenceForm.editReference')
+                  : t('referenceForm.newReference')}
               </p>
               <h2
                 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]"
                 id="reference-form-title"
               >
-                {isEditing ? t('referenceForm.editHeading') : t('referenceForm.addHeading')}
+                {isEditing
+                  ? t('referenceForm.editHeading')
+                  : t('referenceForm.addHeading')}
               </h2>
             </div>
             <button
@@ -259,7 +213,9 @@ export const ReferenceFormModal = ({
                   <input
                     className={inputClass}
                     onChange={(event) => setDoiInput(event.target.value)}
-                    onKeyDown={(event) => { if (event.key === 'Enter') void handleDoiLookup(); }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') void handleDoiLookup();
+                    }}
                     placeholder="https://doi.org/10.xxxx/..."
                     value={doiInput}
                   />
@@ -269,11 +225,15 @@ export const ReferenceFormModal = ({
                     onClick={() => void handleDoiLookup()}
                     type="button"
                   >
-                    {doiLooking ? t('common.loading') : t('referenceForm.lookup')}
+                    {doiLooking
+                      ? t('common.loading')
+                      : t('referenceForm.lookup')}
                   </button>
                 </div>
                 {doiError && (
-                  <p className="mt-2 text-xs text-[var(--color-accent-strong)]">{doiError}</p>
+                  <p className="mt-2 text-xs text-[var(--color-accent-strong)]">
+                    {doiError}
+                  </p>
                 )}
               </div>
             )}
@@ -284,7 +244,10 @@ export const ReferenceFormModal = ({
               <select
                 className={inputClass}
                 onChange={(event) =>
-                  updateField('referenceType', event.target.value as ReferenceType)
+                  updateField(
+                    'referenceType',
+                    event.target.value as ReferenceType,
+                  )
                 }
                 value={form.referenceType}
               >
@@ -300,7 +263,9 @@ export const ReferenceFormModal = ({
             <AuthorRows
               authors={form.authors}
               label={t('referenceForm.authors')}
-              onChange={(authors) => onFormChange((current) => ({ ...current, authors }))}
+              onChange={(authors) =>
+                onFormChange((current) => ({ ...current, authors }))
+              }
             />
 
             {/* Year with unknown checkbox */}
@@ -318,7 +283,9 @@ export const ReferenceFormModal = ({
               <label className="mt-1.5 flex items-center gap-2 text-xs text-[var(--color-muted)]">
                 <input
                   checked={form.yearUnknown}
-                  onChange={(event) => updateField('yearUnknown', event.target.checked)}
+                  onChange={(event) =>
+                    updateField('yearUnknown', event.target.checked)
+                  }
                   type="checkbox"
                 />
                 {t('referenceForm.noDateLabel')}
@@ -333,11 +300,15 @@ export const ReferenceFormModal = ({
               >
                 {t(field.label)}
                 {field.required && (
-                  <span className="ml-1 text-[var(--color-accent-strong)]">*</span>
+                  <span className="ml-1 text-[var(--color-accent-strong)]">
+                    *
+                  </span>
                 )}
                 <input
                   className={inputClass}
-                  onChange={(event) => updateField(field.key, event.target.value)}
+                  onChange={(event) =>
+                    updateField(field.key, event.target.value)
+                  }
                   value={form[field.key] as string}
                 />
               </label>

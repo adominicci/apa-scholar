@@ -43,7 +43,10 @@ export const PaperInspectorPanel = ({
           }
           options={[
             { label: t('paperInspector.studentPaper'), value: 'student' },
-            { label: t('paperInspector.professionalPaper'), value: 'professional' },
+            {
+              label: t('paperInspector.professionalPaper'),
+              value: 'professional',
+            },
           ]}
           value={paperDraft.paper.paperType}
         />
@@ -59,15 +62,25 @@ export const PaperInspectorPanel = ({
         />
       </InspectorSection>
 
-      <InspectorSection title={isProfessional ? t('paperInspector.professionalMetadata') : t('paperInspector.studentMetadata')}>
+      <InspectorSection
+        title={
+          isProfessional
+            ? t('paperInspector.professionalMetadata')
+            : t('paperInspector.studentMetadata')
+        }
+      >
         <InspectorTextField
           label={t('paperInspector.authorName')}
-          onChange={(authorName) => onMetadataChange({ authorName: toMetadataValue(authorName) })}
+          onChange={(authorName) =>
+            onMetadataChange({ authorName: toMetadataValue(authorName) })
+          }
           value={toFieldValue(paperDraft.paperMeta.authorName)}
         />
         <InspectorTextField
           label={t('paperInspector.institution')}
-          onChange={(institution) => onMetadataChange({ institution: toMetadataValue(institution) })}
+          onChange={(institution) =>
+            onMetadataChange({ institution: toMetadataValue(institution) })
+          }
           value={toFieldValue(paperDraft.paperMeta.institution)}
         />
 
@@ -75,13 +88,17 @@ export const PaperInspectorPanel = ({
           <>
             <InspectorTextField
               label={t('paperInspector.runningHead')}
-              onChange={(runningHead) => onMetadataChange({ runningHead: toMetadataValue(runningHead) })}
+              onChange={(runningHead) =>
+                onMetadataChange({ runningHead: toMetadataValue(runningHead) })
+              }
               placeholder={t('paperInspector.runningHeadPlaceholder')}
               value={toFieldValue(paperDraft.paperMeta.runningHead)}
             />
             <InspectorTextAreaField
               label={t('paperInspector.authorNote')}
-              onChange={(authorNote) => onMetadataChange({ authorNote: toMetadataValue(authorNote) })}
+              onChange={(authorNote) =>
+                onMetadataChange({ authorNote: toMetadataValue(authorNote) })
+              }
               placeholder={t('paperInspector.authorNotePlaceholder')}
               value={toFieldValue(paperDraft.paperMeta.authorNote)}
             />
@@ -90,17 +107,25 @@ export const PaperInspectorPanel = ({
           <>
             <InspectorTextField
               label={t('paperInspector.courseName')}
-              onChange={(courseName) => onMetadataChange({ courseName: toMetadataValue(courseName) })}
+              onChange={(courseName) =>
+                onMetadataChange({ courseName: toMetadataValue(courseName) })
+              }
               value={toFieldValue(paperDraft.paperMeta.courseName)}
             />
             <InspectorTextField
               label={t('paperInspector.professorName')}
-              onChange={(professorName) => onMetadataChange({ professorName: toMetadataValue(professorName) })}
+              onChange={(professorName) =>
+                onMetadataChange({
+                  professorName: toMetadataValue(professorName),
+                })
+              }
               value={toFieldValue(paperDraft.paperMeta.professorName)}
             />
             <InspectorTextField
               label={t('paperInspector.dueDate')}
-              onChange={(dueDate) => onMetadataChange({ dueDate: toMetadataValue(dueDate) })}
+              onChange={(dueDate) =>
+                onMetadataChange({ dueDate: toMetadataValue(dueDate) })
+              }
               value={toFieldValue(paperDraft.paperMeta.dueDate)}
             />
           </>
@@ -108,10 +133,7 @@ export const PaperInspectorPanel = ({
       </InspectorSection>
 
       <InspectorSection title={t('paperInspector.issues')}>
-        <InspectorIssuesList
-          issues={issues}
-          onAutofix={onIssueAutofix}
-        />
+        <InspectorIssuesList issues={issues} onAutofix={onIssueAutofix} />
       </InspectorSection>
     </>
   );

@@ -9,8 +9,9 @@ import type {
 const getInlineText = (node: { type: string; text?: string }): string =>
   node.type === 'text' && node.text ? node.text : '';
 
-const getParagraphText = (node: { content?: { type: string; text?: string }[] }): string =>
-  (node.content ?? []).map(getInlineText).join('');
+const getParagraphText = (node: {
+  content?: { type: string; text?: string }[];
+}): string => (node.content ?? []).map(getInlineText).join('');
 
 const getListItemContentText = (node: BodyEditorListItemContentNode): string =>
   node.type === 'paragraph' ? getParagraphText(node) : getListText(node);

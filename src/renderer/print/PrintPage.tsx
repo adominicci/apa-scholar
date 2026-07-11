@@ -6,10 +6,14 @@ export const PrintPage = ({ page }: { page: PrintPageViewModel }) => (
     <div className="print-header">
       {page.header.left ? (
         <span className="print-header-left">{page.header.left}</span>
-      ) : <span />}
+      ) : (
+        <span />
+      )}
       <span>{page.header.right}</span>
     </div>
-    <div className={`print-blocks${page.kind === 'title-page' ? ' print-blocks--title-page' : ''}`}>
+    <div
+      className={`print-blocks${page.kind === 'title-page' ? ' print-blocks--title-page' : ''}`}
+    >
       {page.blocks.map((block, index) => (
         <PrintBlock block={block} key={index} />
       ))}

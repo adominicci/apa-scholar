@@ -4,7 +4,9 @@ contextBridge.exposeInMainWorld('electronPrintBridge', {
   onExportData: (handler: (event: unknown, data: unknown) => void) => {
     ipcRenderer.on('export:data', handler);
   },
-  removeExportDataListener: (handler: (event: unknown, data: unknown) => void) => {
+  removeExportDataListener: (
+    handler: (event: unknown, data: unknown) => void,
+  ) => {
     ipcRenderer.removeListener('export:data', handler);
   },
   signalReady: () => {
