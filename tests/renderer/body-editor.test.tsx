@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import * as pasteEngine from '@application/services/paste-engine';
@@ -44,7 +50,9 @@ interface MockedEditorConfig {
     transformPastedHTML?: (html: string) => string;
     transformPastedText?: (text: string) => string;
   };
-  onUpdate?: (payload: { editor: { getJSON: () => ReturnType<typeof createEmptyBodyEditorDocument> } }) => void;
+  onUpdate?: (payload: {
+    editor: { getJSON: () => ReturnType<typeof createEmptyBodyEditorDocument> };
+  }) => void;
 }
 
 let initialEditorConfig: MockedEditorConfig | null = null;
@@ -55,7 +63,9 @@ vi.mock('@tiptap/react', () => ({
     React.createElement('div', {
       'aria-label': 'Paper body draft',
       'data-editor-surface': 'true',
-      contentEditable: renderEditorSurfaceWithoutContentEditable ? undefined : true,
+      contentEditable: renderEditorSurfaceWithoutContentEditable
+        ? undefined
+        : true,
       role: 'textbox',
       tabIndex: 0,
     }),
@@ -135,7 +145,9 @@ describe('BodyEditor', () => {
       />,
     );
 
-    expect(initialEditorConfig?.editorProps?.attributes?.spellcheck).toBe('false');
+    expect(initialEditorConfig?.editorProps?.attributes?.spellcheck).toBe(
+      'false',
+    );
   });
 
   it('exposes paragraph, heading, and list commands through the imperative handle', () => {
@@ -213,24 +225,25 @@ describe('BodyEditor', () => {
     let handled = false;
 
     act(() => {
-      handled = initialEditorConfig?.editorProps?.handlePaste?.(
-        {} as never,
-        {
-          clipboardData: {
-            getData: (type: string) => {
-              if (type === 'text/html') {
-                return createSuspiciousPasteHtmlFixture();
-              }
+      handled =
+        initialEditorConfig?.editorProps?.handlePaste?.(
+          {} as never,
+          {
+            clipboardData: {
+              getData: (type: string) => {
+                if (type === 'text/html') {
+                  return createSuspiciousPasteHtmlFixture();
+                }
 
-              if (type === 'text/plain') {
-                return suspiciousText;
-              }
+                if (type === 'text/plain') {
+                  return suspiciousText;
+                }
 
-              return '';
+                return '';
+              },
             },
-          },
-        } as ClipboardEvent,
-      ) ?? false;
+          } as ClipboardEvent,
+        ) ?? false;
     });
 
     expect(handled).toBe(true);
@@ -238,7 +251,9 @@ describe('BodyEditor', () => {
       screen.getByRole('heading', { name: 'Review cleaned paste' }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Complex table structure was flattened and should be reviewed before insertion.'),
+      screen.getByText(
+        'Complex table structure was flattened and should be reviewed before insertion.',
+      ),
     ).toBeInTheDocument();
     expect(onPasteWarningsChange).toHaveBeenCalledWith([
       'Complex table structure was flattened and should be reviewed before insertion.',
@@ -246,9 +261,13 @@ describe('BodyEditor', () => {
       'Potentially unsafe embedded content was removed before insertion.',
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Insert cleaned copy' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Insert cleaned copy' }),
+    );
 
-    expect(editorInstance.commands.insertContent).toHaveBeenCalledWith(expectedInsert);
+    expect(editorInstance.commands.insertContent).toHaveBeenCalledWith(
+      expectedInsert,
+    );
     expect(onPasteWarningsChange).toHaveBeenLastCalledWith([]);
   });
 
@@ -271,7 +290,8 @@ describe('BodyEditor', () => {
       {} as never,
       {
         clipboardData: {
-          getData: (type: string) => (type === 'text/html' ? createWordPasteHtmlFixture() : ''),
+          getData: (type: string) =>
+            type === 'text/html' ? createWordPasteHtmlFixture() : '',
         },
       } as ClipboardEvent,
     );
@@ -346,7 +366,9 @@ describe('BodyEditor', () => {
       );
     });
 
-    const insertButton = screen.getByRole('button', { name: 'Insert cleaned copy' });
+    const insertButton = screen.getByRole('button', {
+      name: 'Insert cleaned copy',
+    });
     insertButton.focus();
 
     rerender(
@@ -388,7 +410,9 @@ describe('BodyEditor', () => {
 
     const closeButton = screen.getByRole('button', { name: 'Close' });
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-    const insertButton = screen.getByRole('button', { name: 'Insert cleaned copy' });
+    const insertButton = screen.getByRole('button', {
+      name: 'Insert cleaned copy',
+    });
 
     expect(closeButton).toHaveFocus();
 
@@ -422,7 +446,9 @@ describe('BodyEditor', () => {
       />,
     );
 
-    const editorSurface = screen.getByRole('textbox', { name: 'Paper body draft' });
+    const editorSurface = screen.getByRole('textbox', {
+      name: 'Paper body draft',
+    });
     const focusSpy = vi.spyOn(editorSurface, 'focus');
 
     act(() => {
@@ -447,5 +473,4 @@ describe('BodyEditor', () => {
     expect(focusSpy).toHaveBeenCalled();
     rafSpy.mockRestore();
   });
-
 });

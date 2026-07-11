@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import type { ReferenceRepository } from '@application/contracts/persistence-repositories';
-import { createEntityId, createIsoTimestamp } from '@domain/shared/entity-helpers';
+import {
+  createEntityId,
+  createIsoTimestamp,
+} from '@domain/shared/entity-helpers';
 import {
   computeReferenceSortKey,
   createReferenceInputSchema,
@@ -107,9 +110,12 @@ export const createReferenceRepository = (
         timestamp,
       );
 
-      return getById(id) ?? (() => {
-        throw new Error(`Created reference "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Created reference "${id}" could not be reloaded.`);
+        })()
+      );
     },
 
     listByPaper: (paperId: string): ReferenceEntry[] =>
@@ -137,9 +143,12 @@ export const createReferenceRepository = (
         id,
       );
 
-      return getById(id) ?? (() => {
-        throw new Error(`Updated reference "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Updated reference "${id}" could not be reloaded.`);
+        })()
+      );
     },
 
     delete: (id: string): void => {

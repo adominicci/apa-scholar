@@ -154,7 +154,8 @@ const en = {
     fieldReportNumber: 'Report number',
     pasteDoiUrl: 'Quick add — paste a DOI',
     lookup: 'Look up',
-    lookupFailed: 'Could not find metadata for this DOI. Try adding the reference manually.',
+    lookupFailed:
+      'Could not find metadata for this DOI. Try adding the reference manually.',
   },
 
   courseModal: {
@@ -187,7 +188,8 @@ const en = {
     font: 'Font',
     blockQuote: 'Block quote',
     apaFormat: 'APA Format',
-    apaFormatDescription: 'Switch paper mode, manage APA setup, and apply document structure from one menu.',
+    apaFormatDescription:
+      'Switch paper mode, manage APA setup, and apply document structure from one menu.',
     paperSetup: 'Paper setup',
     apaBasic: 'APA Basic',
     apaProfessional: 'APA Professional',
@@ -213,7 +215,8 @@ const en = {
     createFirstCourse: 'Create your first course',
     draftPaperShell: 'Start a new paper',
     recentPapers: 'Recent papers',
-    noRecentPapers: 'Your recent papers will appear here once you start drafting.',
+    noRecentPapers:
+      'Your recent papers will appear here once you start drafting.',
   },
 
   courseView: {
@@ -238,7 +241,8 @@ const en = {
     wordCount: '{{count}} words',
     pageCount: '{{count}} pages',
     loadingPaperScaffold: 'Loading paper scaffold',
-    loadingPaperDescription: 'Pulling the latest paper skeleton from local storage.',
+    loadingPaperDescription:
+      'Pulling the latest paper skeleton from local storage.',
   },
 
   settings: {
@@ -251,7 +255,8 @@ const en = {
 
   errors: {
     bridgeUnavailable: 'The desktop bridge is unavailable right now.',
-    bridgeRestart: 'The desktop bridge is unavailable right now. Restart the app.',
+    bridgeRestart:
+      'The desktop bridge is unavailable right now. Restart the app.',
     unableToLoadCourses: 'Unable to load your courses right now.',
     unableToLoadPapers: 'Unable to load papers for this course right now.',
     unableToLoadPaper: 'Unable to load this paper draft right now.',
@@ -268,12 +273,14 @@ const en = {
     unableToSaveReference: 'Unable to save the reference right now. Try again.',
     unableToDeleteReference: 'Unable to delete the reference right now.',
     exportFailed: 'PDF export failed. Please try again.',
-    searchPlaceholder: 'Full-text search across courses and papers is coming soon.',
+    searchPlaceholder:
+      'Full-text search across courses and papers is coming soon.',
   },
 
   validation: {
     authorRequired: 'At least one author with a family name is required.',
-    authorIncomplete: 'Each author requires both a family name and a given name.',
+    authorIncomplete:
+      'Each author requires both a family name and a given name.',
     titleRequired: 'Title is required.',
     yearInvalid: 'Year must be a four-digit number or marked as unknown.',
     fieldRequired: '{{label}} is required for this reference type.',
@@ -282,7 +289,9 @@ const en = {
 } as const;
 
 type DeepStringify<T> = {
-  [K in keyof T]: T[K] extends Record<string, unknown> ? DeepStringify<T[K]> : string;
+  [K in keyof T]: T[K] extends Record<string, unknown>
+    ? DeepStringify<T[K]>
+    : string;
 };
 
 export type TranslationResource = DeepStringify<typeof en>;

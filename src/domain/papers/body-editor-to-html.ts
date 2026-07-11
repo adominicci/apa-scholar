@@ -7,10 +7,7 @@ import type {
 } from '@domain/papers/body-editor-schema';
 
 const escapeHtml = (text: string): string =>
-  text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const renderMarks = (text: string, marks?: BodyEditorMark[]): string => {
   if (!marks || marks.length === 0) return escapeHtml(text);
@@ -35,12 +32,15 @@ const renderInlineContent = (content?: BodyEditorInlineNode[]): string =>
   (content ?? []).map(renderInlineNode).join('');
 
 const renderListItem = (item: BodyEditorListItem): string =>
-  `<li>${item.content.map((node) =>
-    node.type === 'paragraph'
-      ? `<p>${renderInlineContent(node.content)}</p>`
-      : node.type === 'bulletList'
-        ? `<ul>${node.content.map(renderListItem).join('')}</ul>`
-        : `<ol>${node.content.map(renderListItem).join('')}</ol>`).join('')}</li>`;
+  `<li>${item.content
+    .map((node) =>
+      node.type === 'paragraph'
+        ? `<p>${renderInlineContent(node.content)}</p>`
+        : node.type === 'bulletList'
+          ? `<ul>${node.content.map(renderListItem).join('')}</ul>`
+          : `<ol>${node.content.map(renderListItem).join('')}</ol>`,
+    )
+    .join('')}</li>`;
 
 const renderBlockNode = (node: BodyEditorBlockNode): string => {
   switch (node.type) {

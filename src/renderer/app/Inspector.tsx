@@ -62,208 +62,197 @@ export const Inspector = ({
   const { t } = useTranslation();
 
   return (
-  <aside
-    aria-label={t('inspector.inspectorPanel')}
-    className="relative flex flex-col overflow-hidden border-l border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
-    role="complementary"
-    style={{ width: collapsed ? 48 : 340 }}
-  >
-    {/* Collapsed icon rail */}
-    <div
-      aria-hidden={collapsed ? 'false' : 'true'}
-      className="panel-rail absolute inset-0 flex flex-col items-center py-4"
-      data-visible={collapsed ? 'true' : 'false'}
+    <aside
+      aria-label={t('inspector.inspectorPanel')}
+      className="relative flex flex-col overflow-hidden border-l border-[var(--color-line)] bg-[var(--color-panel)] transition-all duration-300"
+      role="complementary"
+      style={{ width: collapsed ? 48 : 340 }}
     >
-      <button
-        aria-label={t('inspector.details')}
-        className={railButtonClass}
-        onClick={() => onInspectorTabChange('details')}
-        type="button"
+      {/* Collapsed icon rail */}
+      <div
+        aria-hidden={collapsed ? 'false' : 'true'}
+        className="panel-rail absolute inset-0 flex flex-col items-center py-4"
+        data-visible={collapsed ? 'true' : 'false'}
       >
-        <InfoIcon />
-      </button>
-      <button
-        aria-label={t('inspector.issues')}
-        className={railButtonClass}
-        onClick={() => onInspectorTabChange('issues')}
-        type="button"
-      >
-        <AlertTriangleIcon />
-      </button>
-      <button
-        aria-label={t('inspector.references')}
-        className={railButtonClass}
-        onClick={() => onInspectorTabChange('references')}
-        type="button"
-      >
-        <BookmarkIcon />
-      </button>
-      <div className="mt-auto">
         <button
-          aria-label={t('inspector.expandInspector')}
+          aria-label={t('inspector.details')}
           className={railButtonClass}
-          onClick={onCollapseToggle}
+          onClick={() => onInspectorTabChange('details')}
           type="button"
         >
-          <ChevronLeftIcon />
+          <InfoIcon />
         </button>
-      </div>
-    </div>
-
-    {/* Expanded content */}
-    <div
-      aria-hidden={collapsed ? 'true' : 'false'}
-      className="panel-content flex flex-1 flex-col overflow-y-auto no-scrollbar"
-      data-collapsed={collapsed ? 'true' : 'false'}
-    >
-      <div className="flex items-center justify-between border-b border-[var(--color-line)] p-4">
-        <div className="min-w-0 flex-1 pr-2">
-          <p className="label-caps">
-            {t('inspector.inspector')}
-          </p>
-          {activePaper ? (
-            <div className="mt-2 flex flex-wrap gap-1">
-              <button
-                className={tabButtonClass(inspectorTab === 'details')}
-                onClick={() => onInspectorTabChange('details')}
-                type="button"
-              >
-                {t('inspector.details')}
-              </button>
-              <button
-                className={tabButtonClass(inspectorTab === 'issues')}
-                onClick={() => onInspectorTabChange('issues')}
-                type="button"
-              >
-                {t('inspector.issues')}
-              </button>
-              <button
-                className={tabButtonClass(inspectorTab === 'references')}
-                onClick={() => onInspectorTabChange('references')}
-                type="button"
-              >
-                {t('inspector.references')}
-              </button>
-            </div>
-          ) : (
-            <h2 className="mt-1 text-sm font-bold text-[var(--color-ink-strong)]">
-              {activeCourse ? t('inspector.courseDetails') : t('inspector.workspaceGuide')}
-            </h2>
-          )}
+        <button
+          aria-label={t('inspector.issues')}
+          className={railButtonClass}
+          onClick={() => onInspectorTabChange('issues')}
+          type="button"
+        >
+          <AlertTriangleIcon />
+        </button>
+        <button
+          aria-label={t('inspector.references')}
+          className={railButtonClass}
+          onClick={() => onInspectorTabChange('references')}
+          type="button"
+        >
+          <BookmarkIcon />
+        </button>
+        <div className="mt-auto">
+          <button
+            aria-label={t('inspector.expandInspector')}
+            className={railButtonClass}
+            onClick={onCollapseToggle}
+            type="button"
+          >
+            <ChevronLeftIcon />
+          </button>
         </div>
-        <button
-          aria-label={t('inspector.collapseInspector')}
-          className={railButtonClass}
-          onClick={onCollapseToggle}
-          type="button"
-        >
-          <ChevronLeftIcon />
-        </button>
       </div>
 
-      <div className="border-b border-[var(--color-line)] p-4">
-        {activePaper && activePaperDetail ? (
-          inspectorTab === 'references' ? (
-            <ReferencesPanel
-              references={paperReferences}
-              onAddReference={onAddReference}
-              onEditReference={onEditReference}
-              onDeleteReference={onDeleteReference}
-              onInsertCitation={onInsertCitation}
-            />
-          ) : inspectorTab === 'issues' ? (
+      {/* Expanded content */}
+      <div
+        aria-hidden={collapsed ? 'true' : 'false'}
+        className="panel-content flex flex-1 flex-col overflow-y-auto no-scrollbar"
+        data-collapsed={collapsed ? 'true' : 'false'}
+      >
+        <div className="flex items-center justify-between border-b border-[var(--color-line)] p-4">
+          <div className="min-w-0 flex-1 pr-2">
+            <p className="label-caps">{t('inspector.inspector')}</p>
+            {activePaper ? (
+              <div className="mt-2 flex flex-wrap gap-1">
+                <button
+                  className={tabButtonClass(inspectorTab === 'details')}
+                  onClick={() => onInspectorTabChange('details')}
+                  type="button"
+                >
+                  {t('inspector.details')}
+                </button>
+                <button
+                  className={tabButtonClass(inspectorTab === 'issues')}
+                  onClick={() => onInspectorTabChange('issues')}
+                  type="button"
+                >
+                  {t('inspector.issues')}
+                </button>
+                <button
+                  className={tabButtonClass(inspectorTab === 'references')}
+                  onClick={() => onInspectorTabChange('references')}
+                  type="button"
+                >
+                  {t('inspector.references')}
+                </button>
+              </div>
+            ) : (
+              <h2 className="mt-1 text-sm font-bold text-[var(--color-ink-strong)]">
+                {activeCourse
+                  ? t('inspector.courseDetails')
+                  : t('inspector.workspaceGuide')}
+              </h2>
+            )}
+          </div>
+          <button
+            aria-label={t('inspector.collapseInspector')}
+            className={railButtonClass}
+            onClick={onCollapseToggle}
+            type="button"
+          >
+            <ChevronLeftIcon />
+          </button>
+        </div>
+
+        <div className="border-b border-[var(--color-line)] p-4">
+          {activePaper && activePaperDetail ? (
+            inspectorTab === 'references' ? (
+              <ReferencesPanel
+                references={paperReferences}
+                onAddReference={onAddReference}
+                onEditReference={onEditReference}
+                onDeleteReference={onDeleteReference}
+                onInsertCitation={onInsertCitation}
+              />
+            ) : inspectorTab === 'issues' ? (
+              <>
+                <p className="label-caps">{t('inspector.issues')}</p>
+                {paperIssues.length > 0 ? (
+                  <div className="mt-4 space-y-2">
+                    {paperIssues.map((issue) => (
+                      <div
+                        className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] p-3"
+                        key={issue.code}
+                      >
+                        <p className="text-sm text-[var(--color-ink-strong)]">
+                          {issue.title}
+                        </p>
+                        {issue.autofix && (
+                          <button
+                            className="mt-1 text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
+                            onClick={() => onPaperIssueAutofix(issue)}
+                            type="button"
+                          >
+                            {t('common.fix')}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+                    {t('inspector.noIssues')}
+                  </p>
+                )}
+              </>
+            ) : (
+              <PaperInspectorPanel
+                issues={paperIssues}
+                paperDraft={activePaperDetail}
+                onIssueAutofix={onPaperIssueAutofix}
+                onMetadataChange={onPaperMetadataChange}
+              />
+            )
+          ) : activeCourse ? (
             <>
-              <p className="label-caps">{t('inspector.issues')}</p>
-              {paperIssues.length > 0 ? (
-                <div className="mt-4 space-y-2">
-                  {paperIssues.map((issue) => (
-                    <div
-                      className="rounded-[var(--radius-card)] border border-[var(--color-line)] bg-[var(--color-panel-muted)] p-3"
-                      key={issue.code}
-                    >
-                      <p className="text-sm text-[var(--color-ink-strong)]">{issue.title}</p>
-                      {issue.autofix && (
-                        <button
-                          className="mt-1 text-[10px] font-semibold uppercase tracking-[var(--tracking-caps)] text-[var(--color-accent-strong)] transition hover:underline"
-                          onClick={() => onPaperIssueAutofix(issue)}
-                          type="button"
-                        >
-                          {t('common.fix')}
-                        </button>
-                      )}
-                    </div>
-                  ))}
+              <p className="label-caps">{t('inspector.courseDetails')}</p>
+              <div className="mt-4 space-y-4 text-sm">
+                <div>
+                  <p className="label-caps">{t('inspector.professor')}</p>
+                  <p className="mt-1 text-[var(--color-ink-strong)]">
+                    {activeCourse.professorName ?? t('common.notSetYet')}
+                  </p>
                 </div>
-              ) : (
-                <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-                  {t('inspector.noIssues')}
-                </p>
-              )}
+                <div>
+                  <p className="label-caps">{t('inspector.semester')}</p>
+                  <p className="mt-1 text-[var(--color-ink-strong)]">
+                    {activeCourse.semester ?? t('common.notSetYet')}
+                  </p>
+                </div>
+                <div>
+                  <p className="label-caps">{t('inspector.institution')}</p>
+                  <p className="mt-1 text-[var(--color-ink-strong)]">
+                    {activeCourse.institution ?? t('common.notSetYet')}
+                  </p>
+                </div>
+              </div>
             </>
           ) : (
-            <PaperInspectorPanel
-              issues={paperIssues}
-              paperDraft={activePaperDetail}
-              onIssueAutofix={onPaperIssueAutofix}
-              onMetadataChange={onPaperMetadataChange}
-            />
-          )
-        ) : activeCourse ? (
-          <>
-            <p className="label-caps">
-              {t('inspector.courseDetails')}
-            </p>
-            <div className="mt-4 space-y-4 text-sm">
-              <div>
-                <p className="label-caps">
-                  {t('inspector.professor')}
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.professorName ?? t('common.notSetYet')}
-                </p>
-              </div>
-              <div>
-                <p className="label-caps">
-                  {t('inspector.semester')}
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.semester ?? t('common.notSetYet')}
-                </p>
-              </div>
-              <div>
-                <p className="label-caps">
-                  {t('inspector.institution')}
-                </p>
-                <p className="mt-1 text-[var(--color-ink-strong)]">
-                  {activeCourse.institution ?? t('common.notSetYet')}
-                </p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="label-caps">
-              {t('inspector.workspaceGuide')}
-            </p>
+            <>
+              <p className="label-caps">{t('inspector.workspaceGuide')}</p>
+              <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+                {t('inspector.workspaceGuideText')}
+              </p>
+            </>
+          )}
+        </div>
+
+        {!activePaper && (
+          <div className="border-b border-[var(--color-line)] p-4">
+            <p className="label-caps">{t('inspector.issues')}</p>
             <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-              {t('inspector.workspaceGuideText')}
+              {t('inspector.issuesPlaceholder')}
             </p>
-          </>
+          </div>
         )}
       </div>
-
-      {!activePaper && (
-        <div className="border-b border-[var(--color-line)] p-4">
-          <p className="label-caps">
-            {t('inspector.issues')}
-          </p>
-          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-            {t('inspector.issuesPlaceholder')}
-          </p>
-        </div>
-      )}
-
-    </div>
-  </aside>
+    </aside>
   );
 };

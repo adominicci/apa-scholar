@@ -9,11 +9,7 @@ import {
 
 const entityIdSchema = z.string().trim().min(1, 'Entity id is required.');
 const isoTimestampSchema = z.string().datetime({ offset: true });
-const nullableTrimmedStringSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .nullable();
+const nullableTrimmedStringSchema = z.string().trim().min(1).nullable();
 
 export const languageSchema = z.enum(supportedLanguages, {
   error: (issue) =>
@@ -110,7 +106,9 @@ export const updatePaperInputSchema = z
 
 export const updatePaperMetadataInputSchema = z
   .object({
-    abstractEnabled: z.preprocess((value) => value === 1 || value === true, z.boolean()).optional(),
+    abstractEnabled: z
+      .preprocess((value) => value === 1 || value === true, z.boolean())
+      .optional(),
     authorName: nullableTrimmedStringSchema.optional(),
     authorNote: nullableTrimmedStringSchema.optional(),
     courseCode: nullableTrimmedStringSchema.optional(),
@@ -139,7 +137,10 @@ export const paperMetaSchema = z.object({
   dueDate: nullableTrimmedStringSchema,
   runningHead: nullableTrimmedStringSchema,
   authorNote: nullableTrimmedStringSchema,
-  abstractEnabled: z.preprocess((value) => value === 1 || value === true, z.boolean()),
+  abstractEnabled: z.preprocess(
+    (value) => value === 1 || value === true,
+    z.boolean(),
+  ),
   createdAt: isoTimestampSchema,
   updatedAt: isoTimestampSchema,
 });
@@ -163,9 +164,13 @@ export type CreateCourseInput = z.infer<typeof createCourseInputSchema>;
 export type UpdateCourseInput = z.infer<typeof updateCourseInputSchema>;
 export type Paper = z.infer<typeof paperSchema>;
 export type CreatePaperInput = z.infer<typeof createPaperInputSchema>;
-export type CreateStoredPaperInput = z.infer<typeof createStoredPaperInputSchema>;
+export type CreateStoredPaperInput = z.infer<
+  typeof createStoredPaperInputSchema
+>;
 export type UpdatePaperInput = z.infer<typeof updatePaperInputSchema>;
-export type UpdatePaperMetadataInput = z.infer<typeof updatePaperMetadataInputSchema>;
+export type UpdatePaperMetadataInput = z.infer<
+  typeof updatePaperMetadataInputSchema
+>;
 export type PaperMeta = z.infer<typeof paperMetaSchema>;
 export type PaperContent = z.infer<typeof paperContentSchema>;
 export type AppSettings = z.infer<typeof appSettingsSchema>;

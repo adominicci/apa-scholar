@@ -5,7 +5,11 @@ import type { GhostPageViewModel } from '@domain/papers/ghost-page-view-model';
 import type { BodyEditorHandle } from '@renderer/app/paper-canvas/body-editor/BodyEditor';
 import { PaperCanvasBlock } from '@renderer/app/paper-canvas/PaperCanvasBlock';
 import { PaperCanvasPage } from '@renderer/app/paper-canvas/PaperCanvasPage';
-import { PaperCanvasToolbar, apaFonts, type ApaFontId } from '@renderer/app/paper-canvas/PaperCanvasToolbar';
+import {
+  PaperCanvasToolbar,
+  apaFonts,
+  type ApaFontId,
+} from '@renderer/app/paper-canvas/PaperCanvasToolbar';
 
 interface PaperCanvasProps {
   bodyDocument: BodyEditorDocument;
@@ -74,10 +78,16 @@ export const PaperCanvas = ({
     />
     <div
       className="flex-1 overflow-y-auto"
-      style={{
-        '--font-display': (apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]).family,
-        '--apa-font-size': (apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]).size,
-      } as React.CSSProperties}
+      style={
+        {
+          '--font-display': (
+            apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]
+          ).family,
+          '--apa-font-size': (
+            apaFonts.find((f) => f.id === selectedFont) ?? apaFonts[0]
+          ).size,
+        } as React.CSSProperties
+      }
     >
       <div className="flex flex-col items-center gap-[var(--page-gap)] py-8">
         {paperDraft.ghostPages.map((page) => (
@@ -87,7 +97,9 @@ export const PaperCanvas = ({
                 <PaperCanvasBlock
                   block={block}
                   bodyDocument={bodyDocument}
-                  bodyEditorRef={block.kind === 'body-editor' ? bodyEditorRef : undefined}
+                  bodyEditorRef={
+                    block.kind === 'body-editor' ? bodyEditorRef : undefined
+                  }
                   key={block.id}
                   onBodyDocumentChange={onBodyDocumentChange}
                   onPasteWarningsChange={onPasteWarningsChange}

@@ -15,7 +15,9 @@ describe('runMigrations', () => {
     });
     const exec = vi.fn();
     const transaction = vi.fn(() => {
-      throw new Error('transaction() should not be used for db.exec migrations');
+      throw new Error(
+        'transaction() should not be used for db.exec migrations',
+      );
     });
 
     runMigrations({

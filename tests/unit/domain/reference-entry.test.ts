@@ -29,7 +29,9 @@ describe('reference entry schemas', () => {
   });
 
   it('rejects an unsupported reference type', () => {
-    expect(() => referenceTypeSchema.parse('newspaper')).toThrow(/reference type/i);
+    expect(() => referenceTypeSchema.parse('newspaper')).toThrow(
+      /reference type/i,
+    );
   });
 
   it('parses a valid reference author', () => {

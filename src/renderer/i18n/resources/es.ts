@@ -76,7 +76,8 @@ const es: TranslationResource = {
     runningHead: 'Encabezado continuo',
     runningHeadPlaceholder: 'Título corto',
     authorNote: 'Nota del autor',
-    authorNotePlaceholder: 'Departamento, agradecimientos o nota de financiamiento',
+    authorNotePlaceholder:
+      'Departamento, agradecimientos o nota de financiamiento',
     courseName: 'Nombre del curso',
     professorName: 'Nombre del profesor',
     dueDate: 'Fecha de entrega',
@@ -91,7 +92,8 @@ const es: TranslationResource = {
     body: 'Cuerpo',
     references: 'Referencias',
     titlePage: 'Página de título',
-    allGood: 'Todas las verificaciones APA rastreadas se ven bien para este trabajo.',
+    allGood:
+      'Todas las verificaciones APA rastreadas se ven bien para este trabajo.',
     nextPrefix: 'Siguiente: {{suggestedFix}}',
   },
 
@@ -156,7 +158,8 @@ const es: TranslationResource = {
     fieldReportNumber: 'Número de informe',
     pasteDoiUrl: 'Agregar rápido — pega un DOI',
     lookup: 'Buscar',
-    lookupFailed: 'No se encontraron datos para este DOI. Intenta agregar la referencia manualmente.',
+    lookupFailed:
+      'No se encontraron datos para este DOI. Intenta agregar la referencia manualmente.',
   },
 
   courseModal: {
@@ -174,7 +177,8 @@ const es: TranslationResource = {
     newPaper: 'Nuevo trabajo',
     heading: 'Abre una nueva plantilla APA',
     paperTitle: 'Título del trabajo',
-    titlePlaceholder: 'ej. El Impacto de las Redes Sociales en el Rendimiento Académico',
+    titlePlaceholder:
+      'ej. El Impacto de las Redes Sociales en el Rendimiento Académico',
     course: 'Curso',
     template: 'Plantilla',
     selectCourse: 'Selecciona un curso',
@@ -189,7 +193,8 @@ const es: TranslationResource = {
     font: 'Fuente',
     blockQuote: 'Cita en bloque',
     apaFormat: 'Formato APA',
-    apaFormatDescription: 'Cambia el modo del trabajo, ajusta la configuración APA y aplica estructura al documento desde un solo menú.',
+    apaFormatDescription:
+      'Cambia el modo del trabajo, ajusta la configuración APA y aplica estructura al documento desde un solo menú.',
     paperSetup: 'Configuración del trabajo',
     apaBasic: 'APA Básico',
     apaProfessional: 'APA Profesional',
@@ -215,7 +220,8 @@ const es: TranslationResource = {
     createFirstCourse: 'Crea tu primer curso',
     draftPaperShell: 'Iniciar un nuevo trabajo',
     recentPapers: 'Trabajos recientes',
-    noRecentPapers: 'Tus trabajos recientes aparecerán aquí cuando comiences a redactar.',
+    noRecentPapers:
+      'Tus trabajos recientes aparecerán aquí cuando comiences a redactar.',
   },
 
   courseView: {
@@ -240,7 +246,8 @@ const es: TranslationResource = {
     wordCount: '{{count}} palabras',
     pageCount: '{{count}} páginas',
     loadingPaperScaffold: 'Cargando estructura del trabajo',
-    loadingPaperDescription: 'Obteniendo la última estructura del trabajo desde el almacenamiento local.',
+    loadingPaperDescription:
+      'Obteniendo la última estructura del trabajo desde el almacenamiento local.',
   },
 
   settings: {
@@ -252,14 +259,21 @@ const es: TranslationResource = {
   },
 
   errors: {
-    bridgeUnavailable: 'El puente de escritorio no está disponible en este momento.',
-    bridgeRestart: 'El puente de escritorio no está disponible en este momento. Reinicia la aplicación.',
+    bridgeUnavailable:
+      'El puente de escritorio no está disponible en este momento.',
+    bridgeRestart:
+      'El puente de escritorio no está disponible en este momento. Reinicia la aplicación.',
     unableToLoadCourses: 'No se pudieron cargar tus cursos en este momento.',
-    unableToLoadPapers: 'No se pudieron cargar los trabajos de este curso en este momento.',
-    unableToLoadPaper: 'No se pudo cargar este borrador de trabajo en este momento.',
-    unableToCreateCourse: 'No se pudo crear el curso en este momento. Intenta de nuevo.',
-    unableToRenameCourse: 'No se pudo renombrar el curso en este momento. Intenta de nuevo.',
-    unableToCreatePaper: 'No se pudo crear el trabajo en este momento. Intenta de nuevo.',
+    unableToLoadPapers:
+      'No se pudieron cargar los trabajos de este curso en este momento.',
+    unableToLoadPaper:
+      'No se pudo cargar este borrador de trabajo en este momento.',
+    unableToCreateCourse:
+      'No se pudo crear el curso en este momento. Intenta de nuevo.',
+    unableToRenameCourse:
+      'No se pudo renombrar el curso en este momento. Intenta de nuevo.',
+    unableToCreatePaper:
+      'No se pudo crear el trabajo en este momento. Intenta de nuevo.',
     courseNameRequired: 'El nombre del curso es obligatorio.',
     chooseCourse: 'Selecciona un curso antes de crear el trabajo.',
     paperTitleRequired: 'El título del trabajo es obligatorio.',
@@ -267,17 +281,21 @@ const es: TranslationResource = {
       'No se pudieron guardar los metadatos del trabajo en este momento. Los cambios permanecen locales hasta que se guarden correctamente.',
     unableToSaveBody:
       'No se pudo guardar el cuerpo del trabajo en este momento. Los cambios permanecen locales hasta que se guarden correctamente.',
-    unableToSaveReference: 'No se pudo guardar la referencia en este momento. Intenta de nuevo.',
-    unableToDeleteReference: 'No se pudo eliminar la referencia en este momento.',
+    unableToSaveReference:
+      'No se pudo guardar la referencia en este momento. Intenta de nuevo.',
+    unableToDeleteReference:
+      'No se pudo eliminar la referencia en este momento.',
     exportFailed: 'La exportación de PDF falló. Intenta de nuevo.',
-    searchPlaceholder: 'La búsqueda de texto completo en cursos y trabajos estará disponible pronto.',
+    searchPlaceholder:
+      'La búsqueda de texto completo en cursos y trabajos estará disponible pronto.',
   },
 
   validation: {
     authorRequired: 'Se requiere al menos un autor con apellido.',
     authorIncomplete: 'Cada autor requiere tanto apellido como nombre.',
     titleRequired: 'El título es obligatorio.',
-    yearInvalid: 'El año debe ser un número de cuatro dígitos o marcarse como desconocido.',
+    yearInvalid:
+      'El año debe ser un número de cuatro dígitos o marcarse como desconocido.',
     fieldRequired: '{{label}} es obligatorio para este tipo de referencia.',
     editorRequired: 'Se requiere al menos un editor con apellido.',
   },

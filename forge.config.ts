@@ -12,11 +12,7 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
 
 /** Native/external modules that Vite does not bundle and must be copied into the packaged app. */
-const externalModules = [
-  'better-sqlite3',
-  'bindings',
-  'file-uri-to-path',
-];
+const externalModules = ['better-sqlite3', 'bindings', 'file-uri-to-path'];
 
 const isSigningConfigured =
   Boolean(process.env.APPLE_ID) &&

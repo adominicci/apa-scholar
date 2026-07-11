@@ -18,23 +18,27 @@ describe('body-editor-schema', () => {
   });
 
   it('preserves supported heading and blockquote structures', () => {
-    expect(normalizeBodyEditorDocument(createHeadingBodyEditorFixture())).toEqual(
-      createHeadingBodyEditorFixture(),
-    );
-    expect(normalizeBodyEditorDocument(createBlockquoteBodyEditorFixture())).toEqual(
-      createBlockquoteBodyEditorFixture(),
-    );
-    expect(normalizeBodyEditorDocument({
-      content: [createListBodyEditorFixture()],
-      type: 'doc',
-    })).toEqual({
+    expect(
+      normalizeBodyEditorDocument(createHeadingBodyEditorFixture()),
+    ).toEqual(createHeadingBodyEditorFixture());
+    expect(
+      normalizeBodyEditorDocument(createBlockquoteBodyEditorFixture()),
+    ).toEqual(createBlockquoteBodyEditorFixture());
+    expect(
+      normalizeBodyEditorDocument({
+        content: [createListBodyEditorFixture()],
+        type: 'doc',
+      }),
+    ).toEqual({
       content: [createListBodyEditorFixture()],
       type: 'doc',
     });
   });
 
   it('downgrades unsupported structure to supported body-editor content', () => {
-    expect(normalizeBodyEditorDocument(createUnsupportedFormattingFixture())).toEqual({
+    expect(
+      normalizeBodyEditorDocument(createUnsupportedFormattingFixture()),
+    ).toEqual({
       content: [
         {
           content: [

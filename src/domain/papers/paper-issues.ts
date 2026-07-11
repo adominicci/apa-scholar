@@ -15,7 +15,11 @@ import {
 import { abstractEnabledTemplates } from '@domain/shared/contracts';
 
 export const paperIssueSeveritySchema = z.enum(['high', 'medium', 'low']);
-export const paperIssueCategorySchema = z.enum(['structure', 'formatting', 'advisory']);
+export const paperIssueCategorySchema = z.enum([
+  'structure',
+  'formatting',
+  'advisory',
+]);
 export const paperIssueScopeSchema = z.enum([
   'title-page',
   'abstract',
@@ -46,12 +50,17 @@ export type PaperIssueScope = z.infer<typeof paperIssueScopeSchema>;
 export type PaperIssueAutofix = z.infer<typeof paperIssueAutofixSchema>;
 export type PaperIssue = z.infer<typeof paperIssueSchema>;
 
-export const paperIssueSeverityOrder: PaperIssueSeverity[] = ['high', 'medium', 'low'];
+export const paperIssueSeverityOrder: PaperIssueSeverity[] = [
+  'high',
+  'medium',
+  'low',
+];
 
 const hasText = (value: string | null | undefined): boolean =>
   typeof value === 'string' ? value.trim().length > 0 : false;
 
-const createIssue = (input: PaperIssue): PaperIssue => paperIssueSchema.parse(input);
+const createIssue = (input: PaperIssue): PaperIssue =>
+  paperIssueSchema.parse(input);
 
 const createMetadataRequirementIssue = (input: {
   code: string;
@@ -75,13 +84,17 @@ const getInlineTextContent = (node: BodyEditorInlineNode): string =>
 const getParagraphTextContent = (paragraph: BodyEditorParagraphNode): string =>
   (paragraph.content ?? []).map(getInlineTextContent).join('').trim();
 
-const getListTextContent = (node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>): string =>
+const getListTextContent = (
+  node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>,
+): string =>
   node.content
     .flatMap((item) =>
       item.content.map((child) =>
         child.type === 'paragraph'
           ? getParagraphTextContent(child)
-          : getListTextContent(child)))
+          : getListTextContent(child),
+      ),
+    )
     .join(' ')
     .trim();
 
@@ -98,27 +111,43 @@ const getBlockTextContent = (node: BodyEditorBlockNode): string => {
 };
 
 const hasMeaningfulBodyContent = (draft: PaperDraft): boolean =>
-  draft.paperContent.bodyDoc.content.some((node) => getBlockTextContent(node).length > 0);
+  draft.paperContent.bodyDoc.content.some(
+    (node) => getBlockTextContent(node).length > 0,
+  );
 
 const getHardBreakCount = (draft: PaperDraft): number =>
   draft.paperContent.bodyDoc.content.reduce((count, node) => {
     if (node.type === 'blockquote') {
-      return count + node.content.reduce(
-        (paragraphCount, paragraph) =>
-          paragraphCount +
-          (paragraph.content ?? []).filter((inlineNode) => inlineNode.type === 'hardBreak').length,
-        0,
+      return (
+        count +
+        node.content.reduce(
+          (paragraphCount, paragraph) =>
+            paragraphCount +
+            (paragraph.content ?? []).filter(
+              (inlineNode) => inlineNode.type === 'hardBreak',
+            ).length,
+          0,
+        )
       );
     }
 
-    return count + (node.content ?? []).filter((inlineNode) => inlineNode.type === 'hardBreak').length;
+    return (
+      count +
+      (node.content ?? []).filter(
+        (inlineNode) => inlineNode.type === 'hardBreak',
+      ).length
+    );
   }, 0);
 
 const hasRequiredAbstractPage = (paper: Paper, draft: PaperDraft): boolean => {
   const abstractRequired =
-    draft.paperMeta.abstractEnabled || abstractEnabledTemplates.has(paper.templateId);
+    draft.paperMeta.abstractEnabled ||
+    abstractEnabledTemplates.has(paper.templateId);
 
-  return !abstractRequired || draft.ghostPages.some((page) => page.kind === 'abstract-page');
+  return (
+    !abstractRequired ||
+    draft.ghostPages.some((page) => page.kind === 'abstract-page')
+  );
 };
 
 const hasRequiredReferencesPage = (draft: PaperDraft): boolean =>
@@ -169,16 +198,23 @@ export const buildPasteWarningIssues = (warnings: string[]): PaperIssue[] =>
       description: warning,
       scope: 'body',
       severity: 'medium',
-      suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+      suggestedFix:
+        'Review the cleaned paste preview before inserting it into the paper.',
       title: 'Suspicious pasted formatting detected.',
     }),
   );
 
-const collectCitationReferenceIds = (marks: BodyEditorMark[] | undefined): string[] => {
+const collectCitationReferenceIds = (
+  marks: BodyEditorMark[] | undefined,
+): string[] => {
   if (!marks) return [];
   return marks
-    .filter((m): m is { type: 'citation'; attrs: { referenceId: string } } =>
-      m.type === 'citation' && 'attrs' in m && typeof (m as { attrs?: { referenceId?: unknown } }).attrs?.referenceId === 'string',
+    .filter(
+      (m): m is { type: 'citation'; attrs: { referenceId: string } } =>
+        m.type === 'citation' &&
+        'attrs' in m &&
+        typeof (m as { attrs?: { referenceId?: unknown } }).attrs
+          ?.referenceId === 'string',
     )
     .map((m) => m.attrs.referenceId);
 };
@@ -200,7 +236,9 @@ const collectAllCitationIds = (draft: PaperDraft): Set<string> => {
     }
   };
 
-  const processList = (node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>) => {
+  const processList = (
+    node: Extract<BodyEditorBlockNode, { type: 'bulletList' | 'orderedList' }>,
+  ) => {
     for (const item of node.content) {
       for (const child of item.content) {
         if (child.type === 'paragraph') {
@@ -239,7 +277,8 @@ export const evaluatePaperIssues = (
     issues.push(
       createMetadataRequirementIssue({
         code: 'missing-title',
-        description: 'The paper title drives the title page and body heading scaffold.',
+        description:
+          'The paper title drives the title page and body heading scaffold.',
         title: 'Title is required.',
       }),
     );
@@ -249,7 +288,8 @@ export const evaluatePaperIssues = (
     issues.push(
       createMetadataRequirementIssue({
         code: 'missing-author-name',
-        description: 'Add the author name so the title page matches the selected APA paper type.',
+        description:
+          'Add the author name so the title page matches the selected APA paper type.',
         title: 'Author name is required.',
       }),
     );
@@ -259,7 +299,8 @@ export const evaluatePaperIssues = (
     issues.push(
       createMetadataRequirementIssue({
         code: 'missing-institution',
-        description: 'Institution is part of the supported title-page scaffold for this paper.',
+        description:
+          'Institution is part of the supported title-page scaffold for this paper.',
         title: 'Institution is required.',
       }),
     );
@@ -270,7 +311,8 @@ export const evaluatePaperIssues = (
       issues.push(
         createMetadataRequirementIssue({
           code: 'missing-running-head',
-          description: 'Professional papers need a running head value for the page header scaffold.',
+          description:
+            'Professional papers need a running head value for the page header scaffold.',
           title: 'Running head is required.',
         }),
       );
@@ -280,7 +322,8 @@ export const evaluatePaperIssues = (
       issues.push(
         createMetadataRequirementIssue({
           code: 'missing-course-name',
-          description: 'Student papers should name the course on the title page.',
+          description:
+            'Student papers should name the course on the title page.',
           title: 'Course name is required.',
         }),
       );
@@ -290,7 +333,8 @@ export const evaluatePaperIssues = (
       issues.push(
         createMetadataRequirementIssue({
           code: 'missing-professor-name',
-          description: 'Student papers should include the instructor name on the title page.',
+          description:
+            'Student papers should include the instructor name on the title page.',
           title: 'Professor name is required.',
         }),
       );
@@ -300,7 +344,8 @@ export const evaluatePaperIssues = (
       issues.push(
         createMetadataRequirementIssue({
           code: 'missing-due-date',
-          description: 'Student papers should include the due date on the title page.',
+          description:
+            'Student papers should include the due date on the title page.',
           title: 'Due date is required.',
         }),
       );
@@ -315,7 +360,8 @@ export const evaluatePaperIssues = (
             label: 'Clear the leftover running head',
           },
           code: 'student-paper-running-head',
-          description: 'Running heads are reserved for the professional paper workflow in this shell.',
+          description:
+            'Running heads are reserved for the professional paper workflow in this shell.',
           severity: 'medium',
           title: 'Running head is not used for student papers.',
         }),
@@ -331,7 +377,8 @@ export const evaluatePaperIssues = (
             label: 'Clear the leftover author note',
           },
           code: 'student-paper-author-note',
-          description: 'Author notes belong to the professional title-page flow and can be removed here safely.',
+          description:
+            'Author notes belong to the professional title-page flow and can be removed here safely.',
           severity: 'medium',
           title: 'Author note is not used for student papers.',
         }),
@@ -345,10 +392,12 @@ export const evaluatePaperIssues = (
         autofix: null,
         category: 'structure',
         code: 'missing-abstract-section',
-        description: 'This paper structure expects an abstract page, but the draft scaffold is missing it.',
+        description:
+          'This paper structure expects an abstract page, but the draft scaffold is missing it.',
         scope: 'abstract',
         severity: 'high',
-        suggestedFix: 'Rebuild or resync the paper structure so the abstract page is available.',
+        suggestedFix:
+          'Rebuild or resync the paper structure so the abstract page is available.',
         title: 'Abstract page scaffold is missing.',
       }),
     );
@@ -360,10 +409,12 @@ export const evaluatePaperIssues = (
         autofix: null,
         category: 'structure',
         code: 'missing-references-section',
-        description: 'Every supported paper shell should keep a references page scaffold available.',
+        description:
+          'Every supported paper shell should keep a references page scaffold available.',
         scope: 'references',
         severity: 'high',
-        suggestedFix: 'Rebuild or resync the paper structure so the references page returns.',
+        suggestedFix:
+          'Rebuild or resync the paper structure so the references page returns.',
         title: 'References scaffold is missing.',
       }),
     );
@@ -375,7 +426,8 @@ export const evaluatePaperIssues = (
         autofix: null,
         category: 'structure',
         code: 'missing-body-content',
-        description: 'Add at least one real paragraph to move beyond the empty body scaffold.',
+        description:
+          'Add at least one real paragraph to move beyond the empty body scaffold.',
         scope: 'body',
         severity: 'high',
         suggestedFix: 'Write the opening paragraph in the body draft.',
@@ -390,10 +442,12 @@ export const evaluatePaperIssues = (
         autofix: null,
         category: 'advisory',
         code: 'manual-line-breaks',
-        description: 'Manual line breaks usually come from copied formatting and can disturb APA paragraph flow.',
+        description:
+          'Manual line breaks usually come from copied formatting and can disturb APA paragraph flow.',
         scope: 'body',
         severity: 'low',
-        suggestedFix: 'Replace manual line breaks with separate paragraphs when possible.',
+        suggestedFix:
+          'Replace manual line breaks with separate paragraphs when possible.',
         title: 'Manual line breaks found in the body.',
       }),
     );
@@ -410,7 +464,8 @@ export const evaluatePaperIssues = (
         description: `Heading levels jump more than one step after level ${headingLevelGap}, which can confuse the paper hierarchy.`,
         scope: 'body',
         severity: 'low',
-        suggestedFix: 'Use the next heading level in sequence before moving deeper.',
+        suggestedFix:
+          'Use the next heading level in sequence before moving deeper.',
         title: 'Heading levels skip in the body draft.',
       }),
     );
@@ -429,10 +484,12 @@ export const evaluatePaperIssues = (
             autofix: null,
             category: 'structure',
             code: `orphan-citation-${citedId}`,
-            description: 'A citation in the body points to a reference that no longer exists in the reference list.',
+            description:
+              'A citation in the body points to a reference that no longer exists in the reference list.',
             scope: 'references',
             severity: 'medium',
-            suggestedFix: 'Remove the orphan citation or re-add the matching reference.',
+            suggestedFix:
+              'Remove the orphan citation or re-add the matching reference.',
             title: 'Citation without a matching reference.',
           }),
         );
@@ -442,7 +499,8 @@ export const evaluatePaperIssues = (
     // References with no corresponding citations
     for (const ref of references) {
       if (!citedIds.has(ref.id)) {
-        const refTitle = typeof ref.fields.title === 'string' ? ref.fields.title : 'Untitled';
+        const refTitle =
+          typeof ref.fields.title === 'string' ? ref.fields.title : 'Untitled';
         issues.push(
           createIssue({
             autofix: null,
@@ -451,7 +509,8 @@ export const evaluatePaperIssues = (
             description: `The reference "${refTitle}" is in your list but has no matching citation in the body.`,
             scope: 'references',
             severity: 'low',
-            suggestedFix: 'Insert a citation for this reference in the body or remove the unused reference.',
+            suggestedFix:
+              'Insert a citation for this reference in the body or remove the unused reference.',
             title: 'Reference without a citation.',
           }),
         );

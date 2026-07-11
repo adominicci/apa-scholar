@@ -17,18 +17,14 @@ describe('createPersistenceIpcHandlers', () => {
     const createPaper = vi
       .fn()
       .mockResolvedValue({ id: 'paper-2', courseId: 'course-1' });
-    const updatePaperBodyContent = vi
-      .fn()
-      .mockResolvedValue({
-        ghostPages: [],
-        paper: { id: 'paper-1', title: 'Faculty Draft' },
-      });
-    const updatePaperMetadata = vi
-      .fn()
-      .mockResolvedValue({
-        ghostPages: [],
-        paper: { id: 'paper-1', title: 'Faculty Draft' },
-      });
+    const updatePaperBodyContent = vi.fn().mockResolvedValue({
+      ghostPages: [],
+      paper: { id: 'paper-1', title: 'Faculty Draft' },
+    });
+    const updatePaperMetadata = vi.fn().mockResolvedValue({
+      ghostPages: [],
+      paper: { id: 'paper-1', title: 'Faculty Draft' },
+    });
     const querySearch = vi.fn().mockResolvedValue({
       courses: [],
       papers: [],

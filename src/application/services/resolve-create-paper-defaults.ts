@@ -1,6 +1,4 @@
-import {
-  resolvePaperTypeFromTemplate,
-} from '@domain/shared/contracts';
+import { resolvePaperTypeFromTemplate } from '@domain/shared/contracts';
 import type {
   AppSettings,
   Course,
@@ -18,14 +16,16 @@ export const resolveCreatePaperDefaults = <
   course: TCourse,
   settings?: TSettings,
 ): ResolvedCreatePaperDefaults => {
-  const templateId = input.templateId ?? course.defaultPaperTemplate ?? 'apa-student';
+  const templateId =
+    input.templateId ?? course.defaultPaperTemplate ?? 'apa-student';
 
   return {
     courseId: input.courseId,
     title: input.title,
     templateId,
     paperType: input.paperType ?? resolvePaperTypeFromTemplate(templateId),
-    language: input.language ?? course.defaultLanguage ?? settings?.language ?? 'en',
+    language:
+      input.language ?? course.defaultLanguage ?? settings?.language ?? 'en',
     status: 'draft',
   };
 };

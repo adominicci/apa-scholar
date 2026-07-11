@@ -26,7 +26,9 @@ const createPaper = (overrides: Partial<Paper> = {}): Paper => ({
   ...overrides,
 });
 
-const createBodyDocument = (content: PaperContent['bodyDoc']['content']): PaperContent['bodyDoc'] => ({
+const createBodyDocument = (
+  content: PaperContent['bodyDoc']['content'],
+): PaperContent['bodyDoc'] => ({
   content,
   type: 'doc',
 });
@@ -49,7 +51,9 @@ const createPaperMeta = (overrides: Partial<PaperMeta> = {}): PaperMeta => ({
   ...overrides,
 });
 
-const createPaperContent = (overrides: Partial<PaperContent> = {}): PaperContent => ({
+const createPaperContent = (
+  overrides: Partial<PaperContent> = {},
+): PaperContent => ({
   abstractDoc: { content: [], type: 'doc' },
   bodyDoc: createBodyDocument([
     {
@@ -128,12 +132,17 @@ describe('paper issues', () => {
     const issues = evaluatePaperIssues({
       ...draft,
       ghostPages: draft.ghostPages.filter(
-        (page) => page.kind !== 'abstract-page' && page.kind !== 'references-page',
+        (page) =>
+          page.kind !== 'abstract-page' && page.kind !== 'references-page',
       ),
     });
 
-    expect(issues.map((issue) => issue.code)).toContain('missing-abstract-section');
-    expect(issues.map((issue) => issue.code)).toContain('missing-references-section');
+    expect(issues.map((issue) => issue.code)).toContain(
+      'missing-abstract-section',
+    );
+    expect(issues.map((issue) => issue.code)).toContain(
+      'missing-references-section',
+    );
   });
 
   it('adds safe autofixes for professional-only metadata that lingers on student papers', () => {
@@ -222,8 +231,10 @@ describe('paper issues', () => {
     expect(issues.map((issue) => issue.code)).toContain('heading-level-gap');
     expect(
       issues
-        .filter((issue) =>
-          issue.code === 'manual-line-breaks' || issue.code === 'heading-level-gap',
+        .filter(
+          (issue) =>
+            issue.code === 'manual-line-breaks' ||
+            issue.code === 'heading-level-gap',
         )
         .every((issue) => issue.severity === 'low' && issue.scope === 'body'),
     ).toBe(true);
@@ -236,7 +247,9 @@ describe('paper issues', () => {
           {
             content: [
               {
-                marks: [{ type: 'citation', attrs: { referenceId: 'ref-missing' } }],
+                marks: [
+                  { type: 'citation', attrs: { referenceId: 'ref-missing' } },
+                ],
                 text: '(Smith, 2020)',
                 type: 'text',
               },
@@ -252,7 +265,12 @@ describe('paper issues', () => {
         id: 'ref-1',
         paperId: 'paper-1',
         referenceType: 'book',
-        fields: { authors: [{ family: 'A', given: 'B' }], year: '2020', title: 'X', publisher: 'P' },
+        fields: {
+          authors: [{ family: 'A', given: 'B' }],
+          year: '2020',
+          title: 'X',
+          publisher: 'P',
+        },
         sortKey: 'a|2020|x',
         createdAt: '2026-03-07T14:00:00.000Z',
         updatedAt: '2026-03-07T14:00:00.000Z',
@@ -260,7 +278,9 @@ describe('paper issues', () => {
     ]);
 
     expect(issues.map((i) => i.code)).toContain('orphan-citation-ref-missing');
-    const orphanIssue = issues.find((i) => i.code === 'orphan-citation-ref-missing')!;
+    const orphanIssue = issues.find(
+      (i) => i.code === 'orphan-citation-ref-missing',
+    )!;
     expect(orphanIssue.severity).toBe('medium');
     expect(orphanIssue.scope).toBe('references');
   });
@@ -273,7 +293,12 @@ describe('paper issues', () => {
         id: 'ref-1',
         paperId: 'paper-1',
         referenceType: 'book',
-        fields: { authors: [{ family: 'Jones', given: 'D' }], year: '2021', title: 'Unused Work', publisher: 'P' },
+        fields: {
+          authors: [{ family: 'Jones', given: 'D' }],
+          year: '2021',
+          title: 'Unused Work',
+          publisher: 'P',
+        },
         sortKey: 'jones|2021|unused work',
         createdAt: '2026-03-07T14:00:00.000Z',
         updatedAt: '2026-03-07T14:00:00.000Z',
@@ -309,7 +334,12 @@ describe('paper issues', () => {
         id: 'ref-1',
         paperId: 'paper-1',
         referenceType: 'book',
-        fields: { authors: [{ family: 'Jones', given: 'D' }], year: '2021', title: 'Cited Work', publisher: 'P' },
+        fields: {
+          authors: [{ family: 'Jones', given: 'D' }],
+          year: '2021',
+          title: 'Cited Work',
+          publisher: 'P',
+        },
         sortKey: 'jones|2021|cited work',
         createdAt: '2026-03-07T14:00:00.000Z',
         updatedAt: '2026-03-07T14:00:00.000Z',
@@ -332,7 +362,8 @@ describe('paper issues', () => {
         code: 'suspicious-paste-warning-0',
         scope: 'body',
         severity: 'medium',
-        suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+        suggestedFix:
+          'Review the cleaned paste preview before inserting it into the paper.',
         title: 'Suspicious pasted formatting detected.',
       }),
       expect.objectContaining({
@@ -340,7 +371,8 @@ describe('paper issues', () => {
         code: 'suspicious-paste-warning-1',
         scope: 'body',
         severity: 'medium',
-        suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+        suggestedFix:
+          'Review the cleaned paste preview before inserting it into the paper.',
         title: 'Suspicious pasted formatting detected.',
       }),
     ]);

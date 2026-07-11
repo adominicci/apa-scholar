@@ -95,7 +95,9 @@ describe('createPersistenceContext', () => {
       title: 'Literature Review',
     });
     const paperMetaRow = context.database
-      .prepare('SELECT paper_id AS paperId, title FROM paper_meta WHERE paper_id = ?')
+      .prepare(
+        'SELECT paper_id AS paperId, title FROM paper_meta WHERE paper_id = ?',
+      )
       .get(createdPaper.id) as { paperId: string; title: string } | undefined;
     const paperContentRow = context.database
       .prepare(
@@ -229,6 +231,8 @@ describe('createPersistenceContext', () => {
     expect(JSON.parse(paperContentRow?.bodyDoc ?? '{}')).toEqual(
       createHeadingBodyEditorFixture(),
     );
-    expect(updatedDraft.paperContent.bodyDoc).toEqual(createHeadingBodyEditorFixture());
+    expect(updatedDraft.paperContent.bodyDoc).toEqual(
+      createHeadingBodyEditorFixture(),
+    );
   });
 });

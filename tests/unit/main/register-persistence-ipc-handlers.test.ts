@@ -16,8 +16,12 @@ describe('registerPersistenceIpcHandlers', () => {
         [persistenceIpcChannels.papersListRecent]: () => [],
         [persistenceIpcChannels.papersGetById]: () => ({ id: 'paper-1' }),
         [persistenceIpcChannels.papersCreate]: () => ({ id: 'paper-1' }),
-        [persistenceIpcChannels.papersUpdateBodyContent]: () => ({ id: 'paper-1' }),
-        [persistenceIpcChannels.papersUpdateMetadata]: () => ({ id: 'paper-1' }),
+        [persistenceIpcChannels.papersUpdateBodyContent]: () => ({
+          id: 'paper-1',
+        }),
+        [persistenceIpcChannels.papersUpdateMetadata]: () => ({
+          id: 'paper-1',
+        }),
         [persistenceIpcChannels.referencesListByPaper]: () => [],
         [persistenceIpcChannels.referencesCreate]: () => ({ id: 'ref-1' }),
         [persistenceIpcChannels.referencesGetById]: () => null,

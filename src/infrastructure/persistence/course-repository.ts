@@ -1,5 +1,8 @@
 import type { CourseRepository } from '@application/contracts/persistence-repositories';
-import { createEntityId, createIsoTimestamp } from '@domain/shared/entity-helpers';
+import {
+  createEntityId,
+  createIsoTimestamp,
+} from '@domain/shared/entity-helpers';
 import {
   createCourseInputSchema,
   courseSchema,
@@ -130,11 +133,15 @@ export const createCourseRepository = (
         timestamp,
       );
 
-      return getById(id) ?? (() => {
-        throw new Error(`Created course "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Created course "${id}" could not be reloaded.`);
+        })()
+      );
     },
-    listActive: (): Course[] => listActiveCoursesStatement.all().map(parseCourseRow),
+    listActive: (): Course[] =>
+      listActiveCoursesStatement.all().map(parseCourseRow),
     getById,
     update: (id: string, input: UpdateCourseInput): Course => {
       const existingCourse = getById(id);
@@ -162,9 +169,12 @@ export const createCourseRepository = (
         id,
       );
 
-      return getById(id) ?? (() => {
-        throw new Error(`Updated course "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Updated course "${id}" could not be reloaded.`);
+        })()
+      );
     },
     archive: (id: string): Course => {
       const existingCourse = getById(id);
@@ -176,9 +186,12 @@ export const createCourseRepository = (
       const timestamp = createIsoTimestamp();
       archiveCourseStatement.run(timestamp, timestamp, id);
 
-      return getById(id) ?? (() => {
-        throw new Error(`Archived course "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Archived course "${id}" could not be reloaded.`);
+        })()
+      );
     },
   };
 };

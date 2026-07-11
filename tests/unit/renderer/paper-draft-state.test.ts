@@ -63,12 +63,15 @@ describe('paper draft state', () => {
         description: 'Embedded media was removed from the pasted content.',
         scope: 'body',
         severity: 'medium',
-        suggestedFix: 'Review the cleaned paste preview before inserting it into the paper.',
+        suggestedFix:
+          'Review the cleaned paste preview before inserting it into the paper.',
         title: 'Suspicious pasted formatting detected.',
       },
     ]);
 
-    expect(issues.map((issue) => issue.code)).toContain('suspicious-paste-warning-0');
+    expect(issues.map((issue) => issue.code)).toContain(
+      'suspicious-paste-warning-0',
+    );
     expect(issues.map((issue) => issue.code)).toContain('missing-author-name');
   });
 });

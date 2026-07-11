@@ -109,7 +109,9 @@ describe('formatReferenceApa', () => {
     const text = formatReferenceApaPlainText(entry);
     expect(text).toContain('Garcia, M.');
     expect(text).toContain('APA Style Blog');
-    expect(text).toContain('Retrieved March 10, 2026, from https://apastyle.apa.org/style');
+    expect(text).toContain(
+      'Retrieved March 10, 2026, from https://apastyle.apa.org/style',
+    );
   });
 
   it('formats a conference paper', () => {

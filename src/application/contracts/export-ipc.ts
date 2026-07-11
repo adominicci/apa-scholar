@@ -4,7 +4,8 @@ export const exportIpcChannels = {
   exportPdf: 'export:pdf',
 } as const;
 
-export type ExportIpcChannel = (typeof exportIpcChannels)[keyof typeof exportIpcChannels];
+export type ExportIpcChannel =
+  (typeof exportIpcChannels)[keyof typeof exportIpcChannels];
 
 export const exportPdfPayloadSchema = z.object({
   paperId: z.string().trim().min(1, 'Paper id is required.'),

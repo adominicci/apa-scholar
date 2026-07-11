@@ -42,12 +42,8 @@ export const InspectorSection = ({
   title,
 }: InspectorSectionProps) => (
   <section className="border-b border-[var(--color-line)] p-4 last:border-b-0">
-    <p className="label-caps">
-      {title}
-    </p>
-    <div className="mt-4 space-y-4">
-      {children}
-    </div>
+    <p className="label-caps">{title}</p>
+    <div className="mt-4 space-y-4">{children}</div>
   </section>
 );
 
@@ -132,7 +128,8 @@ const issueSeverityKeys: Record<PaperIssueSeverity, string> = {
 const issueSeverityClasses: Record<PaperIssueSeverity, string> = {
   high: 'border-[rgba(197,89,64,0.38)] bg-[rgba(197,89,64,0.08)] text-[var(--color-ink-strong)]',
   low: 'border-[var(--color-line)] bg-[var(--color-panel-muted)] text-[var(--color-ink-strong)]',
-  medium: 'border-[rgba(190,132,82,0.38)] bg-[rgba(190,132,82,0.08)] text-[var(--color-ink-strong)]',
+  medium:
+    'border-[rgba(190,132,82,0.38)] bg-[rgba(190,132,82,0.08)] text-[var(--color-ink-strong)]',
 };
 
 const issueScopeKeys: Record<PaperIssue['scope'], string> = {
@@ -164,7 +161,9 @@ export const InspectorIssuesList = ({
   return (
     <div className="space-y-4">
       {paperIssueSeverityOrder.map((severity) => {
-        const groupedIssues = issues.filter((issue) => issue.severity === severity);
+        const groupedIssues = issues.filter(
+          (issue) => issue.severity === severity,
+        );
 
         if (groupedIssues.length === 0) {
           return null;
@@ -207,7 +206,9 @@ export const InspectorIssuesList = ({
 
                   {issue.suggestedFix ? (
                     <p className="mt-3 text-xs font-medium text-[var(--color-ink-strong)]">
-                      {t('issues.nextPrefix', { suggestedFix: issue.suggestedFix })}
+                      {t('issues.nextPrefix', {
+                        suggestedFix: issue.suggestedFix,
+                      })}
                     </p>
                   ) : null}
 

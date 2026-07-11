@@ -17,31 +17,36 @@ describe('body-editor-serialization', () => {
   });
 
   it('serializes normalized body content for persistence', () => {
-    expect(serializeBodyEditorDocument(createUnsupportedFormattingFixture())).toEqual(
-      {
-        content: [
-          {
-            content: [
-              {
-                marks: [
-                  {
-                    type: 'bold',
-                  },
-                ],
-                text: 'Imported heading',
-                type: 'text',
-              },
-            ],
-            type: 'paragraph',
-          },
-        ],
-        type: 'doc',
-      },
-    );
+    expect(
+      serializeBodyEditorDocument(createUnsupportedFormattingFixture()),
+    ).toEqual({
+      content: [
+        {
+          content: [
+            {
+              marks: [
+                {
+                  type: 'bold',
+                },
+              ],
+              text: 'Imported heading',
+              type: 'text',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      type: 'doc',
+    });
   });
 
   it('preserves supported list content during serialization', () => {
-    expect(serializeBodyEditorDocument({ content: [createListBodyEditorFixture()], type: 'doc' })).toEqual({
+    expect(
+      serializeBodyEditorDocument({
+        content: [createListBodyEditorFixture()],
+        type: 'doc',
+      }),
+    ).toEqual({
       content: [createListBodyEditorFixture()],
       type: 'doc',
     });

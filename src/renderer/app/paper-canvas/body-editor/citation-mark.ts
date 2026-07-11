@@ -4,7 +4,9 @@ export interface CitationMarkAttributes {
   referenceId: string;
 }
 
-export const CitationMark = Mark.create<{ HTMLAttributes: Record<string, unknown> }>({
+export const CitationMark = Mark.create<{
+  HTMLAttributes: Record<string, unknown>;
+}>({
   name: 'citation',
 
   addAttributes() {

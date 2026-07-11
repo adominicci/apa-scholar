@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { buildPrintPageViewModels, type PrintPageViewModel } from '@domain/papers/print-page-view-model';
+import {
+  buildPrintPageViewModels,
+  type PrintPageViewModel,
+} from '@domain/papers/print-page-view-model';
 import type { StoredPaperAggregate } from '@domain/papers/paper-draft';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
 import { PrintPage } from '@renderer/print/PrintPage';

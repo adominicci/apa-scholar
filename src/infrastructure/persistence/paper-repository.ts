@@ -21,7 +21,10 @@ import type {
 import type { TemplateSeedResult } from '@domain/papers/template-definitions';
 import type { SqliteDatabase } from '@infrastructure/persistence/database';
 import { createRowParser } from '@infrastructure/persistence/row-parsers';
-import { parseJsonRecord, toNullableString } from '@infrastructure/persistence/sql-helpers';
+import {
+  parseJsonRecord,
+  toNullableString,
+} from '@infrastructure/persistence/sql-helpers';
 
 const parsePaperRow = createRowParser(paperSchema);
 const parsePaperMetaRow = createRowParser(paperMetaSchema);
@@ -223,7 +226,9 @@ export const createPaperRepository = (
       WHERE paper_id = ?
     `,
   );
-  const updatePaperContentStatement = database.prepare<[string, string, string]>(
+  const updatePaperContentStatement = database.prepare<
+    [string, string, string]
+  >(
     `
       UPDATE paper_content
       SET
@@ -303,7 +308,7 @@ export const createPaperRepository = (
         toNullableString(seed.paperMeta.runningHead),
         toNullableString(seed.paperMeta.authorNote),
         seed.paperMeta.abstractEnabled ||
-        abstractEnabledTemplates.has(input.templateId)
+          abstractEnabledTemplates.has(input.templateId)
           ? 1
           : 0,
         timestamp,
@@ -320,16 +325,22 @@ export const createPaperRepository = (
   );
 
   return {
-    create: (input: CreateStoredPaperInput, seed: TemplateSeedResult): Paper => {
+    create: (
+      input: CreateStoredPaperInput,
+      seed: TemplateSeedResult,
+    ): Paper => {
       const parsedInput = createStoredPaperInputSchema.parse(input);
       const id = createEntityId();
       const timestamp = createIsoTimestamp();
 
       insertPaperAggregate(id, parsedInput, seed, timestamp);
 
-      return getById(id) ?? (() => {
-        throw new Error(`Created paper "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Created paper "${id}" could not be reloaded.`);
+        })()
+      );
     },
     getAggregateById,
     listByCourse: (courseId: string): Paper[] =>
@@ -361,11 +372,17 @@ export const createPaperRepository = (
         id,
       );
 
-      return getById(id) ?? (() => {
-        throw new Error(`Updated paper "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Updated paper "${id}" could not be reloaded.`);
+        })()
+      );
     },
-    updateMetadata: (id: string, aggregate: StoredPaperAggregate): StoredPaperAggregate => {
+    updateMetadata: (
+      id: string,
+      aggregate: StoredPaperAggregate,
+    ): StoredPaperAggregate => {
       const updatedAt = createIsoTimestamp();
       const updatedPaper = {
         ...aggregate.paper,
@@ -407,9 +424,14 @@ export const createPaperRepository = (
         }
       })();
 
-      return getAggregateById(id) ?? (() => {
-        throw new Error(`Updated paper aggregate "${id}" could not be reloaded.`);
-      })();
+      return (
+        getAggregateById(id) ??
+        (() => {
+          throw new Error(
+            `Updated paper aggregate "${id}" could not be reloaded.`,
+          );
+        })()
+      );
     },
     updateBodyContent: (
       id: string,
@@ -430,9 +452,14 @@ export const createPaperRepository = (
         }
       })();
 
-      return getAggregateById(id) ?? (() => {
-        throw new Error(`Updated paper aggregate "${id}" could not be reloaded.`);
-      })();
+      return (
+        getAggregateById(id) ??
+        (() => {
+          throw new Error(
+            `Updated paper aggregate "${id}" could not be reloaded.`,
+          );
+        })()
+      );
     },
     archive: (id: string): Paper => {
       const existingPaper = getById(id);
@@ -444,9 +471,12 @@ export const createPaperRepository = (
       const timestamp = createIsoTimestamp();
       archivePaperStatement.run(timestamp, timestamp, id);
 
-      return getById(id) ?? (() => {
-        throw new Error(`Archived paper "${id}" could not be reloaded.`);
-      })();
+      return (
+        getById(id) ??
+        (() => {
+          throw new Error(`Archived paper "${id}" could not be reloaded.`);
+        })()
+      );
     },
   };
 };

@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type {
-  Paper,
-  PaperMeta,
-} from '@domain/shared/persistence-models';
+import type { Paper, PaperMeta } from '@domain/shared/persistence-models';
 import {
   applyPaperMetadataUpdate,
   getPaperMetadataValidationMessages,

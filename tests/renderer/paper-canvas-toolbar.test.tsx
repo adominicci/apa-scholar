@@ -31,7 +31,10 @@ describe('PaperCanvasToolbar', () => {
     render(<PaperCanvasToolbar {...defaultProps} />);
 
     // Paper setup section is expanded by default
-    expect(screen.getByRole('button', { name: 'APA Basic' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'APA Basic' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'APA Professional' }));
     expect(defaultProps.onSetPaperType).toHaveBeenCalledWith('professional');
@@ -66,7 +69,9 @@ describe('PaperCanvasToolbar', () => {
       />,
     );
 
-    const expandButton = screen.getByRole('button', { name: 'Show format panel' });
+    const expandButton = screen.getByRole('button', {
+      name: 'Show format panel',
+    });
     expect(expandButton).toBeInTheDocument();
 
     fireEvent.click(expandButton);
@@ -79,11 +84,19 @@ describe('PaperCanvasToolbar', () => {
     // Open Font section
     fireEvent.click(screen.getByText('Font'));
 
-    expect(screen.getByRole('button', { name: /Times New Roman/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /Calibri/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Times New Roman/i }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: /Calibri/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Arial/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Georgia/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Lucida Sans/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Georgia/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Lucida Sans/i }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Calibri/i }));
     expect(defaultProps.onFontChange).toHaveBeenCalledWith('calibri');

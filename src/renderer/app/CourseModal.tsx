@@ -6,7 +6,9 @@ interface CourseModalProps {
   courseForm: CreateCourseInput;
   errorMessage?: string | null;
   isSubmitting?: boolean;
-  onFormChange: (updater: (current: CreateCourseInput) => CreateCourseInput) => void;
+  onFormChange: (
+    updater: (current: CreateCourseInput) => CreateCourseInput,
+  ) => void;
   onSubmit: (form: HTMLFormElement) => void;
   onClose: () => void;
 }
@@ -42,9 +44,7 @@ export const CourseModal = ({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="label-caps">
-              {t('courseModal.newCourse')}
-            </p>
+            <p className="label-caps">{t('courseModal.newCourse')}</p>
             <h2 className="mt-3 font-[var(--font-display)] text-2xl text-[var(--color-ink-strong)]">
               {t('courseModal.heading')}
             </h2>
@@ -146,7 +146,9 @@ export const CourseModal = ({
             }}
             type="button"
           >
-            {isSubmitting ? t('courseModal.creatingCourse') : t('courseModal.createCourse')}
+            {isSubmitting
+              ? t('courseModal.creatingCourse')
+              : t('courseModal.createCourse')}
           </button>
         </div>
       </form>
