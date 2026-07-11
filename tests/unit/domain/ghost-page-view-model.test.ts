@@ -75,11 +75,11 @@ describe('buildGhostPageViewModels', () => {
     expect(pages[2]?.blocks.map((block) => block.text)).toContain('References');
   });
 
-  it('localizes missing student metadata guidance without mutating paper metadata', () => {
+  it('honors an explicit language override without mutating paper metadata', () => {
     const paperMeta = createPaperMeta();
     const pages = buildGhostPageViewModels({
       language: 'es',
-      paper: createPaper({ language: 'es' }),
+      paper: createPaper({ language: 'en' }),
       paperContent: createPaperContent(),
       paperMeta,
     });

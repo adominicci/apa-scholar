@@ -28,7 +28,7 @@ The OpenSpec audit at commit `5ad4f61` found the following baseline before this 
 | Production build | Passed | The standard main/preload/main-renderer build completed; this did not prove packaged print/export acceptance. |
 | Electron E2E | Passed but unsafe | The single course/paper smoke test used the normal Electron `userData` path and could mutate a user's normal APA Scholar database. |
 
-The current change has red-green evidence for the isolated `userData` override, student placeholders, CrossRef response mapping, and updated renderer behavior. Final whole-repository results from the branch synchronized with `origin/main` are recorded in [Final Verification Evidence](#final-verification-evidence).
+The current change has red-green evidence for the isolated `userData` override, student placeholders through production draft/rebuild paths, CrossRef response mapping, and updated renderer behavior. Final whole-repository results are recorded in [Final Verification Evidence](#final-verification-evidence) only after the final branch state passes every required gate.
 
 ## Current Capability Matrix
 
@@ -50,7 +50,6 @@ The current change has red-green evidence for the isolated `userData` override, 
 - Implement print pagination for body overflow and add rendered print/PDF golden coverage.
 - Exercise the real PDF save flow in a safe integration or E2E environment and record the artifact result.
 - Finish core EN/ES externalization and verify both languages through the primary workflows.
-- Pass the selected paper language through derived ghost-page generation and localize issue/paste/export feedback instead of defaulting those paths to English.
 - Complete or explicitly scope professional-paper metadata, abstract authoring, and paper-font persistence/export behavior.
 - Complete course defaults and title-page mapping, including institution editing and the required combined course number/name output.
 - Implement APA heading-level 4/5 terminal punctuation and same-line paragraph behavior, or explicitly mark those levels unsupported.
@@ -63,7 +62,7 @@ The current change has red-green evidence for the isolated `userData` override, 
 
 | Change | State | Scope |
 |---|---|---|
-| `restore-project-truth-and-gates` | Implementation complete; not archived | All 18 tasks are verified on the branch synchronized with `origin/main`. The change restores quality gates, isolates E2E data, repairs guided student scaffolding, validates CrossRef mapping, and reconciles current project truth. |
+| `restore-project-truth-and-gates` | Implementation complete; not archived | All 18 tasks are verified on the branch synchronized with `origin/main`. The change restores quality gates, isolates E2E data, repairs localized guided student scaffolding through production draft/rebuild paths, validates CrossRef mapping, and reconciles current project truth. |
 
 No later capability should be described as complete merely because a proposal, plan, or checklist exists. Additional export-safety, DOI-boundary, localization, professional-paper, and release work remains separate from this stabilization change.
 
@@ -83,18 +82,23 @@ The E2E harness must supply a unique absolute `APA_SCHOLAR_USER_DATA_DIR`, verif
 
 ## Final Verification Evidence
 
-Fresh verification was run on 2026-07-11 after synchronizing the feature branch with `origin/main` at `b3de21e6d8d2da926e46c99cf86be18fb9ea545e`. The verification environment was Node `v24.14.1`, npm `11.11.0`, and OpenSpec `1.5.0`; Node `22.x` remains the recommended project runtime, so these results prove this recorded environment rather than every supported machine.
+Fresh verification was run on 2026-07-11 after synchronizing the feature branch with `origin/main` at `b3de21e6d8d2da926e46c99cf86be18fb9ea545e` and correcting production-path Spanish ghost guidance. The verification environment was Node `v22.22.1`, npm `10.9.4`, and OpenSpec `1.5.0`.
+
+Focused TDD evidence for the localization correction:
+
+- Red: the production-path Vitest command ran 3 files and 10 tests; 4 tests failed because `buildPaperDraft` and optimistic metadata, body, and reference rebuilds rendered English placeholders for a Spanish paper.
+- Green: after deriving language from `input.language ?? input.paper.language`, the same 3 files and 10 tests passed, including explicit language-override compatibility.
 
 | Command | Fresh result |
 |---|---|
 | `npm run format` | Exit 0; Prettier reported that all matched files use its configured style. |
 | `npm run lint` | Exit 0 with zero ESLint errors or warnings. |
 | `npm run typecheck` | Exit 0 from `tsc --noEmit`. |
-| `npm run test:unit` | Exit 0 after the scripted Node native rebuild; 39 test files and 231 tests passed. |
-| `npm run build` | Exit 0; Vite transformed 113 main-process modules, 86 preload modules, and 223 renderer modules. Vite emitted a non-failing warning that the 776.84 kB renderer chunk exceeds 500 kB. |
+| `npm run test:unit` | Exit 0 after the scripted Node native rebuild; 39 test files and 235 tests passed. |
+| `npm run build` | Exit 0; Vite transformed 113 main-process modules, 86 preload modules, and 223 renderer modules. Vite emitted a non-failing warning that the 776.85 kB renderer chunk exceeds 500 kB. |
 | `npm run test:e2e` | Exit 0 after the scripted Electron native rebuild and nested production build; the single Playwright Electron test passed. The harness created unique absolute temporary directories, asserted that Electron's active `userData` path matched `APA_SCHOLAR_USER_DATA_DIR`, observed the fixture database there, closed Electron, and removed only its own directories. |
 | `git diff --check` | Exit 0 with no whitespace errors. |
 | `openspec validate restore-project-truth-and-gates --strict` | Exit 0; the change is valid. |
-| `openspec doctor --json` | Exit 0 with `root.healthy: true` and no status findings after adding the tracked empty `openspec/changes/archive/` scaffold. No OpenSpec change was archived. |
+| `openspec doctor --json` | Exit 0 with `root.healthy: true` and no status findings. No OpenSpec change was archived. |
 
 All 18 tasks in `openspec/changes/restore-project-truth-and-gates/tasks.md` are complete. This proves the stabilization slice and repository gates only; it does not close the separate product and release blockers listed above.

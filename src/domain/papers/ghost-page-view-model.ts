@@ -99,7 +99,7 @@ export const buildGhostPageViewModels = (input: {
   paperMeta: PaperMeta;
   references?: ReferenceEntry[];
 }): GhostPageViewModel[] => {
-  const lang = input.language ?? 'en';
+  const lang = input.language ?? input.paper.language;
   const s = getGhostPageStrings(lang);
 
   const titlePageBlocks =
