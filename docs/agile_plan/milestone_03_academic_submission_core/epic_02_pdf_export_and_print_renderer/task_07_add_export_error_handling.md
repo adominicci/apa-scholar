@@ -2,7 +2,9 @@
 
 Status:
 - [ ] Not started
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10. Basic error propagation exists, but export issue preflight and actionable release-grade diagnostics remain incomplete. Prior implementation history is preserved; see `docs/project-status.md`.
 
 - Objective: handle export failures clearly and safely.
 - Why: desktop export should fail gracefully instead of leaving users stranded.

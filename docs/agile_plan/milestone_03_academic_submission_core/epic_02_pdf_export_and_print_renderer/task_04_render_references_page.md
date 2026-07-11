@@ -2,7 +2,9 @@
 
 Status:
 - [ ] Not started
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10. Reference ordering/rendering exists, but a multi-page body can push the references page to a later physical sheet while its fixed modeled page number remains stale. Prior implementation history is preserved; see `docs/project-status.md`.
 
 - Objective: ensure the references page prints correctly in export output.
 - Why: submission-ready output must include properly rendered reference pages.

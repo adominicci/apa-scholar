@@ -1,5 +1,9 @@
 # Body Editor v1 Implementation Plan
 
+**Lifecycle status:** Completed historical plan.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), [`docs/architecture.md`](../architecture.md), and the current body-editor modules/tests. Commands and checkpoints below describe the original execution, not a current run record.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 >
 > **Required execution skills:** `superpowers:using-git-worktrees`, `superpowers:test-driven-development`, `superpowers:verification-before-completion`, `systematic-debugging` whenever a test/build/runtime check fails, and `superpowers:finishing-a-development-branch` after all verification passes.

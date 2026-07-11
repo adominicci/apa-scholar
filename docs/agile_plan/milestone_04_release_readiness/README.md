@@ -6,4 +6,6 @@ Tracking rule: all task files inside each epic must be marked `Done` before that
 
 Includes:
 
-- [x] Epic 01: macOS Packaging and Release Prep
+- [ ] Epic 01: macOS Packaging and Release Prep
+
+Current state: incomplete and unverified as of 2026-07-10. Configuration and checklist history is preserved, but required executed release evidence is missing. See [`docs/project-status.md`](../../project-status.md).

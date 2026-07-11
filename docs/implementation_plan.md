@@ -3,6 +3,7 @@
 **Version:** 1.0  
 **Date:** 2026-03-07  
 **Purpose:** Provide a step-by-step, AI-friendly implementation roadmap for APA Scholar so the product can be built coherently with ChatGPT/Codex-style assistance.
+**Document role:** Target sequence, not proof of completion. Use [`docs/project-status.md`](project-status.md) and the agile task files for current evidence-backed state.
 
 ---
 
@@ -51,6 +52,18 @@ This order prevents the most common failure mode:
 > building editor/export features before the paper model and system boundaries are stable.
 
 If that happens, the app turns into a brittle UI prototype instead of a maintainable product.
+
+## 2.3 Current Execution State (2026-07-10)
+
+| Phases | Current state | Notes |
+|---|---|---|
+| 0-7 | Implemented history preserved | Foundation, persistence, shell, ghost pages, metadata, body editor, paste pipeline, and issues engine exist. Current quality evidence lives in `docs/project-status.md`. |
+| 8 | Partially implemented | Manual references, linked citation marks, generated references, and orphan rules exist. Citation text is not reconciled after reference edits, reference-load failure can masquerade as an empty list, and the CrossRef network request remains an interim renderer-side boundary. |
+| 9 | Partially implemented | Semantic print mapping and Electron PDF plumbing exist, but pending-save coordination, export safety, overflow pagination, rendered golden coverage, and real E2E export acceptance remain open. |
+| 10 | Partially implemented | EN/ES resources and language persistence exist; complete externalization, abstract authoring, professional-paper completion, and persisted paper fonts remain open. |
+| 11 | Partially implemented and unverified | Forge makers, signing hooks, and release templates exist; clean-install, packaged-storage, signed/notarized artifact, and separate-machine checks have no recorded successful run. |
+
+Current shell composition is header + course-first sidebar + main route + inspector. Paper routes also contain a collapsible APA Format panel inside the canvas for paper type, live font preview, body structure commands, references, and citation actions.
 
 ---
 
@@ -389,6 +402,10 @@ Add the structured research layer.
 
 Reference formatting must be driven by structured data, not manual text paragraphs.
 
+### Current Boundary Note
+
+The reference workflow is implemented in the paper inspector. `mapCrossRefWork(input: unknown)` validates supported CrossRef envelopes outside React, but `ReferenceFormModal.tsx` still performs the public network request. Linked citation marks store a reference ID plus static display text; edits to the source do not currently reconcile that text. Reference loading also needs an explicit error state instead of falling back to an empty list. Later hardening must preserve the structured reference model while closing these gaps.
+
 ---
 
 ## Phase 9 — PDF Export and Print Renderer
@@ -424,6 +441,10 @@ Generate reliable submission output from the semantic paper model.
 
 macOS packaging should not begin until PDF export is stable.
 
+### Current Acceptance Gap
+
+The initial print renderer and PDF handler are implemented, but this phase is not complete. The current export can read SQLite before pending renderer saves settle, emits guidance fallbacks for missing metadata, maps all body content to one semantic page, and has no export issue preflight. Pure snapshots and handler tests do not replace rendered-print/PDF golden evidence or a safe UI-to-file E2E result.
+
 ---
 
 ## Phase 10 — Bilingual UI Completion and Polish
@@ -454,6 +475,10 @@ Finish product-level usability for target users.
 
 - Core workflows work fully in English and Spanish.
 - New users understand the structure with minimal explanation.
+
+### Current Acceptance Gap
+
+Language selection persists and EN/ES resource parity is tested, but hard-coded English remains in product paths. The abstract page is not an editor, professional-paper support is partial, and format-panel font selection is local renderer state rather than persisted semantic paper settings or export configuration.
 
 ---
 
@@ -486,6 +511,10 @@ Prepare the first real desktop release.
 - Can produce testable macOS artifacts.
 - Signing/notarization path is documented and ready.
 - App launches cleanly outside dev mode.
+
+### Current Acceptance Gap
+
+Configuration and reusable checklists exist, but no current evidence records a clean install, packaged storage/permission verification, signed/notarized artifact, or separate-machine launch. Keep this phase and Milestone D open until those results are executed and recorded.
 
 ---
 
@@ -547,6 +576,8 @@ Includes:
 Goal:
 - user can create a meaningful paper and export it
 
+Current state: **incomplete**. Phase 8 core behavior exists; Phases 9 and 10 retain the acceptance gaps listed above.
+
 ## Milestone D — Release Readiness
 
 Includes:
@@ -554,6 +585,8 @@ Includes:
 
 Goal:
 - macOS pilot build ready
+
+Current state: **incomplete and unverified**. Release procedures are available, but their existence is not an executed result.
 
 ---
 

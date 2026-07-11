@@ -2,7 +2,9 @@
 
 Status:
 - [ ] Not started
-- [x] Done
+- [ ] Done
+
+Current state: reopened on 2026-07-10. Body-structure and inspector shortcuts are wired, but font selection remains renderer-local and is neither persisted nor reflected in export. The format-panel implementation history is preserved; see `docs/project-status.md`.
 
 - Objective: connect the floating paper canvas toolbar buttons to their respective features.
 - Why: the Essayist-style floating toolbar was added as part of the paper canvas redesign, but the buttons are currently placeholders with no actions.

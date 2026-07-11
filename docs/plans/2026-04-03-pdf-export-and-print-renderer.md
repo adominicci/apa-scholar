@@ -1,5 +1,9 @@
 # PDF Export and Print Renderer Implementation Plan
 
+**Lifecycle status:** Partially completed and superseded for current-state guidance.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), [`docs/architecture.md`](../architecture.md), and the reopened Milestone 03 export tasks. The initial print pipeline exists, while export preflight, placeholder removal, overflow pagination, rendered goldens, and real E2E export acceptance remain open.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Produce reliable PDF output from the semantic paper model via Electron's `printToPDF`.

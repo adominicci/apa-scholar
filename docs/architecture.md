@@ -3,6 +3,7 @@
 **Version:** 1.0  
 **Date:** 2026-03-07  
 **Purpose:** Define the target architecture for APA Scholar so implementation can be done safely and incrementally with ChatGPT/Codex-style assistance.
+**Current-state companion:** [`docs/project-status.md`](project-status.md) records verified implementation state, open acceptance work, and release blockers as of 2026-07-10.
 
 ---
 
@@ -69,6 +70,19 @@ Every subsystem must have:
 - low coupling,
 - tests near the logic,
 - documentation that explains intended extension points.
+
+## 2.1 Current Implementation Snapshot
+
+This document remains the target architecture. The current implementation has these important concrete boundaries and gaps:
+
+- The shipped shell is `header + course-first left sidebar + main route/canvas + contextual right inspector`.
+- Paper routes add a collapsible APA Format panel inside `PaperCanvas`; it is not a second workspace sidebar. Font selection currently changes only the live canvas and is not persisted or applied to PDF export.
+- References live in the paper inspector. A pure Zod-validated CrossRef mapper now lives in `src/application/services/map-crossref-work.ts`, but `ReferenceFormModal.tsx` still owns the network `fetch`. Moving that request behind a main-process/infrastructure adapter with timeout and URL semantics remains future work.
+- Citation marks retain a reference ID, but their rendered text is currently stored statically and is not reconciled after reference edits. Reference-load failure is also collapsed into an empty list in the renderer. Both behaviors remain open consistency work.
+- The body editor is the only rich-text authoring surface. Abstract content is persisted in the semantic model but the current abstract page remains read-only guidance.
+- The print model and Electron PDF handler exist, but content-overflow pagination, export issue preflight, removal of instructional fallback text, and rendered PDF golden evidence remain incomplete.
+- Renderer saves are debounced; export and app close do not yet coordinate with pending/in-flight saves, so a release-safe flush/close handshake remains open.
+- Global search remains a typed placeholder. Archive/delete/move/quick-paper operations from the PRD are not implemented.
 
 ---
 
@@ -225,6 +239,12 @@ Responsible for use cases:
 - run validation,
 - export PDF,
 - manage references.
+
+Current interim external-metadata boundary:
+
+- `mapCrossRefWork(input: unknown)` is a pure application service that validates and normalizes supported CrossRef work envelopes.
+- The renderer currently performs the CrossRef request and passes the unknown JSON into that mapper.
+- The intended hardened boundary is a named preload/IPC method backed by main-process infrastructure; do not treat renderer-side fetch as the final architecture.
 
 This layer orchestrates domain logic and repositories.
 
@@ -489,14 +509,16 @@ The editor is **section-aware**, not a giant unconstrained document.
 
 Initial editable regions:
 - title-page metadata form
-- abstract editor (optional)
 - body editor
 - references manager
+
+Planned but not yet editable:
+- abstract editor
 
 Important:
 - The title page is primarily metadata-driven.
 - References are structured data, not user-typed raw paragraphs.
-- Only body/abstract use rich-text document editing directly.
+- Only the body currently uses rich-text document editing directly. The stored abstract document is reserved for the future abstract authoring surface.
 
 ## 10.2 Ghost-Page Rendering
 
@@ -520,7 +542,9 @@ Do **not** implement true live hard pagination in the editor for v1.
 Instead:
 - show page-sized containers and visual separators,
 - allow body content to flow semantically,
-- generate actual print pagination in preview/export renderer.
+- generate actual print pagination in the preview/export renderer before release acceptance.
+
+The current print renderer creates one semantic body page regardless of overflow; it does not yet satisfy that final pagination target.
 
 This keeps copy-paste behavior fast and maintainable.
 
@@ -662,6 +686,14 @@ Flow:
 4. Apply print CSS and page setup
 5. Generate PDF
 
+Current implementation status:
+
+- A hidden sandboxed print `BrowserWindow`, print-only preload bridge, semantic print view model, and `printToPDF` handler exist.
+- The standard `npm run build` covers the main process, main-window preload, and main renderer. Electron Forge owns the additional print preload/renderer build entries used by packaging.
+- The current path does not run issue preflight, still maps missing metadata to instructional fallback strings, and does not paginate body overflow.
+- The current path reloads the aggregate from SQLite without first flushing pending renderer saves.
+- Unit/snapshot coverage protects pure print mapping and handler coordination, but no executed E2E proves the UI-to-file PDF flow and no rendered PDF golden is recorded.
+
 ## 13.3 DOCX Export (Phase 2)
 
 Flow:
@@ -764,6 +796,8 @@ Critical user journeys:
 - add references
 - insert citation
 - export PDF
+
+Current coverage is narrower than this target: the single Playwright Electron smoke test creates a course and paper. It now uses a unique temporary `userData` directory and proves fixture persistence stays there, but it does not exercise editing, references, citations, or export.
 
 ## 17.4 Snapshot / Golden Tests
 

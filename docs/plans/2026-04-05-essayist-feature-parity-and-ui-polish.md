@@ -1,5 +1,9 @@
 # Essayist Feature Parity & UI Polish Implementation Plan
 
+**Lifecycle status:** Partially completed and superseded for current-state guidance.
+
+**Current source of truth:** [`docs/project-status.md`](../project-status.md), [`docs/UI/design-system.md`](../UI/design-system.md), and the current renderer. Dead-control cleanup and several polish slices shipped; complete bilingual acceptance, persisted/exported font choice, and other remaining product capabilities are still open.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Bring APA Scholar to feature parity with Essayist.app while polishing the UI for a sharp, professional look — keeping the experience simpler and student-focused.

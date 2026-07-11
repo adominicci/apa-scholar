@@ -1,5 +1,7 @@
 # APA Scholar — Release Notes
 
+**Document status:** Template only. Copy to a versioned file and replace every placeholder with evidence from an executed build/release check.
+
 ## Version X.Y.Z — YYYY-MM-DD
 
 ### Build Info
@@ -26,7 +28,7 @@
 1. Download `APA Scholar-X.Y.Z-arm64.dmg` from [distribution location].
 2. Open the DMG and drag **APA Scholar** to your **Applications** folder.
 3. On first launch, macOS may show a security prompt. Click **Open** to proceed.
-4. The app creates its database at `~/Library/Application Support/APA Scholar/`.
+4. By default, the app creates its database under Electron's macOS `userData` path (`~/Library/Application Support/APA Scholar/` for the current product name). Test/diagnostic builds may use an explicitly isolated override; record the observed path for the released artifact.
 
 ### Uninstall Instructions
 
