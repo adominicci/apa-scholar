@@ -204,6 +204,25 @@ describe('validateFormState', () => {
     expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/author/i);
   });
 
+  it('allows an author with a family name and no given name', () => {
+    const form = validForm();
+    form.authors = [{ family: 'Santiago', given: '' }];
+
+    expect(validateFormState(form, i18n.t.bind(i18n))).toBeNull();
+  });
+
+  it('rejects an author with a given name but no family or organization name', () => {
+    const form = validForm();
+    form.authors = [
+      { family: 'Smith', given: 'John' },
+      { family: '', given: 'Avery' },
+    ];
+
+    expect(validateFormState(form, i18n.t.bind(i18n))).toBe(
+      'Each author requires a family or organization name.',
+    );
+  });
+
   it('requires title', () => {
     const form = validForm();
     form.title = '';

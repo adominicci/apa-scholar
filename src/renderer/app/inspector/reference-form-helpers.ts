@@ -188,9 +188,7 @@ const trimOrNull = (value: string): string | null => {
 export const formStateToFields = (
   form: ReferenceFormState,
 ): Record<string, unknown> => {
-  const validAuthors = form.authors.filter(
-    (a) => a.family.trim().length > 0 && a.given.trim().length > 0,
-  );
+  const validAuthors = form.authors.filter((a) => a.family.trim().length > 0);
 
   const base: Record<string, unknown> = {
     authors: validAuthors.length > 0 ? validAuthors : form.authors,
@@ -217,7 +215,7 @@ export const formStateToFields = (
       };
     case 'edited-book-chapter': {
       const validEditors = form.editors.filter(
-        (e) => e.family.trim().length > 0 && e.given.trim().length > 0,
+        (e) => e.family.trim().length > 0,
       );
       return {
         ...base,
@@ -260,9 +258,7 @@ export const validateFormState = (
   }
 
   const partialAuthors = form.authors.filter(
-    (a) =>
-      (a.family.trim().length > 0 && a.given.trim().length === 0) ||
-      (a.family.trim().length === 0 && a.given.trim().length > 0),
+    (a) => a.family.trim().length === 0 && a.given.trim().length > 0,
   );
 
   if (partialAuthors.length > 0) {

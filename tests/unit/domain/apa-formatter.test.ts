@@ -173,6 +173,44 @@ describe('formatReferenceApa', () => {
     expect(text).toContain('Smith, J., & Doe, J.');
   });
 
+  it('formats organizational and family-only authors without dangling punctuation', () => {
+    const entry = makeEntry('book', {
+      authors: [
+        {
+          family: 'World Health Organization',
+          given: '',
+          isGroup: true,
+        },
+        { family: 'Santiago', given: '' },
+      ],
+      year: '2026',
+      title: 'Global writing guidance',
+      publisher: 'Academic Press',
+    });
+
+    expect(formatReferenceApaPlainText(entry)).toMatch(
+      /^World Health Organization, & Santiago \(2026\)\./,
+    );
+  });
+
+  it('formats organizational and family-only editors without dangling punctuation', () => {
+    const entry = makeEntry('edited-book-chapter', {
+      authors: [{ family: 'Rivera', given: 'Avery' }],
+      year: '2026',
+      title: 'A chapter',
+      bookTitle: 'A handbook',
+      editors: [
+        { family: 'APA Editorial Board', given: '', isGroup: true },
+        { family: 'Santiago', given: '' },
+      ],
+      publisher: 'Academic Press',
+    });
+
+    expect(formatReferenceApaPlainText(entry)).toContain(
+      'APA Editorial Board, & Santiago (Eds.)',
+    );
+  });
+
   it('formats three authors with Oxford comma', () => {
     const entry = makeEntry('book', {
       authors: [

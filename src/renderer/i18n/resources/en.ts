@@ -278,13 +278,14 @@ const en = {
   },
 
   validation: {
-    authorRequired: 'At least one author with a family name is required.',
-    authorIncomplete:
-      'Each author requires both a family name and a given name.',
+    authorRequired:
+      'At least one author with a family or organization name is required.',
+    authorIncomplete: 'Each author requires a family or organization name.',
     titleRequired: 'Title is required.',
     yearInvalid: 'Year must be a four-digit number or marked as unknown.',
     fieldRequired: '{{label}} is required for this reference type.',
-    editorRequired: 'At least one editor with a family name is required.',
+    editorRequired:
+      'At least one editor with a family or organization name is required.',
   },
 } as const;
 

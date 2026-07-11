@@ -291,13 +291,16 @@ const es: TranslationResource = {
   },
 
   validation: {
-    authorRequired: 'Se requiere al menos un autor con apellido.',
-    authorIncomplete: 'Cada autor requiere tanto apellido como nombre.',
+    authorRequired:
+      'Se requiere al menos un autor con apellido o nombre de organización.',
+    authorIncomplete:
+      'Cada autor requiere un apellido o nombre de organización.',
     titleRequired: 'El título es obligatorio.',
     yearInvalid:
       'El año debe ser un número de cuatro dígitos o marcarse como desconocido.',
     fieldRequired: '{{label}} es obligatorio para este tipo de referencia.',
-    editorRequired: 'Se requiere al menos un editor con apellido.',
+    editorRequired:
+      'Se requiere al menos un editor con apellido o nombre de organización.',
   },
 } as const;
 

@@ -24,7 +24,7 @@ const formatAuthorName = (author: ReferenceAuthor): string => {
     .map((part) => `${part[0]!.toUpperCase()}.`)
     .join(' ');
 
-  return `${author.family}, ${initials}`;
+  return initials ? `${author.family}, ${initials}` : author.family;
 };
 
 const formatAuthors = (authors: ReferenceAuthor[]): string => {

@@ -59,6 +59,11 @@ describe('translation key parity', () => {
     check(es);
     expect(empties).toEqual([]);
   });
+
+  it('describes the family or organization name requirement in both languages', () => {
+    expect(en.validation.authorIncomplete).toContain('organization name');
+    expect(es.validation.authorIncomplete).toContain('nombre de organización');
+  });
 });
 
 describe('ghost page strings parity', () => {

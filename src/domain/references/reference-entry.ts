@@ -20,7 +20,7 @@ export const referenceTypeSchema = z.enum(supportedReferenceTypes, {
 
 export const referenceAuthorSchema = z.object({
   family: z.string().trim().min(1, 'Author family name is required.'),
-  given: z.string().trim().min(1, 'Author given name is required.'),
+  given: z.string().trim(),
   isGroup: z.boolean().optional(),
 });
 
