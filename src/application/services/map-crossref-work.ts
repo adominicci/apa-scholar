@@ -4,18 +4,38 @@ import type {
   ReferenceType,
 } from '@domain/references/reference-entry';
 
-const crossRefAuthorSchema = z.object({
-  family: z.string().trim().min(1),
-  given: z.string().trim().min(1),
-});
+const crossRefContributorSchema = z
+  .union([
+    z.object({
+      family: z.string().trim().min(1),
+      given: z.string().trim().optional(),
+    }),
+    z.object({
+      name: z.string().trim().min(1),
+    }),
+  ])
+  .transform((contributor): ReferenceAuthor => {
+    if ('family' in contributor) {
+      return {
+        family: contributor.family,
+        given: contributor.given ?? '',
+      };
+    }
+
+    return {
+      family: contributor.name,
+      given: '',
+      isGroup: true,
+    };
+  });
 
 const crossRefWorkEnvelopeSchema = z.object({
   message: z.object({
     DOI: z.string().trim().min(1),
-    author: z.array(crossRefAuthorSchema).min(1),
+    author: z.array(crossRefContributorSchema).min(1),
     'container-title': z.array(z.string().trim().min(1)).optional(),
     edition: z.string().optional(),
-    editor: z.array(crossRefAuthorSchema).optional(),
+    editor: z.array(crossRefContributorSchema).optional(),
     issue: z.string().optional(),
     page: z.string().optional(),
     published: z
