@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  Product: APA Scholar, a local-first macOS-first Electron desktop app for guided APA academic writing.
+  Domain model: Workspace -> Course -> Paper, backed by a semantic paper model rather than a generic document editor.
+  Tech stack: TypeScript, React, Electron, Vite, SQLite via better-sqlite3, Zod, Vitest, and Playwright.
+  Architecture: src/main owns Electron and OS access; src/preload owns the typed window.apaScholar bridge; src/renderer must not import Node or Electron APIs directly. Pure business logic belongs in domain or application, persistence details in infrastructure, and screen-only behavior in renderer.
+  Product direction: preserve the warm-dark academic studio shell, bundled fonts, system theme support, bilingual English/Spanish behavior, and local-first privacy.
+  Source of truth: read AGENTS.md, docs/apa-scholar-prd-v2.md, docs/architecture.md, docs/implementation_plan.md, and docs/agile_plan/ before product or architecture decisions. Keep documentation aligned with implementation in the same change.
+  Workflow: use test-driven development, explicit types, focused tests, and conventional commits. GitHub comments must be English. Feature pull requests target dev when it exists; never delete main or dev branches.
+  Runtime: Node 22.x is recommended. Native better-sqlite3 builds may require npm run rebuild:native or npm run rebuild:native:node for the target runtime.
+
+rules:
+  proposal:
+    - State the user outcome, scope, non-goals, dependencies, and documentation affected.
+    - Distinguish confirmed implementation gaps from product decisions or release assumptions.
+  design:
+    - Name layer ownership and any IPC, preload, persistence, migration, privacy, localization, accessibility, and packaging implications.
+    - Reuse established contracts and patterns before introducing another abstraction.
+  specs:
+    - Write testable requirements with explicit happy-path, failure, persistence, and local-first scenarios where relevant.
+    - Cover English and Spanish behavior when user-facing copy or document language changes.
+  tasks:
+    - Order implementation test-first and include exact focused and full verification commands.
+    - Include documentation reconciliation, OpenSpec validation, and release evidence when the change affects shipped behavior.
