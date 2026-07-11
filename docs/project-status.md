@@ -58,11 +58,11 @@ The current change has red-green evidence for the isolated `userData` override, 
 - Execute and record packaging, clean-install, packaged-storage/permissions, signing, and notarization checks in disposable or clean environments.
 - Implement remaining PRD workspace operations such as real search, archive/delete/move, and quick-paper flows; current search is explicitly a placeholder.
 
-## Active OpenSpec Work
+## OpenSpec Change History
 
 | Change | State | Scope |
 |---|---|---|
-| `restore-project-truth-and-gates` | Implementation complete; not archived | All 18 tasks are verified on the branch synchronized with `origin/main`. The change restores quality gates, isolates E2E data, repairs localized guided student scaffolding through production draft/rebuild paths, validates CrossRef mapping, and reconciles current project truth. |
+| `restore-project-truth-and-gates` | Archived 2026-07-11 | All 18 tasks were independently verified on the branch synchronized with `origin/main`, then the change was archived and its eight requirements were promoted into three canonical specs. The change restores quality gates, isolates E2E data, repairs localized guided student scaffolding through production draft/rebuild paths, validates CrossRef mapping, and reconciles current project truth. |
 
 No later capability should be described as complete merely because a proposal, plan, or checklist exists. Additional export-safety, DOI-boundary, localization, professional-paper, and release work remains separate from this stabilization change.
 
@@ -98,7 +98,8 @@ Focused TDD evidence for the localization correction:
 | `npm run build` | Exit 0; Vite transformed 113 main-process modules, 86 preload modules, and 223 renderer modules. Vite emitted a non-failing warning that the 776.85 kB renderer chunk exceeds 500 kB. |
 | `npm run test:e2e` | Exit 0 after the scripted Electron native rebuild and nested production build; the single Playwright Electron test passed. The harness created unique absolute temporary directories, asserted that Electron's active `userData` path matched `APA_SCHOLAR_USER_DATA_DIR`, observed the fixture database there, closed Electron, and removed only its own directories. |
 | `git diff --check` | Exit 0 with no whitespace errors. |
-| `openspec validate restore-project-truth-and-gates --strict` | Exit 0; the change is valid. |
-| `openspec doctor --json` | Exit 0 with `root.healthy: true` and no status findings. No OpenSpec change was archived. |
+| `openspec validate restore-project-truth-and-gates --strict` | Exit 0 before archival; the completed change was valid. |
+| `openspec validate --all --strict` | Exit 0 after archival; all three promoted canonical specs are valid. |
+| `openspec doctor --json` | Exit 0 after archival with `root.healthy: true` and no status findings. |
 
-All 18 tasks in `openspec/changes/restore-project-truth-and-gates/tasks.md` are complete. This proves the stabilization slice and repository gates only; it does not close the separate product and release blockers listed above.
+All 18 tasks are preserved under `openspec/changes/archive/2026-07-11-restore-project-truth-and-gates/tasks.md`. This proves the stabilization slice and repository gates only; it does not close the separate product and release blockers listed above.
