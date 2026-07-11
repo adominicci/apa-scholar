@@ -64,9 +64,35 @@ describe('buildGhostPageViewModels', () => {
       'body-page',
       'references-page',
     ]);
-    expect(pages[0]?.blocks.map((block) => block.text)).toContain('Student Name');
-    expect(pages[0]?.blocks.map((block) => block.text)).toContain('Due date');
+    expect(pages[0]?.blocks.map((block) => block.text)).toEqual([
+      'Capstone Draft',
+      'Student Name',
+      'Institution',
+      'Course Name',
+      'Professor name',
+      'Due date',
+    ]);
     expect(pages[2]?.blocks.map((block) => block.text)).toContain('References');
+  });
+
+  it('localizes missing student metadata guidance without mutating paper metadata', () => {
+    const paperMeta = createPaperMeta();
+    const pages = buildGhostPageViewModels({
+      language: 'es',
+      paper: createPaper({ language: 'es' }),
+      paperContent: createPaperContent(),
+      paperMeta,
+    });
+
+    expect(pages[0]?.blocks.map((block) => block.text)).toEqual([
+      'Capstone Draft',
+      'Nombre del Estudiante',
+      'Institución',
+      'Nombre del Curso',
+      'Nombre del profesor',
+      'Fecha de entrega',
+    ]);
+    expect(paperMeta).toEqual(createPaperMeta());
   });
 
   it('inserts the abstract page between title and body for abstract templates', () => {

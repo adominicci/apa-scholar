@@ -50,12 +50,16 @@ const baseFields: FieldDefinition[] = [
 const fieldsByType: Record<ReferenceType, FieldDefinition[]> = {
   'journal-article': [
     ...baseFields,
-    { key: 'journalName', label: 'referenceForm.fieldJournalName', required: true },
+    {
+      key: 'journalName',
+      label: 'referenceForm.fieldJournalName',
+      required: true,
+    },
     { key: 'volume', label: 'referenceForm.fieldVolume', required: false },
     { key: 'issue', label: 'referenceForm.fieldIssue', required: false },
     { key: 'pages', label: 'referenceForm.fieldPages', required: false },
   ],
-  'book': [
+  book: [
     ...baseFields,
     { key: 'publisher', label: 'referenceForm.fieldPublisher', required: true },
     { key: 'edition', label: 'referenceForm.fieldEdition', required: false },
@@ -67,33 +71,50 @@ const fieldsByType: Record<ReferenceType, FieldDefinition[]> = {
     { key: 'pages', label: 'referenceForm.fieldPages', required: false },
     { key: 'edition', label: 'referenceForm.fieldEdition', required: false },
   ],
-  'website': [
+  website: [
     ...baseFields,
     { key: 'siteName', label: 'referenceForm.fieldSiteName', required: false },
-    { key: 'retrievalDate', label: 'referenceForm.fieldRetrievalDate', required: false },
+    {
+      key: 'retrievalDate',
+      label: 'referenceForm.fieldRetrievalDate',
+      required: false,
+    },
   ],
   'conference-paper': [
     ...baseFields,
-    { key: 'conferenceName', label: 'referenceForm.fieldConferenceName', required: true },
+    {
+      key: 'conferenceName',
+      label: 'referenceForm.fieldConferenceName',
+      required: true,
+    },
     { key: 'location', label: 'referenceForm.fieldLocation', required: false },
   ],
-  'report': [
+  report: [
     ...baseFields,
-    { key: 'institution', label: 'referenceForm.fieldInstitution', required: true },
-    { key: 'reportNumber', label: 'referenceForm.fieldReportNumber', required: false },
+    {
+      key: 'institution',
+      label: 'referenceForm.fieldInstitution',
+      required: true,
+    },
+    {
+      key: 'reportNumber',
+      label: 'referenceForm.fieldReportNumber',
+      required: false,
+    },
   ],
 };
 
-export const getFieldsForType = (referenceType: ReferenceType): FieldDefinition[] =>
-  fieldsByType[referenceType];
+export const getFieldsForType = (
+  referenceType: ReferenceType,
+): FieldDefinition[] => fieldsByType[referenceType];
 
 export const typeLabelKeys: Record<ReferenceType, string> = {
   'journal-article': 'referenceForm.typeJournalArticle',
-  'book': 'referenceForm.typeBook',
+  book: 'referenceForm.typeBook',
   'edited-book-chapter': 'referenceForm.typeEditedBookChapter',
-  'website': 'referenceForm.typeWebsite',
+  website: 'referenceForm.typeWebsite',
   'conference-paper': 'referenceForm.typeConferencePaper',
-  'report': 'referenceForm.typeReport',
+  report: 'referenceForm.typeReport',
 };
 
 export const emptyAuthor = (): ReferenceAuthor => ({ family: '', given: '' });
@@ -122,10 +143,16 @@ export const createEmptyFormState = (): ReferenceFormState => ({
   reportNumber: '',
 });
 
-export const referenceToFormState = (entry: ReferenceEntry): ReferenceFormState => {
-  const fields = entry.fields as Record<string, unknown>;
-  const authors = (fields.authors as ReferenceAuthor[] | undefined) ?? [emptyAuthor()];
-  const editors = (fields.editors as ReferenceAuthor[] | undefined) ?? [emptyAuthor()];
+export const referenceToFormState = (
+  entry: ReferenceEntry,
+): ReferenceFormState => {
+  const fields = entry.fields;
+  const authors = (fields.authors as ReferenceAuthor[] | undefined) ?? [
+    emptyAuthor(),
+  ];
+  const editors = (fields.editors as ReferenceAuthor[] | undefined) ?? [
+    emptyAuthor(),
+  ];
   const year = fields.year as string | null;
 
   return {
@@ -226,9 +253,7 @@ export const validateFormState = (
   form: ReferenceFormState,
   t: (key: string, options?: Record<string, string>) => string,
 ): string | null => {
-  const validAuthors = form.authors.filter(
-    (a) => a.family.trim().length > 0,
-  );
+  const validAuthors = form.authors.filter((a) => a.family.trim().length > 0);
 
   if (validAuthors.length === 0) {
     return t('validation.authorRequired');
@@ -248,11 +273,17 @@ export const validateFormState = (
     return t('validation.titleRequired');
   }
 
-  if (!form.yearUnknown && form.year.trim().length > 0 && !/^\d{4}$/.test(form.year.trim())) {
+  if (
+    !form.yearUnknown &&
+    form.year.trim().length > 0 &&
+    !/^\d{4}$/.test(form.year.trim())
+  ) {
     return t('validation.yearInvalid');
   }
 
-  const requiredFields = getFieldsForType(form.referenceType).filter((f) => f.required);
+  const requiredFields = getFieldsForType(form.referenceType).filter(
+    (f) => f.required,
+  );
 
   for (const field of requiredFields) {
     if (field.key === 'title') continue;

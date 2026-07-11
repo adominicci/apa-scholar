@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReferenceEntry } from '@domain/references/reference-entry';
 import { ReferencesPanel } from '@renderer/app/inspector/ReferencesPanel';
 
-const createReference = (overrides: Partial<ReferenceEntry> = {}): ReferenceEntry => ({
+const createReference = (
+  overrides: Partial<ReferenceEntry> = {},
+): ReferenceEntry => ({
   id: 'ref-1',
   paperId: 'paper-1',
   referenceType: 'journal-article',
@@ -65,9 +67,13 @@ describe('ReferencesPanel', () => {
       />,
     );
 
-    expect(screen.getAllByText('Cognitive Effects of Sleep Deprivation').length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText('Cognitive Effects of Sleep Deprivation').length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Smith (2020)')).toBeVisible();
-    expect(screen.getAllByText('Publication Manual').length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText('Publication Manual').length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Adams & Baker (2019)')).toBeVisible();
   });
 

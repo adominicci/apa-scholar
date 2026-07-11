@@ -1,7 +1,14 @@
+import path from 'node:path';
 import { app, dialog } from 'electron';
 import { bootstrapPersistence } from '@main/app/bootstrap-persistence';
 import { handleAppReady } from '@main/app/handle-app-ready';
 import { createMainWindow } from '@main/app/create-main-window';
+
+const userDataDirectoryOverride = process.env.APA_SCHOLAR_USER_DATA_DIR;
+
+if (userDataDirectoryOverride && path.isAbsolute(userDataDirectoryOverride)) {
+  app.setPath('userData', userDataDirectoryOverride);
+}
 
 if (process.platform === 'win32') {
   try {

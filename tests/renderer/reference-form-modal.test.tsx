@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import i18n from 'i18next';
 import type { ReferenceFormState } from '@renderer/app/inspector/reference-form-helpers';
@@ -14,7 +20,9 @@ import { ReferenceFormModal } from '@renderer/app/inspector/ReferenceFormModal';
 
 afterEach(cleanup);
 
-const renderModal = (overrides: Partial<Parameters<typeof ReferenceFormModal>[0]> = {}) => {
+const renderModal = (
+  overrides: Partial<Parameters<typeof ReferenceFormModal>[0]> = {},
+) => {
   const props = {
     isOpen: true,
     form: createEmptyFormState(),
@@ -63,11 +71,11 @@ describe('ReferenceFormModal', () => {
   it('renders the reference type selector with all types', () => {
     const { container } = renderModal();
 
-    const dialog = container.querySelector('[role="dialog"]')!;
-    const select = within(dialog as HTMLElement).getByRole('combobox');
+    const dialog = container.querySelector<HTMLElement>('[role="dialog"]')!;
+    const select = within(dialog).getByRole('combobox');
     expect(select).toBeVisible();
 
-    const options = within(select as HTMLElement).getAllByRole('option');
+    const options = within(select).getAllByRole('option');
     expect(options).toHaveLength(6);
     expect(options.map((opt) => opt.textContent)).toEqual([
       'Journal article',
@@ -84,8 +92,12 @@ describe('ReferenceFormModal', () => {
 
     expect(screen.getByPlaceholderText('e.g. 2024')).toBeVisible();
 
-    const labels = screen.getAllByText(/Title|Journal name|Volume|Issue|Pages|DOI|URL/);
-    const labelTexts = labels.map((el) => el.textContent?.replace(/\s*\*$/, '').trim());
+    const labels = screen.getAllByText(
+      /Title|Journal name|Volume|Issue|Pages|DOI|URL/,
+    );
+    const labelTexts = labels.map((el) =>
+      el.textContent?.replace(/\s*\*$/, '').trim(),
+    );
     expect(labelTexts).toContain('Title');
     expect(labelTexts).toContain('Journal name');
     expect(labelTexts).toContain('Volume');
@@ -100,7 +112,9 @@ describe('ReferenceFormModal', () => {
     renderModal({ form });
 
     const labels = screen.getAllByText(/Publisher|Edition/);
-    const labelTexts = labels.map((el) => el.textContent?.replace(/\s*\*$/, '').trim());
+    const labelTexts = labels.map((el) =>
+      el.textContent?.replace(/\s*\*$/, '').trim(),
+    );
     expect(labelTexts).toContain('Publisher');
     expect(labelTexts).toContain('Edition');
   });
@@ -112,7 +126,9 @@ describe('ReferenceFormModal', () => {
     renderModal({ form });
 
     const labels = screen.getAllByText(/Book title|Publisher/);
-    const labelTexts = labels.map((el) => el.textContent?.replace(/\s*\*$/, '').trim());
+    const labelTexts = labels.map((el) =>
+      el.textContent?.replace(/\s*\*$/, '').trim(),
+    );
     expect(labelTexts).toContain('Book title');
     expect(labelTexts).toContain('Publisher');
     expect(screen.getByText('Editors')).toBeVisible();
@@ -137,7 +153,7 @@ describe('ReferenceFormModal', () => {
 
     renderModal({ form });
 
-    const yearInput = screen.getByPlaceholderText('e.g. 2024') as HTMLInputElement;
+    const yearInput = screen.getByPlaceholderText('e.g. 2024');
     expect(yearInput).toBeDisabled();
   });
 
@@ -237,7 +253,9 @@ describe('validateFormState', () => {
     form.referenceType = 'conference-paper';
     form.conferenceName = '';
 
-    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(/conference name/i);
+    expect(validateFormState(form, i18n.t.bind(i18n))).toMatch(
+      /conference name/i,
+    );
   });
 
   it('requires institution for report', () => {

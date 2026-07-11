@@ -14,15 +14,15 @@ class MockBrowserWindow {
 
   readonly webContents = {
     send: vi.fn(),
-    printToPDF: vi.fn(async () => Buffer.from('pdf')),
+    printToPDF: vi.fn(() => Promise.resolve(Buffer.from('pdf'))),
   };
 
-  readonly loadURL = vi.fn(async () => {});
-  readonly loadFile = vi.fn(async () => {});
+  readonly loadURL = vi.fn(() => Promise.resolve());
+  readonly loadFile = vi.fn(() => Promise.resolve());
 
   private destroyed = false;
 
-  constructor(_options: unknown) {
+  constructor() {
     MockBrowserWindow.instances.push(this);
   }
 
@@ -129,7 +129,8 @@ describe('createExportPdfHandler', () => {
   it('loads the print renderer entry html in development', async () => {
     vi.stubGlobal('PRINT_WINDOW_VITE_DEV_SERVER_URL', 'http://localhost:5173');
 
-    const { createExportPdfHandler } = await import('@main/ipc/create-export-ipc-handlers');
+    const { createExportPdfHandler } =
+      await import('@main/ipc/create-export-ipc-handlers');
 
     const handler = createExportPdfHandler({
       getAggregate: () => buildAggregate(),
@@ -143,7 +144,9 @@ describe('createExportPdfHandler', () => {
     });
 
     const printWindow = MockBrowserWindow.instances[0]!;
-    expect(printWindow.loadURL).toHaveBeenCalledWith('http://localhost:5173/print.html');
+    expect(printWindow.loadURL).toHaveBeenCalledWith(
+      'http://localhost:5173/print.html',
+    );
 
     ipcMain.emit('export:ready', { sender: printWindow.webContents });
     ipcMain.emit('export:rendered', { sender: printWindow.webContents });
@@ -152,7 +155,8 @@ describe('createExportPdfHandler', () => {
   });
 
   it('loads the built print renderer html in production', async () => {
-    const { createExportPdfHandler } = await import('@main/ipc/create-export-ipc-handlers');
+    const { createExportPdfHandler } =
+      await import('@main/ipc/create-export-ipc-handlers');
 
     const handler = createExportPdfHandler({
       getAggregate: () => buildAggregate(),
@@ -177,7 +181,8 @@ describe('createExportPdfHandler', () => {
   });
 
   it('re-sends export data when the print renderer announces readiness again before rendering completes', async () => {
-    const { createExportPdfHandler } = await import('@main/ipc/create-export-ipc-handlers');
+    const { createExportPdfHandler } =
+      await import('@main/ipc/create-export-ipc-handlers');
 
     const aggregate = buildAggregate();
     const references = [buildReference()];
@@ -206,14 +211,25 @@ describe('createExportPdfHandler', () => {
     });
 
     expect(printWindow!.webContents.send).toHaveBeenCalledTimes(2);
-    expect(printWindow!.webContents.send).toHaveBeenNthCalledWith(1, 'export:data', {
-      aggregate,
-      references,
-    });
-    expect(printWindow!.webContents.send).toHaveBeenNthCalledWith(2, 'export:data', {
-      aggregate,
-      references,
-    });
-    expect(writeFile).toHaveBeenCalledWith('/tmp/test-paper.pdf', Buffer.from('pdf'));
+    expect(printWindow!.webContents.send).toHaveBeenNthCalledWith(
+      1,
+      'export:data',
+      {
+        aggregate,
+        references,
+      },
+    );
+    expect(printWindow!.webContents.send).toHaveBeenNthCalledWith(
+      2,
+      'export:data',
+      {
+        aggregate,
+        references,
+      },
+    );
+    expect(writeFile).toHaveBeenCalledWith(
+      '/tmp/test-paper.pdf',
+      Buffer.from('pdf'),
+    );
   });
 });
